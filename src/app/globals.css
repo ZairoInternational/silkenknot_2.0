@@ -1,0 +1,148 @@
+@import "tailwindcss";
+
+:root {
+  --nav-h: 4rem;
+  --paper: #f6f3ee;
+  --ink: #1c1b19;
+  --mute: #6d675f;
+  --line: #e3dbd1;
+  --announce-h: 26px;
+  color-scheme: light;
+}
+
+@theme {
+  --color-paper: #f6f3ee;
+  --color-cream: #efeae3;
+  --color-sand: #e6ddd2;
+  --color-stone: #cfc4b6;
+  --color-ink: #1c1b19;
+  --color-mute: #6d675f;
+  --color-line: #e3dbd1;
+  --color-olive: #6a6756;
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), "Times New Roman", serif;
+}
+
+html[data-announce="off"] {
+  --announce-h: 0px;
+}
+
+html[data-announce="off"] .announcement {
+  display: none;
+}
+
+html {
+  background: var(--paper);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: #e6ddd2;
+  color: #1c1b19;
+}
+
+:focus-visible {
+  outline: 2px solid #1c1b19;
+  outline-offset: 3px;
+}
+
+.search-field:focus-within {
+  border-color: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28);
+}
+
+.search-field input:focus,
+.search-field input:focus-visible,
+.search-field button:focus,
+.search-field button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.eyebrow {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.page-pad {
+  padding-top: calc(var(--nav-h) + 2rem);
+}
+
+@keyframes silk-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.silk-marquee {
+  animation: silk-marquee 24s linear infinite;
+}
+
+.search-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #cfc4b6 transparent;
+}
+
+.search-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.search-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 10px 0;
+}
+
+.search-scroll::-webkit-scrollbar-thumb {
+  background: #cfc4b6;
+  border: 2px solid #fff;
+  border-radius: 999px;
+}
+
+.search-scroll::-webkit-scrollbar-thumb:hover {
+  background: #6d675f;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .silk-marquee {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+}
+
+button,
+a,
+summary,
+label[for],
+[role="button"] {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}

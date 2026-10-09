@@ -1,0 +1,47 @@
+import type { Metadata } from "next";
+import { Cormorant_Garamond, Outfit } from "next/font/google";
+import { Providers } from "@/components/providers";
+import "./globals.css";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-outfit",
+  display: "swap",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: {
+    default: "Silk Knot — Body care, bath & wellness",
+    template: "%s · Silk Knot",
+  },
+  description:
+    "Body care, bath essentials, aromatherapy, and quiet apparel. Everyday rituals, made better.",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" className={`${outfit.variable} ${cormorant.variable} h-full antialiased`}>
+      <head>
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(sessionStorage.getItem('silkknot.announce')==='off')document.documentElement.dataset.announce='off'}catch(e){}",
+          }}
+        />
+      </head>
+      <body className="min-h-full bg-paper font-sans text-ink">
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
