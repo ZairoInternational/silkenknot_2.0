@@ -160,10 +160,7 @@ export function SiteHeader() {
     return () => window.removeEventListener("keydown", onKey);
   }, [mega]);
 
-  const tone = "text-ink";
-  const iconButton = bar.solid
-    ? "bg-black/10 text-ink hover:bg-black/18"
-    : "bg-white/15 text-white hover:bg-white/25";
+  const tone = bar.solid ? "text-ink" : "text-white";
   const currentNote = notes[note];
   const NoteIcon = currentNote.icon;
 
@@ -266,7 +263,7 @@ export function SiteHeader() {
         }}
         onMouseLeave={() => setMega(false)}
       >
-        <div className="pointer-events-auto relative mx-auto flex h-16 items-center border-b border-black/10 px-4 transition-colors duration-300 md:px-8">
+        <div className={`pointer-events-auto relative mx-auto flex h-16 items-center border-b px-4 transition-colors duration-300 md:px-8 ${bar.solid ? "border-black/10" : "border-white/45"}`}>
           <div className="relative z-20 flex min-w-0 items-center gap-5">
             <button
               type="button"
@@ -313,7 +310,7 @@ export function SiteHeader() {
           <div className="relative z-20 ml-auto flex items-center gap-2">
             <button
               type="button"
-              className={`group inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 ${iconButton}`}
+              className="group inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/10 text-current transition-colors duration-300 hover:bg-black/18"
               aria-label="Search"
               onClick={store.openSearch}
             >
@@ -321,7 +318,7 @@ export function SiteHeader() {
             </button>
             <button
               type="button"
-              className={`group hidden h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 md:inline-flex ${iconButton}`}
+              className="group hidden h-10 w-10 items-center justify-center rounded-full bg-black/10 text-current transition-colors duration-300 hover:bg-black/18 md:inline-flex"
               aria-label="Account"
               onClick={() => setAccountOpen(true)}
             >
@@ -329,7 +326,7 @@ export function SiteHeader() {
             </button>
             <button
               type="button"
-              className={`group relative inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 ${iconButton}`}
+              className="group relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/10 text-current transition-colors duration-300 hover:bg-black/18"
               aria-label="Bag"
               onClick={store.openCart}
             >

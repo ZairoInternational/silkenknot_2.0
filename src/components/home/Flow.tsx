@@ -331,34 +331,38 @@ export function Newsletter() {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
   return (
-    <section className="bg-[#f7f4ef] px-5 py-20 text-center md:py-28">
-      <p className="text-[12px] uppercase tracking-[0.22em] text-[#6f675d]">Stay in touch</p>
-      <h2 className="mt-3 font-serif text-4xl text-[#2c2926] md:text-5xl">Join the Silk Knot list</h2>
-      <p className="mx-auto mt-4 max-w-md text-[#5e574e]">Seasonal scents, care notes, and the occasional quiet launch.</p>
-      <form
-        className="mx-auto mt-8 flex max-w-xl flex-col gap-3 sm:flex-row"
-        onSubmit={(event) => {
-          event.preventDefault();
-          setDone(true);
-          setEmail("");
-        }}
-      >
-        <label htmlFor="notes-email" className="sr-only">Email address</label>
-        <input
-          id="notes-email"
-          type="email"
-          required
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          placeholder="Your email address"
-          autoComplete="email"
-          className="h-12 flex-1 rounded-full border border-black/10 bg-white px-5 outline-none"
-        />
-        <button type="submit" className="h-12 rounded-full bg-[#243028] px-8 text-sm text-white">
-          Join
-        </button>
-      </form>
-      {done ? <p className="mt-4 text-sm" role="status">You are on the list. We write rarely.</p> : null}
+    <section className="px-5 py-24 text-center md:py-36">
+      <Reveal>
+        <p className="eyebrow text-mute">The list</p>
+        <h2 className="mt-4 font-serif text-5xl md:text-7xl">Notes on ritual.</h2>
+        <p className="mx-auto mt-4 max-w-md text-mute">Seasonal scents, care notes, and the occasional quiet launch.</p>
+        <form
+          className="mx-auto mt-10 flex max-w-md items-end border-b border-ink text-left"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setDone(true);
+            setEmail("");
+          }}
+        >
+          <div className="flex-1">
+            <label htmlFor="notes-email" className="sr-only">Email address</label>
+            <input
+              id="notes-email"
+              type="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="Email address"
+              autoComplete="email"
+              className="h-14 w-full bg-transparent outline-none"
+            />
+          </div>
+          <button type="submit" className="h-14 text-[11px] uppercase tracking-[0.18em]">
+            Join
+          </button>
+        </form>
+        {done ? <p className="mt-4 text-sm" role="status">You are on the list. We write rarely.</p> : null}
+      </Reveal>
     </section>
   );
 }
