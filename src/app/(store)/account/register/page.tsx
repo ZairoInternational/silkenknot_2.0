@@ -1,7 +1,5 @@
-import { RegisterScreen } from "@/components/account/Screens";
-
-export const metadata = { title: "Register" };
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <RegisterScreen />;
+  redirect("/account/login");
 }

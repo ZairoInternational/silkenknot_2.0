@@ -1,6 +1,9 @@
 import { MongoClient, type Db } from "mongodb";
+import { ensurePaymentIndexes } from "@/lib/payments/indexes";
 import bcrypt from "bcryptjs";
 import { seedCategories, seedCoupons, seedProducts, seedUsers } from "@/lib/data";
+import { approxProductWeight } from "@/lib/shipping/weight";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB || "silkknot";
@@ -36,7 +39,10 @@ async function seedIfEmpty(db: Db) {
   if ((await products.countDocuments()) === 0) {
     await products.insertMany(seedProducts.map((product) => ({ ...product })));
   }
-
+  const unweighed = await products.find({ $or: [{ weightGrams: { $exists: false } }, { weightGrams: { $lte: 0 } }] }).toArray();
+  for (const product of unweighed) {
+    await products.updateOne({ _id: product._id }, { $set: { weightGrams: approxProductWeight(String(product.type || "")) } });
+  }
   const categories = db.collection("categories");
   const stored = await categories.find().toArray();
   for (const row of stored) {
@@ -64,18 +70,71 @@ async function seedIfEmpty(db: Db) {
     const seededUsers = await Promise.all(
       seedUsers.map(async (user) => {
         const { password, ...rest } = user;
-        return { ...rest, passwordHash: await bcrypt.hash(password, 10) };
+        const phone = parsePhoneNumberFromString(user.phone, "IN");
+        return {
+          ...rest,
+          phone: phone?.isValid() ? phone.number : user.phone,
+          passwordHash: await bcrypt.hash(password, 10),
+          emailVerifiedAt: user.role === "customer" ? new Date().toISOString() : null,
+          phoneVerifiedAt: null,
+          savedCart: [],
+          savedWishlist: [],
+        };
       }),
     );
     await users.insertMany(seededUsers);
-    await users.createIndex({ email: 1 }, { unique: true });
   }
+  await ensureAuthCollections(db);
+  await ensurePaymentIndexes(db);
+}
+
+export async function getMongo() {
+  const db = await getDb();
+  if (!client) throw new Error("Database unavailable.");
+  return { client, db };
+}
+
+async function ensureAuthCollections(db: Db) {
+  const users = db.collection("users");
+  const legacy = await users.find({ role: "customer", passwordHash: { $type: "string" }, email: { $type: "string" }, emailVerifiedAt: { $exists: false } }).toArray();
+  if (legacy.length) {
+    await users.updateMany(
+      { id: { $in: legacy.map((row) => row.id) } },
+      { $set: { emailVerifiedAt: new Date().toISOString() } },
+    );
+  }
+  const localPhones = await users.find({ phone: /^\d{10}$/ }).toArray();
+  for (const row of localPhones) {
+    const phone = parsePhoneNumberFromString(String(row.phone), "IN");
+    if (phone?.isValid()) await users.updateOne({ _id: row._id }, { $set: { phone: phone.number } });
+  }
+  const emailIndex = (await users.indexes()).find((index) => index.key?.email === 1 && index.unique);
+  if (emailIndex?.name && !emailIndex.partialFilterExpression) await users.dropIndex(emailIndex.name);
+  await users.createIndex(
+    { email: 1 },
+    { name: "email_1", unique: true, partialFilterExpression: { email: { $type: "string" } } },
+  );
+  await users.createIndex(
+    { phone: 1 },
+    { unique: true, partialFilterExpression: { phoneVerifiedAt: { $type: "string" }, phone: { $type: "string" } } },
+  ).catch(() => undefined);
+  await db.collection("otpChallenges").createIndex({ id: 1 }, { unique: true });
+  await db.collection("otpChallenges").createIndex({ destination: 1, createdAt: -1 });
+  await db.collection("sessions").createIndex({ tokenHash: 1 }, { unique: true });
+  await db.collection("sessions").createIndex({ userId: 1 });
+  await db.collection("checkoutIntents").createIndex({ id: 1 }, { unique: true });
 }
 
 export function publicUser(user: { passwordHash?: string; password?: string; [key: string]: unknown }) {
   const copy = { ...user };
   delete copy.passwordHash;
   delete copy._id;
+  delete copy.savedCart;
+  delete copy.savedWishlist;
+  delete copy.savedCoupon;
   copy.password = "";
+  copy.email = copy.email || "";
+  copy.phone = copy.phone || "";
+  copy.addresses = copy.addresses || [];
   return copy;
 }

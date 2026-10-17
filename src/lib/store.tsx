@@ -10,6 +10,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { csrfHeaders } from "@/lib/auth/browser";
+import { retainCheckoutDraft } from "@/lib/checkout";
 import { seedCategories, seedCoupons, seedProducts } from "@/lib/data";
 import { couponDiscount, repairImageUrl, slugify, subtotal, withDerivedPrice } from "@/lib/format";
 import type {
@@ -27,6 +29,25 @@ import type {
 
 const BAG_KEY = "silkknot.bag.v1";
 
+type StoredBag = {
+  ownerUserId?: string | null;
+  cart?: CartItem[];
+  wishlist?: string[];
+  couponCode?: string | null;
+  recentSearches?: string[];
+};
+
+function readStoredBag(): StoredBag {
+  try {
+    const saved = JSON.parse(localStorage.getItem(BAG_KEY) || "null") as StoredBag | null;
+    if (!saved || !("ownerUserId" in saved)) return {};
+    return saved;
+  } catch {
+    localStorage.removeItem(BAG_KEY);
+    return {};
+  }
+}
+
 type ApiResult = {
   ok: boolean;
   message?: string;
@@ -36,12 +57,23 @@ type ApiResult = {
   products?: Product[];
   customers?: User[];
   admin?: boolean;
+  helpful?: number;
+  votes?: Record<string, "yes" | "no">;
+  reported?: string[];
+  challengeId?: string;
+  expiresAt?: string;
+  resendAt?: string;
+  devCode?: string;
+  cart?: CartItem[];
+  wishlist?: string[];
+  couponCode?: string | null;
+  bag?: { cart: CartItem[]; wishlist: string[]; couponCode: string | null } | null;
 };
 
 async function post(action: string, payload: Record<string, unknown> = {}) {
   const response = await fetch("/api/store", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: csrfHeaders(),
     body: JSON.stringify({ action, ...payload }),
   });
   return (await response.json()) as ApiResult;
@@ -100,17 +132,16 @@ type StoreValue = {
   clearCoupon: () => void;
   toggleWishlist: (productId: string) => Result;
   isWished: (productId: string) => boolean;
-  register: (input: { name: string; email: string; password: string }) => Promise<Result>;
-  login: (email: string, password: string) => Promise<Result>;
+  requestOtp: (input: { channel: "email" | "sms"; destination: string; country?: string; purpose?: "login" | "link-email" | "link-phone" }) => Promise<Result & { challengeId?: string; resendAt?: string; devCode?: string }>;
+  verifyOtp: (input: { challengeId: string; code: string; purpose?: "login" | "link-email" | "link-phone" }) => Promise<Result>;
   logout: () => Promise<void>;
-  updateProfile: (input: { name: string; phone: string }) => Promise<Result>;
-  findAccount: (email: string) => Promise<Result>;
-  resetPassword: (email: string, password: string) => Promise<Result>;
+  updateProfile: (input: { name: string }) => Promise<Result>;
   saveAddress: (address: Address) => Promise<void>;
   deleteAddress: (id: string) => Promise<void>;
   loginAdmin: (email: string, password: string) => Promise<Result>;
   logoutAdmin: () => Promise<void>;
-  placeOrder: (order: Omit<Order, "id" | "number" | "createdAt" | "status">) => Promise<Result & { order?: Order }>;
+  placeOrder: (order: Omit<Order, "id" | "number" | "createdAt" | "status">, checkoutOrderId: string) => Promise<Result & { order?: Order }>;
+  acceptServerOrder: (order: Order, products?: Product[]) => void;
   saveProduct: (product: Product, isNew: boolean) => Promise<Result>;
   deleteProduct: (id: string) => Promise<Result>;
   saveCategory: (category: Category, isNew: boolean) => Promise<Result>;
@@ -120,6 +151,9 @@ type StoreValue = {
   saveCoupon: (coupon: Coupon, isNew: boolean) => Promise<Result>;
   deleteCoupon: (id: string) => Promise<void>;
   addReview: (productId: string, review: Omit<Review, "id" | "date">) => Promise<void>;
+  voteReview: (productId: string, reviewId: string, vote: "yes" | "no") => Promise<ApiResult>;
+  reportReview: (productId: string, reviewId: string) => Promise<ApiResult>;
+  loadReviewVotes: () => Promise<{ votes: Record<string, "yes" | "no">; reported: string[] }>;
   rememberSearch: (term: string) => void;
   productBySlug: (slug: string) => Product | undefined;
   productById: (id: string) => Product | undefined;
@@ -195,25 +229,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [toast, setToast] = useState<Toast>(null);
   const dbRef = useRef(db);
+  dbRef.current = db;
 
   useEffect(() => {
-    dbRef.current = db;
-  }, [db]);
-
-  useEffect(() => {
-    let bag: Partial<Database> = {};
-    try {
-      const saved = JSON.parse(localStorage.getItem(BAG_KEY) || "null") as Partial<Database> | null;
-      if (saved) bag = saved;
-    } catch {
-      localStorage.removeItem(BAG_KEY);
-    }
+    const saved = readStoredBag();
     let cancelled = false;
     fetch("/api/store")
       .then((response) => response.json())
       .then((data: ApiResult & { products?: Product[]; categories?: Category[]; coupons?: Coupon[]; orders?: Order[]; user?: User | null; customers?: User[]; admin?: boolean }) => {
         if (cancelled) return;
+        const userId = data.user?.id ?? null;
+        retainCheckoutDraft(userId);
+        const guestBag = !userId && saved.ownerUserId == null && "ownerUserId" in saved ? saved : {};
         const base = initialDatabase();
+        const accountBag = data.user && !data.admin && data.bag ? data.bag : null;
         dispatch({
           type: "hydrate",
           db: repairDatabase({
@@ -225,12 +254,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             users: data.user
               ? [{ ...data.user, password: "" }, ...(data.customers ?? []).map((customer) => ({ ...customer, password: "" }))]
               : [],
-            sessionUserId: data.user?.id ?? null,
+            sessionUserId: userId,
             adminAuthed: Boolean(data.admin),
-            cart: bag.cart ?? [],
-            wishlist: bag.wishlist ?? [],
-            couponCode: bag.couponCode ?? null,
-            recentSearches: bag.recentSearches ?? [],
+            cart: accountBag ? accountBag.cart : guestBag.cart ?? [],
+            wishlist: accountBag ? accountBag.wishlist : guestBag.wishlist ?? [],
+            couponCode: accountBag ? accountBag.couponCode : guestBag.couponCode ?? null,
+            recentSearches: saved.recentSearches ?? [],
           }),
         });
         setReady(true);
@@ -244,17 +273,26 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || db.adminAuthed) return;
     localStorage.setItem(
       BAG_KEY,
       JSON.stringify({
+        ownerUserId: db.sessionUserId,
         cart: db.cart,
         wishlist: db.wishlist,
         couponCode: db.couponCode,
         recentSearches: db.recentSearches,
       }),
     );
-  }, [db.cart, db.wishlist, db.couponCode, db.recentSearches, ready]);
+  }, [db.cart, db.wishlist, db.couponCode, db.recentSearches, db.sessionUserId, db.adminAuthed, ready]);
+
+  useEffect(() => {
+    if (!ready || !db.sessionUserId || db.adminAuthed) return;
+    const timer = window.setTimeout(() => {
+      void post("sync-bag", { cart: db.cart, wishlist: db.wishlist, couponCode: db.couponCode });
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [ready, db.sessionUserId, db.adminAuthed, db.cart, db.wishlist, db.couponCode]);
 
   useEffect(() => {
     if (!toast) return;
@@ -314,6 +352,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (!line) return;
     if (quantity < 1) {
       patch({ cart: current.cart.filter((item) => item.id !== lineId) });
+      notify(`${line.name} removed`);
       return;
     }
     const product = current.products.find((item) => item.id === line.productId);
@@ -324,11 +363,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         item.id === lineId ? { ...item, quantity: Math.min(quantity, cap) } : item,
       ),
     });
-  }, [patch]);
+  }, [notify, patch]);
 
   const removeFromCart = useCallback((lineId: string) => {
+    const line = dbRef.current.cart.find((item) => item.id === lineId);
     patch({ cart: dbRef.current.cart.filter((item) => item.id !== lineId) });
-  }, [patch]);
+    if (line) notify(`${line.name} removed`);
+  }, [notify, patch]);
 
   const toggleWishlist = useCallback((productId: string): Result => {
     const current = dbRef.current;
@@ -381,33 +422,45 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   }, [patch]);
 
-  const register = useCallback(async (input: { name: string; email: string; password: string }): Promise<Result> => {
-    const data = await post("register", input);
-    if (!data.ok || !data.user) return { ok: false, message: data.message || "Could not create the account." };
-    signedIn(data);
-    return { ok: true, message: data.message };
-  }, [signedIn]);
-
-  const login = useCallback(async (email: string, password: string): Promise<Result> => {
-    const data = await post("login", { email, password });
-    if (!data.ok || !data.user) return { ok: false, message: data.message || "Email or password is incorrect." };
-    signedIn(data);
-    return { ok: true };
-  }, [signedIn]);
-
-  const findAccount = useCallback(async (email: string): Promise<Result> => {
-    const data = await post("lookup", { email });
-    if (!data.ok) return { ok: false, message: data.message || "We couldn’t find that account." };
-    return { ok: true };
+  const requestOtp = useCallback(async (input: { channel: "email" | "sms"; destination: string; country?: string; purpose?: "login" | "link-email" | "link-phone" }) => {
+    const response = await fetch("/api/auth/otp", {
+      method: "POST",
+      headers: csrfHeaders(),
+      body: JSON.stringify(input),
+    });
+    const data = (await response.json()) as ApiResult;
+    if (!data.ok || !data.challengeId) return { ok: false as const, message: data.message || "We couldn’t send a code." };
+    return { ok: true as const, challengeId: data.challengeId, resendAt: data.resendAt, devCode: data.devCode };
   }, []);
 
-  const resetPassword = useCallback(async (email: string, password: string): Promise<Result> => {
-    const data = await post("reset-password", { email, password });
-    if (!data.ok) return { ok: false, message: data.message || "Could not update the password." };
-    return { ok: true, message: data.message };
-  }, []);
+  const verifyOtp = useCallback(async (input: { challengeId: string; code: string; purpose?: "login" | "link-email" | "link-phone" }) => {
+    const current = dbRef.current;
+    const guestBag = !current.sessionUserId;
+    const response = await fetch("/api/auth/otp", {
+      method: "PUT",
+      headers: csrfHeaders(),
+      body: JSON.stringify({
+        ...input,
+        cart: input.purpose && input.purpose !== "login" ? undefined : guestBag ? current.cart : [],
+        wishlist: input.purpose && input.purpose !== "login" ? undefined : guestBag ? current.wishlist : [],
+        couponCode: input.purpose && input.purpose !== "login" ? undefined : guestBag ? current.couponCode : null,
+      }),
+    });
+    const data = (await response.json()) as ApiResult;
+    if (!data.ok || !data.user) return { ok: false as const, message: data.message || "That code is incorrect or has expired." };
+    if (input.purpose === undefined || input.purpose === "login") retainCheckoutDraft(data.user.id);
+    signedIn({ ...data, orders: data.orders ?? current.orders });
+    if (input.purpose === undefined || input.purpose === "login") {
+      patch({
+        cart: data.cart ?? current.cart,
+        wishlist: data.wishlist ?? current.wishlist,
+        couponCode: data.couponCode ?? current.couponCode,
+      });
+    }
+    return { ok: true as const };
+  }, [patch, signedIn]);
 
-  const updateProfile = useCallback(async (input: { name: string; phone: string }): Promise<Result> => {
+  const updateProfile = useCallback(async (input: { name: string }): Promise<Result> => {
     const data = await post("profile", input);
     if (!data.ok || !data.user) return { ok: false, message: data.message || "Could not save your profile." };
     signedIn(data);
@@ -433,7 +486,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     await post("logout");
-    patch({ sessionUserId: null, users: [], adminAuthed: false, orders: [] });
+    retainCheckoutDraft(null);
+    patch({ sessionUserId: null, users: [], adminAuthed: false, orders: [], cart: [], wishlist: [], couponCode: null });
   }, [patch]);
 
   const logoutAdmin = useCallback(async () => {
@@ -442,9 +496,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, [patch]);
 
   const placeOrder = useCallback(
-    async (draft: Omit<Order, "id" | "number" | "createdAt" | "status">): Promise<Result & { order?: Order }> => {
+    async (draft: Omit<Order, "id" | "number" | "createdAt" | "status">, checkoutOrderId: string): Promise<Result & { order?: Order }> => {
       if (!draft.items.length) return { ok: false, message: "Your bag is empty." };
-      const data = await post("place-order", { order: draft });
+      const data = await post("place-order", { order: draft, checkoutOrderId });
       if (!data.ok || !data.order) return { ok: false, message: data.message || "We couldn’t place that order." };
       patch({
         orders: [data.order, ...dbRef.current.orders],
@@ -549,22 +603,64 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     patch({ coupons: dbRef.current.coupons.filter((coupon) => coupon.id !== id) });
   }, [patch]);
 
-  const updateOrderStatus = useCallback(async (id: string, status: OrderStatus) => {
-    patch({ orders: dbRef.current.orders.map((order) => (order.id === id ? { ...order, status } : order)) });
-    await post("order-status", { id, status });
+  const acceptServerOrder = useCallback((order: Order, products?: Product[]) => {
+    patch({
+      orders: [order, ...dbRef.current.orders.filter((item) => item.id !== order.id)],
+      products: products ?? dbRef.current.products,
+      cart: [],
+      couponCode: null,
+    });
   }, [patch]);
 
+  const updateOrderStatus = useCallback(async (id: string, status: OrderStatus) => {
+    const previous = dbRef.current.orders;
+    patch({ orders: previous.map((order) => (order.id === id ? { ...order, status } : order)) });
+    const data = await post("order-status", { id, status });
+    if (!data.ok || !data.order) {
+      patch({ orders: previous });
+      if (data.message) notify(data.message);
+      return;
+    }
+    patch({ orders: dbRef.current.orders.map((order) => (order.id === id ? data.order! : order)) });
+  }, [notify, patch]);
+
   const addReview = useCallback(async (productId: string, review: Omit<Review, "id" | "date">) => {
-    const entry: Review = { ...review, id: `rev-${Date.now()}`, date: new Date().toISOString() };
+    const current = dbRef.current;
+    if (!current.sessionUserId) return;
+    const account = current.users.find((user) => user.id === current.sessionUserId);
+    const entry: Review = { ...review, name: account?.name || review.name, id: `rev-${Date.now()}`, date: new Date().toISOString() };
     patch({
-      products: dbRef.current.products.map((product) =>
+      products: current.products.map((product) =>
         product.id === productId
-          ? { ...product, reviews: [...product.reviews, entry], reviewCount: product.reviewCount + 1 }
+          ? { ...product, reviews: [entry, ...product.reviews], reviewCount: product.reviewCount + 1 }
           : product,
       ),
     });
     await post("review", { productId, review: entry });
   }, [patch]);
+
+  const voteReview = useCallback(async (productId: string, reviewId: string, vote: "yes" | "no") => {
+    const data = await post("review-vote", { productId, reviewId, vote });
+    if (data.ok && typeof data.helpful === "number") {
+      patch({
+        products: dbRef.current.products.map((product) =>
+          product.id === productId
+            ? { ...product, reviews: product.reviews.map((review) => (review.id === reviewId ? { ...review, helpful: data.helpful } : review)) }
+            : product,
+        ),
+      });
+    }
+    return data;
+  }, [patch]);
+
+  const reportReview = useCallback(async (productId: string, reviewId: string) => {
+    return post("review-report", { productId, reviewId });
+  }, []);
+
+  const loadReviewVotes = useCallback(async () => {
+    const data = await post("my-review-votes");
+    return { votes: data.votes ?? {}, reported: data.reported ?? [] };
+  }, []);
 
   const rememberSearch = useCallback((term: string) => {
     const clean = term.trim();
@@ -626,17 +722,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     clearCoupon: () => patch({ couponCode: null }),
     toggleWishlist,
     isWished: (productId: string) => db.wishlist.includes(productId),
-    register,
-    login,
+    requestOtp,
+    verifyOtp,
     logout,
     updateProfile,
-    findAccount,
-    resetPassword,
     saveAddress,
     deleteAddress,
     loginAdmin,
     logoutAdmin,
     placeOrder,
+    acceptServerOrder,
     saveProduct,
     deleteProduct,
     saveCategory,
@@ -646,6 +741,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     saveCoupon,
     deleteCoupon,
     addReview,
+    voteReview,
+    reportReview,
+    loadReviewVotes,
     rememberSearch,
     productBySlug: (slug: string) => db.products.find((product) => product.slug === slug),
     productById: (id: string) => db.products.find((product) => product.id === id),
@@ -655,9 +753,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     },
   }), [
     ready, db, currentUser, cartOpen, searchOpen, menuOpen, toast, activeProducts, closeOverlays, notify,
-    addToCart, setQuantity, removeFromCart, moveToWishlist, applyCoupon, toggleWishlist, register, login, logout,
-    findAccount, resetPassword, updateProfile, saveAddress, deleteAddress, loginAdmin, logoutAdmin, placeOrder, saveProduct, deleteProduct,
-    saveCategory, deleteCategory, moveCategory, updateOrderStatus, saveCoupon, deleteCoupon, addReview, rememberSearch, patch,
+    addToCart, setQuantity, removeFromCart, moveToWishlist, applyCoupon, toggleWishlist, requestOtp, verifyOtp, logout,
+    updateProfile, saveAddress, deleteAddress, loginAdmin, logoutAdmin, placeOrder, acceptServerOrder, saveProduct, deleteProduct,
+    saveCategory, deleteCategory, moveCategory, updateOrderStatus, saveCoupon, deleteCoupon, addReview, voteReview, reportReview, loadReviewVotes, rememberSearch, patch,
   ]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

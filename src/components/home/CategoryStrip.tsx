@@ -1,37 +1,26 @@
-"use client";
-
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import { useStore } from "@/lib/store";
 import { Media } from "@/components/ui";
 
+const circles = [
+  { name: "Body Butter", href: "/shop?type=Body%20Butter", image: "/silknknot/body_butter.jpg" },
+  { name: "Whipped Soap", href: "/shop?type=Whipped%20Soap", image: "/silknknot/whipped_shop.jpg" },
+  { name: "Sugar Scrub", href: "/shop?type=Sugar%20Scrub", image: "/silknknot/sugar_scrap1.jpg" },
+  { name: "Bath Salts", href: "/shop?type=Bath%20Salts", image: "/silknknot/bath_salts1.jpg" },
+  { name: "Soap", href: "/shop?category=bath-soap", image: "/silknknot/soap1.webp" },
+  { name: "Candles", href: "/shop?category=aromatherapy", image: "/silknknot/candle1.jpg" },
+];
+
 export function CategoryStrip() {
-  const store = useStore();
   return (
-    <section className="bg-paper px-5 py-8 md:px-12 md:py-10" aria-label="Categories">
-      <ul className="mx-auto grid max-w-[1440px] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {store.categories.map((category) => (
-          <li key={category.id}>
-            <Link
-              href={`/shop?category=${category.id}`}
-              className="group flex h-full items-center gap-3 rounded-2xl border border-line bg-white p-2 pr-4 transition duration-300 hover:-translate-y-0.5 hover:border-ink"
-            >
-              <span className="relative block size-20 shrink-0 overflow-hidden rounded-xl bg-cream">
-                <Media
-                  src={category.image}
-                  alt=""
-                  sizes="80px"
-                  className="object-cover transition duration-500 group-hover:scale-105"
-                />
+    <section className="bg-white px-5 py-12 md:px-10 md:py-14" aria-label="Shop by type">
+      <ul className="mx-auto flex max-w-[1200px] items-start justify-between gap-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {circles.map((item) => (
+          <li key={item.name} className="shrink-0">
+            <Link href={item.href} className="group flex w-[112px] flex-col items-center gap-4 text-center md:w-[140px]">
+              <span className="relative block size-[104px] overflow-hidden rounded-full bg-[#e7dfd4] shadow-[0_10px_28px_-16px_rgba(28,27,25,0.55)] ring-4 ring-white transition duration-300 group-hover:scale-105 md:size-[128px]">
+                <Media src={item.image} alt="" sizes="128px" className="object-cover" />
               </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-serif text-2xl leading-none">{category.name}</span>
-                <span className="mt-2 line-clamp-2 text-xs leading-relaxed text-mute">{category.description}</span>
-              </span>
-              <ArrowUpRight
-                size={16}
-                className="shrink-0 transition duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-              />
+              <span className="text-sm font-medium tracking-wide text-ink md:text-base">{item.name}</span>
             </Link>
           </li>
         ))}

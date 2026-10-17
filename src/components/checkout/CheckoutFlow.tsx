@@ -203,6 +203,7 @@ export function CheckoutFlow() {
               onClick={async () => {
                 if (user && saveAddress) await store.saveAddress({ ...address, name: customer.name, phone: customer.phone, isDefault: address.isDefault });
                 const result = await store.placeOrder({
+                  paymentId: undefined,
                   email: customer.email.trim().toLowerCase(),
                   customerName: customer.name.trim(),
                   phone: customer.phone.trim(),
@@ -216,7 +217,7 @@ export function CheckoutFlow() {
                   shipping,
                   total,
                   couponCode: coupon?.code,
-                });
+                }, "legacy");
                 if (!result.ok || !result.order) {
                   setError(result.message ?? "We couldn’t place that order.");
                   return;

@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Heart } from "lucide-react";
+import { Media, PriceTag, Stars, WishlistButton } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
-import { Media, PriceTag, Stars } from "@/components/ui";
 
 export function ProductCard({ product }: { product: Product }) {
   const store = useStore();
-  const wished = store.isWished(product.id);
   const variant = product.variants[0];
   const [showAlt, setShowAlt] = useState(false);
 
@@ -43,18 +41,6 @@ export function ProductCard({ product }: { product: Product }) {
         </Link>
         <button
           type="button"
-          aria-label={wished ? `Remove ${product.name} from wishlist` : `Save ${product.name}`}
-          aria-pressed={wished}
-          onClick={() => {
-            const result = store.toggleWishlist(product.id);
-            if (result.message) store.notify(result.message);
-          }}
-          className="absolute right-3 top-3 z-20 inline-flex h-10 w-10 items-center justify-center bg-paper/80"
-        >
-          <Heart size={16} strokeWidth={1.5} fill={wished ? "currentColor" : "none"} />
-        </button>
-        <button
-          type="button"
           onClick={add}
           className="absolute inset-x-3 bottom-3 z-20 hidden bg-paper/95 py-3 text-[11px] uppercase tracking-[0.16em] opacity-0 transition duration-300 group-hover:opacity-100 group-focus-within:opacity-100 md:block"
         >
@@ -63,9 +49,12 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
       <div className="mt-4">
         <p className="eyebrow text-mute">{product.type}</p>
-        <h3 className="mt-1 font-serif text-[1.7rem] leading-none">
-          <Link href={`/products/${product.slug}`}>{product.name}</Link>
-        </h3>
+        <div className="mt-1 flex items-start gap-1">
+          <h3 className="min-w-0 flex-1 font-serif text-[1.7rem] leading-none">
+            <Link href={`/products/${product.slug}`}>{product.name}</Link>
+          </h3>
+          <WishlistButton productId={product.id} name={product.name} className="-mr-2 -mt-1" />
+        </div>
         <div className="mt-3 flex items-center justify-between gap-3 text-sm">
           <PriceTag price={product.price} compare={product.compareAtPrice} />
           <Stars rating={product.rating} />

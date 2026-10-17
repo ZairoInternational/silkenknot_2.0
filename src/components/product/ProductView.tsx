@@ -3,10 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ProductCard } from "@/components/product/ProductCard";
-import { Media, PriceTag, Quantity, Reveal, Stars, usePrefersReducedMotion } from "@/components/ui";
+import { Media, PriceTag, Quantity, Reveal, Stars, usePrefersReducedMotion, WishlistButton } from "@/components/ui";
 import { getSeedProduct } from "@/lib/data";
 import { categoryName, formatDate } from "@/lib/format";
 import { useStore } from "@/lib/store";
@@ -47,7 +46,6 @@ function ProductDetail({ product }: { product: Product }) {
   const [reviewNote, setReviewNote] = useState("");
 
   const variant = product.variants.find((item) => item.label === variantLabel) ?? product.variants[0];
-  const wished = store.isWished(product.id);
   const reviews = store.reviewsFor(product.id);
   const related = store.activeProducts.filter((item) => item.categoryId === product.categoryId && item.id !== product.id).slice(0, 4);
   const soldOut = !variant || variant.stock < 1;
@@ -60,7 +58,7 @@ function ProductDetail({ product }: { product: Product }) {
   };
 
   return (
-    <article className="pb-28 md:pb-24">
+    <article className="pb-44 md:pb-24">
       <div className="grid gap-10 pt-[var(--nav-h)] md:grid-cols-2 md:gap-0">
         <div className="px-5 md:px-10 md:pt-10">
           <div
@@ -155,24 +153,13 @@ function ProductDetail({ product }: { product: Product }) {
               </div>
             </div>
             <div className="mt-8 flex flex-wrap gap-3">
-              <button type="button" disabled={soldOut} onClick={() => add(false)} className="h-12 bg-ink px-8 text-[11px] uppercase tracking-[0.2em] text-paper disabled:opacity-40">
+              <button type="button" disabled={soldOut} onClick={() => add(false)} className="h-12 bg-[#CBAC7C] px-8 text-[11px] uppercase tracking-[0.2em] text-white hover:bg-[#B39668] disabled:opacity-40">
                 {soldOut ? "Sold out" : "Add to cart"}
               </button>
               <button type="button" disabled={soldOut} onClick={() => add(true)} className="h-12 border border-ink px-8 text-[11px] uppercase tracking-[0.2em] disabled:opacity-40">
                 Buy now
               </button>
-              <button
-                type="button"
-                aria-pressed={wished}
-                aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
-                onClick={() => {
-                  const result = store.toggleWishlist(product.id);
-                  if (result.message) store.notify(result.message);
-                }}
-                className="inline-flex h-12 w-12 items-center justify-center border border-line"
-              >
-                <Heart size={16} fill={wished ? "currentColor" : "none"} />
-              </button>
+              <WishlistButton productId={product.id} name={product.name} className="size-12" />
             </div>
             <p className="mt-4 text-sm text-mute">{variant && variant.stock < 8 ? `${variant.stock} remaining` : "Ships from the studio in India."}</p>
           </Reveal>
@@ -298,10 +285,10 @@ function ProductDetail({ product }: { product: Product }) {
         </section>
       ) : null}
 
-      {!store.cartOpen ? <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-paper/95 px-4 py-3 backdrop-blur md:hidden">
+      {!store.cartOpen ? <div className="fixed inset-x-0 bottom-[calc(3.75rem+env(safe-area-inset-bottom))] z-40 border-t border-line bg-paper/95 px-4 py-3 backdrop-blur md:bottom-0 md:hidden">
         <div className="flex items-center justify-between gap-3">
           <PriceTag price={variant?.price ?? product.price} compare={variant?.compareAtPrice} />
-          <button type="button" disabled={soldOut} onClick={() => add(false)} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-40">
+          <button type="button" disabled={soldOut} onClick={() => add(false)} className="h-12 bg-[#CBAC7C] px-6 text-[11px] uppercase tracking-[0.18em] text-white hover:bg-[#B39668] disabled:opacity-40">
             {soldOut ? "Sold out" : "Add to cart"}
           </button>
         </div>

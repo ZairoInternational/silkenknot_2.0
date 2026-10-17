@@ -1,5 +1,17 @@
 import type { NextConfig } from "next";
 
+function bunnyHost() {
+  const raw = process.env.BUNNY_CDN_URL?.trim();
+  if (!raw) return [];
+  try {
+    const hostname = new URL(raw).hostname;
+    if (!hostname || hostname.endsWith(".b-cdn.net")) return [];
+    return [{ protocol: "https" as const, hostname, pathname: "/**" }];
+  } catch {
+    return [];
+  }
+}
+
 const nextConfig: NextConfig = {
   agentRules: false,
   images: {
@@ -12,6 +24,12 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "*.b-cdn.net",
+        pathname: "/**",
+      },
+      ...bunnyHost(),
     ],
   },
   turbopack: {

@@ -5,14 +5,16 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { formatDate, formatPrice, slugify } from "@/lib/format";
 import { useStore } from "@/lib/store";
-import type { Category, Coupon, OrderStatus, Product, Variant } from "@/lib/types";
+import type { Category, Coupon, Order, OrderStatus, Product, Variant } from "@/lib/types";
 import { Media } from "@/components/ui";
+import { csrfHeaders } from "@/lib/auth/browser";
 
 const links = [
   ["Overview", "/admin"],
   ["Products", "/admin/products"],
   ["Categories", "/admin/categories"],
   ["Orders", "/admin/orders"],
+  ["Shipping", "/admin/shipping"],
   ["Customers", "/admin/customers"],
   ["Offers", "/admin/offers"],
 ];
@@ -36,7 +38,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-cream text-ink">
       <aside className="fixed inset-y-0 left-0 hidden w-60 border-r border-line bg-paper p-6 md:block">
-        <Link href="/admin" className="font-serif text-3xl">Silk Knot</Link>
+        <Link href="/admin" className="font-serif text-3xl">Silken Knot</Link>
         <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-mute">Studio</p>
         <nav className="mt-10 space-y-2" aria-label="Studio">
           {links.map(([label, href]) => (
@@ -180,6 +182,7 @@ function blankProduct(): Product {
     bestseller: false,
     newArrival: false,
     active: true,
+    weightGrams: 200,
     createdAt: new Date().toISOString(),
     reviews: [],
     faqs: [],
@@ -191,17 +194,36 @@ function ProductForm({ initial }: { initial?: Product }) {
   const router = useRouter();
   const [product, setProduct] = useState<Product>(initial ?? blankProduct());
   const [error, setError] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const set = <K extends keyof Product>(key: K, value: Product[K]) => setProduct((current) => ({ ...current, [key]: value }));
 
   const onFiles = async (files: FileList | null) => {
-    if (!files?.length) return;
-    const urls: string[] = [];
-    for (const file of [...files]) {
-      urls.push(await compress(file));
+    if (!files?.length || uploading) return;
+    setUploading(true);
+    setError("");
+    try {
+      const urls: string[] = [];
+      for (const file of [...files]) {
+        const prepared = await compress(file);
+        const body = new FormData();
+        body.append("file", prepared, "product.jpg");
+        const response = await fetch("/api/admin/media", {
+          method: "POST",
+          headers: csrfHeaders(false),
+          body,
+        });
+        const payload = await response.json() as { url?: string; message?: string };
+        if (!response.ok || !payload.url) throw new Error(payload.message || "Could not upload that image.");
+        urls.push(payload.url);
+      }
+      setProduct((current) => ({ ...current, images: [...current.images, ...urls] }));
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : "Could not upload that image.");
+    } finally {
+      setUploading(false);
     }
-    set("images", [...product.images, ...urls]);
   };
 
   return (
@@ -238,6 +260,18 @@ function ProductForm({ initial }: { initial?: Product }) {
         <AdminField label="Type" value={product.type} onChange={(value) => set("type", value)} />
         <AdminField label="Scent" value={product.scent} onChange={(value) => set("scent", value)} />
         <label className="block text-sm">
+          Approximate weight (grams)
+          <input
+            type="number"
+            min={1}
+            max={30000}
+            value={product.weightGrams || ""}
+            onChange={(event) => set("weightGrams", Math.round(Number(event.target.value) || 0))}
+            className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+          />
+          <span className="mt-2 block text-xs text-mute">Used to estimate the parcel for this product. Shoppers do not see it. The shipment uses the total of the items in the order.</span>
+        </label>
+        <label className="block text-sm">
           Description
           <textarea value={product.description} onChange={(event) => set("description", event.target.value)} className="mt-2 min-h-28 w-full border-b border-line bg-transparent outline-none" />
         </label>
@@ -256,8 +290,8 @@ function ProductForm({ initial }: { initial?: Product }) {
             void onFiles(event.dataTransfer.files);
           }}
         >
-          Drop images or browse
-          <input type="file" accept="image/*" multiple className="sr-only" onChange={(event) => void onFiles(event.target.files)} />
+          {uploading ? "Uploading to the image host…" : "Drop images or browse"}
+          <input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={uploading} className="sr-only" onChange={(event) => void onFiles(event.target.files)} />
         </label>
         <div className="mt-3 flex gap-2">
           <input id="image-url" placeholder="Or paste an image URL" className="h-11 flex-1 border-b border-line bg-transparent outline-none" />
@@ -266,8 +300,13 @@ function ProductForm({ initial }: { initial?: Product }) {
             className="text-[11px] uppercase tracking-[0.16em]"
             onClick={() => {
               const input = document.getElementById("image-url") as HTMLInputElement;
-              if (!input.value.trim()) return;
-              set("images", [...product.images, input.value.trim()]);
+              const value = input.value.trim();
+              if (!value) return;
+              if (value.startsWith("data:") || value.startsWith("blob:")) {
+                setError("Browse a photo to upload it, or paste a public image address.");
+                return;
+              }
+              set("images", [...product.images, value]);
               input.value = "";
             }}
           >
@@ -379,9 +418,11 @@ async function compress(file: File) {
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
   const context = canvas.getContext("2d");
-  if (!context) return URL.createObjectURL(file);
+  if (!context) throw new Error("Could not prepare that image.");
   context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  return canvas.toDataURL("image/jpeg", 0.72);
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.72));
+  if (!blob) throw new Error("Could not prepare that image.");
+  return blob;
 }
 
 export function CategoryManager() {
@@ -432,7 +473,16 @@ export function CategoryManager() {
 export function OrderIndex() {
   const store = useStore();
   const [status, setStatus] = useState("all");
-  const orders = store.orders.filter((order) => status === "all" || order.status === status);
+  const [payment, setPayment] = useState("all");
+  const [shipment, setShipment] = useState("all");
+  const [query, setQuery] = useState("");
+  const orders = store.orders.filter((order) => {
+    if (status !== "all" && order.status !== status) return false;
+    if (payment !== "all" && order.paymentState !== payment) return false;
+    if (shipment !== "all" && (order.shipment?.state || "not_created") !== shipment) return false;
+    const haystack = `${order.number} ${order.customerName} ${order.email}`.toLowerCase();
+    return haystack.includes(query.trim().toLowerCase());
+  });
   return (
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -440,9 +490,22 @@ export function OrderIndex() {
         <label className="text-sm">
           Status
           <select value={status} onChange={(event) => setStatus(event.target.value)} className="ml-3 h-10 border-b border-line bg-transparent">
-            {["all", "placed", "confirmed", "packed", "shipped", "delivered", "cancelled"].map((item) => <option key={item}>{item}</option>)}
+            {["all", "pending_payment", "confirmed", "shipped", "delivered", "cancelled", "return_requested"].map((item) => <option key={item}>{item}</option>)}
           </select>
         </label>
+      <label className="text-sm">
+          Payment
+          <select value={payment} onChange={(event) => setPayment(event.target.value)} className="ml-3 h-10 border-b border-line bg-transparent">
+            {["all", "pending", "captured", "failed", "refund_pending", "refunded"].map((item) => <option key={item}>{item}</option>)}
+          </select>
+        </label>
+        <label className="text-sm">
+          Shipment
+          <select value={shipment} onChange={(event) => setShipment(event.target.value)} className="ml-3 h-10 border-b border-line bg-transparent">
+            {["all", "not_created", "pending", "booked", "in_transit", "delivered", "exception", "unknown"].map((item) => <option key={item}>{item}</option>)}
+          </select>
+        </label>
+        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search orders" className="h-10 border-b border-line bg-transparent" />
       </div>
       <ul className="mt-8 divide-y divide-line">
         {orders.map((order) => (
@@ -467,17 +530,20 @@ export function OrderDetail({ id }: { id: string }) {
     <div className="max-w-3xl">
       <h1 className="font-serif text-5xl">{order.number}</h1>
       <p className="mt-2 text-mute">{order.customerName} · {order.email} · {order.phone}</p>
+      {order.paymentState ? <p className="mt-2 text-sm">Payment {order.paymentState} · Fulfilment {order.fulfillmentState || "unfulfilled"}</p> : null}
       <p className="mt-2">{order.address.line1}, {order.address.city} {order.address.postal}</p>
       <label className="mt-6 block text-sm">
         Status
         <select
           value={order.status}
+          disabled={Boolean(order.shipment?.awb)}
           onChange={(event) => store.updateOrderStatus(order.id, event.target.value as OrderStatus)}
-          className="mt-2 h-11 w-full max-w-xs border-b border-line bg-transparent"
+          className="mt-2 h-11 w-full max-w-xs border-b border-line bg-transparent disabled:opacity-60"
         >
-          {["placed", "confirmed", "packed", "shipped", "delivered", "cancelled"].map((status) => <option key={status}>{status}</option>)}
+          {["pending_payment", "placed", "confirmed", "packed", "shipped", "delivered", "cancelled"].map((status) => <option key={status}>{status}</option>)}
         </select>
       </label>
+      {order.shipment?.awb ? <p className="mt-2 text-sm text-mute">This order has a waybill. Delivery status follows Delhivery.</p> : null}
       <ul className="mt-8 space-y-3">
         {order.items.map((item) => (
           <li key={item.id} className="flex justify-between border-b border-line py-3">
@@ -487,6 +553,7 @@ export function OrderDetail({ id }: { id: string }) {
         ))}
       </ul>
       <p className="mt-4 text-right font-serif text-3xl">{formatPrice(order.total)}</p>
+      <FulfilmentPanel orderId={order.id} initial={order} />
     </div>
   );
 }
@@ -610,5 +677,104 @@ export function OfferManager() {
         <button type="submit" className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper">Save offer</button>
       </form>
     </div>
+  );
+}
+
+type ShippingLabelView = {
+  kind: "pdf" | "link" | "data";
+  waybill: string;
+  pdfSize: "A4" | "4R";
+  requestedPdf: boolean;
+  downloadUrl: string;
+  expiresInSeconds: number | null;
+  pdfBase64: string;
+  packagesFound: number;
+  fields: { key: string; value: string }[];
+};
+
+function openPdf(base64: string) {
+  const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+  const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+  window.open(url, "_blank", "noopener");
+}
+
+function FulfilmentPanel({ orderId, initial }: { orderId: string; initial: Order }) {
+  const [order, setOrder] = useState(initial);
+  const [message, setMessage] = useState("");
+  const [labelSize, setLabelSize] = useState<"A4" | "4R">("4R");
+  const [label, setLabel] = useState<ShippingLabelView | null>(null);
+  async function run(action: string, extra: Record<string, unknown> = {}) {
+    setMessage("");
+    if (action !== "shipping-label") setLabel(null);
+    const response = await fetch("/api/admin/fulfilment", {
+      method: "POST",
+      headers: csrfHeaders(),
+      body: JSON.stringify({ action, orderId, ...extra }),
+    });
+    const body = await response.json();
+    if (!response.ok) {
+      setMessage(body.error || "Could not update fulfilment.");
+      return;
+    }
+    if (body.order) setOrder(body.order);
+    if (action === "shipping-label" && body.label) {
+      setLabel(body.label);
+      setMessage(body.label.kind === "link" ? "Delhivery returned a label link." : body.label.kind === "pdf" ? "Delhivery returned a PDF." : "Delhivery returned label data.");
+      return;
+    }
+    setMessage("Saved.");
+  }
+  const shipment = order.shipment;
+  return (
+    <section className="mt-10 border-t border-line pt-6">
+      <h2 className="font-serif text-3xl">Fulfilment</h2>
+      <p className="mt-2 text-sm">Payment {order.paymentState || "—"} · Shipment {shipment?.state || "not_created"} · {shipment?.provider || "manual"}</p>
+      {shipment?.test ? <p className="mt-2 text-sm">Test shipment. Not sent to Delhivery. Refresh tracking to add the next test event.</p> : null}
+      {shipment?.awb ? <p className="mt-2 text-sm">Waybill {shipment.awb}</p> : null}
+      {shipment?.weightGrams ? <p className="mt-2 text-sm">Parcel weight for testing: {shipment.weightGrams} g{shipment.packageData === "product_weights" ? "" : " · includes a product still using the store fallback"}</p> : null}
+      {order.payment === "cod" ? <p className="mt-2 text-sm">Cash on delivery {order.codCollection === "due" ? "is still due" : "does not apply"}.</p> : null}
+      {shipment?.lastError ? <p className="mt-2 text-sm">{shipment.lastError}</p> : null}
+      <ul className="mt-4 space-y-2 text-sm">
+        {(shipment?.events || []).map((event) => <li key={`${event.at}-${event.providerStatus}`}>{event.at} · {event.providerStatus}</li>)}
+      </ul>
+      {shipment?.awb && !shipment.test ? (
+        <div className="mt-6 border-t border-line pt-4">
+          <h3 className="text-sm">Prepare for dispatch</h3>
+          <p className="mt-1 text-sm text-mute">Uses this waybill with Delhivery’s shipping-label options. A4 is a full page. 4R is a 4×6 label.</p>
+          <label className="mt-3 block text-sm">Label size
+            <select value={labelSize} onChange={(event) => setLabelSize(event.target.value === "A4" ? "A4" : "4R")} className="mt-1 h-11 w-full max-w-xs border-b border-line bg-transparent">
+              <option value="4R">4R · 4×6</option>
+              <option value="A4">A4 · 8×11</option>
+            </select>
+          </label>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <button type="button" className="h-10 border-b border-line text-sm" onClick={() => run("shipping-label", { pdf: true, pdfSize: labelSize })}>Get printable PDF</button>
+            <button type="button" className="h-10 border-b border-line text-sm" onClick={() => run("shipping-label", { pdf: false, pdfSize: labelSize })}>Get label data</button>
+          </div>
+          {label?.kind === "link" ? (
+            <p className="mt-3 text-sm">
+              <a className="underline" href={label.downloadUrl} target="_blank" rel="noreferrer">Open shipping label</a>
+              {label.expiresInSeconds ? ` · link expires in ${Math.round(label.expiresInSeconds / 3600)} hours` : null}
+            </p>
+          ) : null}
+          {label?.kind === "pdf" && label.pdfBase64 ? <button type="button" className="mt-3 h-10 border-b border-line text-sm" onClick={() => openPdf(label.pdfBase64)}>Open PDF</button> : null}
+          {label?.kind === "data" && label.fields.length ? (
+            <dl className="mt-3 space-y-1 text-sm">
+              {label.fields.map((field) => <div key={field.key} className="flex gap-3"><dt className="w-40 shrink-0 text-mute">{field.key}</dt><dd className="break-all">{field.value}</dd></div>)}
+            </dl>
+          ) : null}
+        </div>
+      ) : null}
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button type="button" className="h-10 border-b border-line text-sm" onClick={() => run("refresh")}>Refresh tracking</button>
+        <button type="button" className="h-10 border-b border-line text-sm" onClick={() => run("retry-booking", { acknowledgeAbsent: window.confirm("Confirm Delhivery has no shipment for this order before booking again.") })}>Retry booking</button>
+        <button type="button" className="h-10 border-b border-line text-sm" onClick={() => run("pickup")}>Request pickup</button>
+        <button type="button" className="h-10 border-b border-line text-sm" onClick={() => run("cancel-shipment", { confirm: window.confirm("Cancel this shipment?") })}>Cancel shipment</button>
+        <button type="button" className="h-10 border-b border-line text-sm" onClick={() => run("manual")}>Manual fulfilment</button>
+        <button type="button" className="h-10 border-b border-line text-sm" onClick={() => run("approve-return")}>Book return pickup</button>
+        <button type="button" className="h-10 border-b border-line text-sm" onClick={() => run("refund")}>Request refund</button>
+      </div>
+      {message ? <p className="mt-3 text-sm">{message}</p> : null}
+    </section>
   );
 }

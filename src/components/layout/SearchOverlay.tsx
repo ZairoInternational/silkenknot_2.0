@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, Heart, Search, X } from "lucide-react";
+import { ArrowUpRight, Search, X } from "lucide-react";
+import { Media, useDialog, WishlistButton } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import { formatPrice } from "@/lib/format";
-import { Media, useDialog } from "@/components/ui";
 
 const ease = [0.76, 0, 0.24, 1] as const;
 
@@ -43,7 +43,7 @@ export function SearchOverlay() {
             role="dialog"
             aria-modal="true"
             aria-label="Search"
-            className="pointer-events-auto absolute left-1/2 top-1/2 z-30 w-1/2"
+            className="pointer-events-auto absolute left-1/2 top-1/2 z-30 w-full px-3 md:w-1/2 md:px-0"
             initial={{ x: "-50%", y: "46vh", opacity: 0 }}
             animate={{ x: "-50%", y: "-1.5rem", opacity: 1 }}
             exit={{ x: "-50%", y: "28vh", opacity: 0 }}
@@ -97,7 +97,7 @@ export function SearchOverlay() {
                 </ul>
               ) : (
                 <div className="flex min-h-full flex-1 flex-col gap-5 p-4">
-                  <div className="shrink-0">
+                  <div className="hidden shrink-0 md:block">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-mute">Popular search</p>
                     <ul className="mt-3 space-y-2">
                       {store.recentSearches.length === 0 ? (
@@ -112,9 +112,9 @@ export function SearchOverlay() {
                       ))}
                     </ul>
                   </div>
-                  <div>
+                  <div className="hidden md:block">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-mute">Categories</p>
-                    <ul className="mt-3 grid grid-cols-2 gap-3">
+                    <ul className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
                       {store.categories.map((category) => (
                         <li key={category.id}>
                           <Link
@@ -136,9 +136,9 @@ export function SearchOverlay() {
                   </div>
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.18em] text-mute">Suggested</p>
-                    <ul className="mt-3 grid grid-cols-2 gap-3">
-                      {popular.map((product) => (
-                        <li key={product.id}>
+                    <ul className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+                      {popular.map((product, index) => (
+                        <li key={product.id} className={index > 1 ? "hidden md:block" : undefined}>
                           <div className="group flex h-16 items-center gap-2 rounded-xl border border-line bg-white px-2 transition duration-300 hover:-translate-y-0.5 hover:border-ink hover:shadow-[0_12px_28px_-18px_rgba(0,0,0,0.55)]">
                             <Link
                               href={`/products/${product.slug}`}
@@ -153,18 +153,7 @@ export function SearchOverlay() {
                                 <span className="mt-1 block text-xs text-mute">{formatPrice(product.price)}</span>
                               </span>
                             </Link>
-                            <button
-                              type="button"
-                              aria-label={store.isWished(product.id) ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`}
-                              aria-pressed={store.isWished(product.id)}
-                              onClick={() => store.toggleWishlist(product.id)}
-                              className="inline-flex shrink-0 p-1"
-                            >
-                              <Heart
-                                size={16}
-                                className={store.isWished(product.id) ? "fill-current" : ""}
-                              />
-                            </button>
+                            <WishlistButton productId={product.id} name={product.name} />
                           </div>
                         </li>
                       ))}

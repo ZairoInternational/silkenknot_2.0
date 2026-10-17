@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { ArrowRight } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ritualBuilderSteps, seedProducts } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
@@ -113,7 +114,7 @@ function ShowcaseCopy({ product }: { product: (typeof seedProducts)[number] }) {
       </div>
       <button
         type="button"
-        className="mt-8 h-12 bg-ink px-7 text-[11px] uppercase tracking-[0.2em] text-paper"
+        className="mt-8 h-12 bg-[#CBAC7C] px-7 text-[11px] uppercase tracking-[0.2em] text-white hover:bg-[#B39668]"
         onClick={() => {
           const result = store.addToCart(product.id, product.variants[0].label, 1);
           if (result.message) store.notify(result.message);
@@ -301,27 +302,23 @@ export function BestSellers() {
 }
 
 export function BrandStory() {
-  const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], ["-8%", "8%"]);
   return (
-    <section ref={ref} className="grid bg-cream md:grid-cols-2">
-      <div className="relative min-h-[70vh] overflow-hidden">
-        <motion.div style={{ y }} className="absolute inset-x-0 -top-[12%] h-[124%]">
-          <Media src="/silknknot/candle2.webp" alt="A lit candle" sizes="50vw" className="object-contain" />
-        </motion.div>
-      </div>
-      <div className="flex flex-col justify-center px-5 py-20 md:px-16 md:py-28">
-        <Reveal>
-          <p className="eyebrow text-mute">Our story</p>
-          <h2 className="mt-4 font-serif text-5xl leading-[0.95] md:text-6xl">Made slowly, used daily.</h2>
-          <p className="mt-6 max-w-md text-lg leading-8 text-mute">
-            Silk Knot began as a small studio ritual: slow formulas, honest scents, and objects meant to be used every day — not saved for later.
+    <section className="mt-6 hidden bg-[#fbf9f6] px-5 py-8 md:block md:px-8 md:py-10">
+      <div className="site-container grid items-center gap-10 md:grid-cols-2 md:gap-16">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] bg-[#e7dfd4]">
+          <Media src="/silknknot/bestseller-candle.jpg" alt="A Silken Knot candle" sizes="(min-width: 768px) 46vw, 90vw" className="object-cover" />
+        </div>
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-[#8a8178]">Our story</p>
+          <h2 className="mt-3 font-serif text-4xl leading-tight text-[#2c2926] md:text-5xl">Made slowly, used daily.</h2>
+          <p className="mt-4 max-w-md text-[15px] leading-7 text-[#5e574e]">
+            Silken Knot began as a small studio ritual: slow formulas, honest scents, and objects meant to be used every day — not saved for later.
           </p>
-          <Link href="/about" className="mt-8 inline-flex text-[11px] uppercase tracking-[0.18em]">
+          <Link href="/about" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#CBAC7C] px-6 py-3 text-sm text-white transition-colors duration-300 hover:bg-[#B39668]">
             Read the story
+            <ArrowRight size={16} />
           </Link>
-        </Reveal>
+        </div>
       </div>
     </section>
   );
@@ -331,38 +328,51 @@ export function Newsletter() {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
   return (
-    <section className="px-5 py-24 text-center md:py-36">
-      <Reveal>
-        <p className="eyebrow text-mute">The list</p>
-        <h2 className="mt-4 font-serif text-5xl md:text-7xl">Notes on ritual.</h2>
-        <p className="mx-auto mt-4 max-w-md text-mute">Seasonal scents, care notes, and the occasional quiet launch.</p>
+    <section className="relative mt-6 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0">
+        <Media src="/silknknot/collection-lifestyle-wide.jpg" alt="" sizes="100vw" className="object-cover" />
+      </div>
+      <div className="pointer-events-none absolute inset-0 bg-white/40 md:bg-gradient-to-r md:from-white/55 md:via-white/25 md:to-transparent" />
+      <div className="site-container relative z-10 flex flex-col items-center gap-6 px-6 py-12 text-center md:gap-10 md:px-8 md:py-20">
+        <div className="w-full">
+          <h2 className="text-[1.85rem] leading-tight text-[#2c2926] md:text-5xl">Join the Silken Knot list</h2>
+          <p className="mx-auto mt-3 max-w-md text-base leading-7 text-[#2c2926] md:text-[15px] md:text-[#4e4943]">
+            Be the first to know about new arrivals, care notes, and quiet launches.
+          </p>
+        </div>
         <form
-          className="mx-auto mt-10 flex max-w-md items-end border-b border-ink text-left"
+          className="flex w-full max-w-xl flex-col gap-4 md:flex-row md:items-center md:gap-0 md:rounded-full md:border md:border-black/15 md:bg-white md:p-1.5 md:focus-within:border-black/40 md:focus-within:shadow-[0_0_0_1px_rgba(0,0,0,0.28)]"
           onSubmit={(event) => {
             event.preventDefault();
             setDone(true);
             setEmail("");
+            if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
           }}
         >
-          <div className="flex-1">
-            <label htmlFor="notes-email" className="sr-only">Email address</label>
+          <label htmlFor="notes-email" className="sr-only">Email address</label>
+          <div className="subscribe-field w-full rounded-full border border-black/15 bg-white md:contents">
             <input
               id="notes-email"
               type="email"
               required
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="Email address"
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (done) setDone(false);
+              }}
+              placeholder="Your email address"
               autoComplete="email"
-              className="h-14 w-full bg-transparent outline-none"
+              className="h-16 w-full min-w-0 flex-1 cursor-text bg-transparent px-5 text-base text-[#2c2926] outline-none focus:outline-none focus-visible:outline-none md:h-12 md:px-5 md:text-sm"
             />
           </div>
-          <button type="submit" className="h-14 text-[11px] uppercase tracking-[0.18em]">
-            Join
+          <button
+            type="submit"
+            className={`h-14 w-full shrink-0 rounded-full px-6 text-base text-white transition-colors duration-300 md:h-12 md:w-auto md:text-sm ${done ? "bg-[#B39668]" : "bg-[#CBAC7C] hover:bg-[#B39668]"}`}
+          >
+            {done ? "Subscribed" : "Subscribe"}
           </button>
         </form>
-        {done ? <p className="mt-4 text-sm" role="status">You are on the list. We write rarely.</p> : null}
-      </Reveal>
+      </div>
     </section>
   );
 }

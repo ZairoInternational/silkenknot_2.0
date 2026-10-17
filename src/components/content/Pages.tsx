@@ -29,7 +29,7 @@ export function AboutPage() {
     <Editorial
       eyebrow="Our story"
       title="A studio for ordinary care."
-      lede="Silk Knot makes body care, bath, aromatherapy, and the clothes you put on afterwards."
+      lede="Silken Knot makes body care, bath, aromatherapy, and the clothes you put on afterwards."
     >
       <p>
         The house started with a butter that did not feel like a project. It was something to use after a shower, on a Tuesday, without a mirror speech. The soaps, scrubs, salts, and candles followed because the order of a bath asked for them.
@@ -60,8 +60,8 @@ export function IngredientsPage() {
 export function ShippingPage() {
   return (
     <Editorial eyebrow="Help" title="Shipping" lede="We deliver within India.">
-      <p>Standard delivery is free on orders of ₹999 and above, and ₹79 below that. It usually arrives in 4–7 days.</p>
-      <p>Express delivery is ₹149 and usually arrives in 2–4 days, where the service reaches. You choose at checkout. Shipping is calculated there, not in the bag.</p>
+      <p>Delivery is free on orders of ₹999 and above. Below that, the delivery price for your PIN is shown at checkout.</p>
+      <p>Where a faster option is available, you can choose it at checkout. The arrival time is shown there for your PIN.</p>
       <p>Candles and glass are packed to travel. If something arrives damaged, write to us with a photograph and we will replace it.</p>
     </Editorial>
   );
@@ -80,9 +80,9 @@ export function ReturnsPage() {
 export function PrivacyPage() {
   return (
     <Editorial eyebrow="Studio" title="Privacy" lede="This preview keeps your account in your browser.">
-      <p>Silk Knot’s preview store does not send your profile, bag, or orders to a server. They live in local storage on this device so the shop can be explored without an account system in the cloud.</p>
-      <p>When a production backend is connected, we will collect only what an order needs: name, contact, address, and payment reference. We will not sell that information.</p>
-      <p>You can clear the preview at any time by removing site data for this browser.</p>
+      <p>Silken Knot’s preview store keeps your bag on this device. An account, when you sign in, is stored for that login.</p>
+      <p>Payment details are entered in a secure payment window. Silken Knot does not store your full card number, CVV, or UPI PIN. We keep the name, contact, address, and payment reference needed to deliver the order.</p>
+      <p>That information is used to fulfil the order, send delivery updates, and handle a return. It is not sold.</p>
     </Editorial>
   );
 }
@@ -91,8 +91,8 @@ export function TermsPage() {
   return (
     <Editorial eyebrow="Studio" title="Terms" lede="A calm agreement for a calm shop.">
       <p>Products are described as they are made. Colours on a screen are close, not identical. Apparel sizing is listed on each piece.</p>
-      <p>An order is an offer to buy. We accept it when the confirmation appears. If we cannot fulfil something, we will refund that line.</p>
-      <p>The preview checkout does not charge a card. A production store will say so clearly before any payment is taken.</p>
+      <p>An order is an offer to buy. We accept it when payment is verified and the confirmation appears. If we cannot fulfil a line, we refund that line.</p>
+      <p>Payment is taken in a secure payment window after you place the order. Silken Knot does not store your full card number or CVV. Do not share a PIN, password, or one-time code with anyone claiming to be support.</p>
     </Editorial>
   );
 }

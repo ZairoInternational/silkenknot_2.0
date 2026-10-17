@@ -1,8 +1,12 @@
 import bcrypt from "bcryptjs";
 import { seedCategories, seedCoupons, seedProducts } from "@/lib/data";
 import { databaseConfigured, getDb, publicUser } from "@/lib/mongo";
-import { clearSession, currentSession, setSession } from "@/lib/session";
-import type { Address, Category, Coupon, Order, Product, Review, User } from "@/lib/types";
+import { readBag, saveBag } from "@/lib/auth/bag";
+import { csrfHeaderMatches, jsonError, sameOrigin } from "@/lib/auth/http";
+import { applyAdminStatus, CheckoutError, publicOrder, type StoredOrder } from "@/lib/payments/service";
+import { customerOrderVisible } from "@/lib/shipping/states";
+import { clearSession, currentSession, ensureCsrfCookie, setSession } from "@/lib/session";
+import type { Address, CartItem, Category, Coupon, Order, Product, Review } from "@/lib/types";
 
 function clean<T>(doc: T) {
   if (!doc || typeof doc !== "object") return doc;
@@ -27,6 +31,7 @@ function offlineCatalog() {
 export async function GET() {
   if (!databaseConfigured()) return Response.json(offlineCatalog());
   try {
+    await ensureCsrfCookie();
     const db = await getDb();
     const [products, categories, coupons] = await Promise.all([
       db.collection("products").find().toArray(),
@@ -38,15 +43,22 @@ export async function GET() {
     let orders: Order[] = [];
     let customers: ReturnType<typeof publicUser>[] = [];
     let admin = false;
+    let bag = null;
     if (session) {
       const found = await db.collection("users").findOne({ id: session.id });
       if (found) user = publicUser(found);
+      if (session.role === "customer") bag = await readBag(db, session.id);
       if (session.role === "admin") {
         admin = true;
         customers = (await db.collection("users").find({ role: "customer" }).toArray()).map((item) => publicUser(item));
-        orders = (await db.collection("orders").find().sort({ createdAt: -1 }).toArray()).map((order) => clean(order) as unknown as Order);
+        orders = (await db.collection("orders").find().sort({ createdAt: -1 }).toArray()).map((order) => publicOrder(order as unknown as StoredOrder));
       } else if (found) {
-        orders = (await db.collection("orders").find({ $or: [{ userId: found.id }, { email: found.email }] }).sort({ createdAt: -1 }).toArray()).map((order) => clean(order) as unknown as Order);
+        const orderQuery = found.email
+          ? { $or: [{ userId: found.id }, { email: found.email }] }
+          : { userId: found.id };
+        orders = (await db.collection("orders").find(orderQuery).sort({ createdAt: -1 }).toArray())
+          .map((order) => publicOrder(order as unknown as StoredOrder))
+          .filter((order) => customerOrderVisible(order));
       }
     }
     return Response.json({
@@ -58,6 +70,7 @@ export async function GET() {
       user,
       customers,
       admin,
+      bag,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Database unavailable.";
@@ -74,8 +87,11 @@ function fail(message: string, status = 400) {
 }
 
 export async function POST(request: Request) {
+  if (!sameOrigin(request)) return jsonError("Request blocked.", 403);
   const body = await bodyOf(request);
   const action = String(body.action || "");
+  const openActions = new Set(["admin-login"]);
+  if (!openActions.has(action) && !csrfHeaderMatches(request)) return jsonError("Request blocked.", 403);
   if (!databaseConfigured()) {
     return fail("Add your MongoDB connection string as MONGODB_URI in .env.local, then restart the app.");
   }
@@ -88,46 +104,20 @@ export async function POST(request: Request) {
     const coupons = db.collection<Coupon>("coupons");
     const orders = db.collection<Order>("orders");
 
-    if (action === "lookup") {
-      const email = String(body.email || "").trim().toLowerCase();
-      const user = await users.findOne({ email, role: "customer" });
-      if (!user) return fail("We couldn’t find that account.");
-      return Response.json({ ok: true });
+    if (action === "lookup" || action === "register" || action === "login" || action === "reset-password") {
+      return fail("Sign in with a one-time code sent to your email or mobile.", 410);
     }
 
-    if (action === "register") {
-      const name = String(body.name || "").trim();
-      const email = String(body.email || "").trim().toLowerCase();
-      const password = String(body.password || "");
-      if (!name || !email || password.length < 6) return fail("Name, email, and a password of at least 6 characters are required.");
-      const existing = await users.findOne({ email });
-      if (existing) return fail("An account with this email already exists.");
-      const user = {
-        id: `user-${Date.now()}`,
-        name,
-        email,
-        phone: "",
-        role: "customer" as const,
-        addresses: [] as Address[],
-        passwordHash: await bcrypt.hash(password, 10),
-      };
-      await users.insertOne(user);
-      await setSession({ id: user.id, role: "customer" });
-      return Response.json({ ok: true, message: "Welcome to Silk Knot.", user: publicUser(user) });
-    }
-
-    if (action === "login" || action === "admin-login") {
+    if (action === "admin-login") {
       const email = String(body.email || "").trim().toLowerCase();
       const password = String(body.password || "");
       const user = await users.findOne({ email });
-      if (!user || !(await bcrypt.compare(password, String(user.passwordHash || "")))) {
-        return fail(action === "admin-login" ? "Those studio details are not recognised." : "Email or password is incorrect.");
+      if (!user || user.role !== "admin" || !(await bcrypt.compare(password, String(user.passwordHash || "")))) {
+        return fail("Those studio details are not recognised.");
       }
-      if (action === "admin-login" && user.role !== "admin") return fail("Those studio details are not recognised.");
-      if (action === "login" && user.role !== "customer") return fail("Use the studio login for this account.");
-      await setSession({ id: String(user.id), role: user.role === "admin" ? "admin" : "customer" });
+      await setSession({ id: String(user.id), role: "admin" });
       const orderQuery = user.role === "admin" ? {} : { $or: [{ userId: user.id }, { email: user.email }] };
-      const mine = (await orders.find(orderQuery).sort({ createdAt: -1 }).toArray()).map((order) => clean(order));
+      const mine = (await orders.find(orderQuery).sort({ createdAt: -1 }).toArray()).map((order) => publicOrder(order as unknown as StoredOrder));
       const customers = user.role === "admin"
         ? (await users.find({ role: "customer" }).toArray()).map((item) => publicUser(item))
         : [];
@@ -139,67 +129,91 @@ export async function POST(request: Request) {
       return Response.json({ ok: true });
     }
 
-    if (action === "reset-password") {
-      const email = String(body.email || "").trim().toLowerCase();
-      const password = String(body.password || "");
-      if (password.length < 6) return fail("Use at least 6 characters.");
-      const user = await users.findOne({ email, role: "customer" });
-      if (!user) return fail("We couldn’t find that account.");
-      await users.updateOne({ id: user.id }, { $set: { passwordHash: await bcrypt.hash(password, 10) } });
-      return Response.json({ ok: true, message: "Password updated. You can log in." });
-    }
-
     if (action === "review") {
+      const session = await currentSession();
+      if (!session || session.role !== "customer") return fail("Log in to review this product.");
+      const account = await users.findOne({ id: session.id });
+      if (!account) return fail("Log in to review this product.");
       const review = body.review as Review;
+      const entry = { ...review, name: account.name };
       await products.updateOne(
         { id: String(body.productId) },
-        { $push: { reviews: review }, $inc: { reviewCount: 1 } },
+        { $push: { reviews: { $each: [entry], $position: 0 } }, $inc: { reviewCount: 1 } },
       );
       return Response.json({ ok: true });
     }
 
-    if (action === "place-order") {
-      const draft = body.order as Omit<Order, "id" | "number" | "createdAt" | "status">;
-      if (!draft?.items?.length) return fail("Your bag is empty.");
-      const catalog = await products.find({ id: { $in: draft.items.map((item) => item.productId) } }).toArray();
-      for (const item of draft.items) {
-        const product = catalog.find((entry) => entry.id === item.productId);
-        const variant = product?.variants.find((option) => option.label === item.variantLabel);
-        if (!product || !variant || variant.stock < item.quantity) return fail(`${item.name} no longer has enough stock.`);
-      }
-      for (const item of draft.items) {
-        await products.updateOne(
-          { id: item.productId, "variants.label": item.variantLabel },
-          { $inc: { "variants.$.stock": -item.quantity } },
-        );
-      }
+    if (action === "review-vote") {
       const session = await currentSession();
-      const order: Order = {
-        ...draft,
-        userId: session?.role === "customer" ? session.id : undefined,
-        id: `ord-${Date.now()}`,
-        number: `SK${Math.floor(1000 + Math.random() * 9000)}`,
-        createdAt: new Date().toISOString(),
-        status: "placed",
-      };
-      await orders.insertOne(order);
-      const fresh = (await products.find().toArray()).map((item) => clean(item));
-      return Response.json({ ok: true, order: clean(order), products: fresh });
+      if (!session || session.role !== "customer") return fail("Log in to mark this review.");
+      const productId = String(body.productId || "");
+      const reviewId = String(body.reviewId || "");
+      const vote = body.vote === "yes" || body.vote === "no" ? body.vote : "";
+      if (!productId || !reviewId || !vote) return fail("That vote could not be saved.");
+      const voterKey = `user:${session.id}`;
+      const votes = db.collection("reviewVotes");
+      const existing = await votes.findOne({ productId, reviewId, voterKey });
+      if (existing?.vote !== vote) {
+        if (existing) await votes.updateOne({ _id: existing._id }, { $set: { vote } });
+        else await votes.insertOne({ productId, reviewId, voterKey, vote });
+      }
+      const helpful = await votes.countDocuments({ productId, reviewId, vote: "yes" });
+      await products.updateOne({ id: productId, "reviews.id": reviewId }, { $set: { "reviews.$.helpful": helpful } });
+      return Response.json({ ok: true, helpful, vote });
+    }
+
+    if (action === "review-report") {
+      const session = await currentSession();
+      if (!session || session.role !== "customer") return fail("Log in to report this review.");
+      const productId = String(body.productId || "");
+      const reviewId = String(body.reviewId || "");
+      if (!productId || !reviewId) return fail("That report could not be saved.");
+      await db.collection("reviewReports").updateOne(
+        { productId, reviewId, userId: session.id },
+        { $setOnInsert: { productId, reviewId, userId: session.id, createdAt: new Date().toISOString() } },
+        { upsert: true },
+      );
+      return Response.json({ ok: true });
+    }
+
+    if (action === "my-review-votes") {
+      const session = await currentSession();
+      if (!session || session.role !== "customer") return Response.json({ ok: true, votes: {}, reported: [] });
+      const voterKey = `user:${session.id}`;
+      const rows = await db.collection("reviewVotes").find({ voterKey }).toArray();
+      const reports = await db.collection("reviewReports").find({ userId: session.id }).toArray();
+      const votes = Object.fromEntries(rows.map((row) => [String(row.reviewId), row.vote === "no" ? "no" : "yes"]));
+      return Response.json({ ok: true, votes, reported: reports.map((row) => String(row.reviewId)) });
+    }
+
+    if (action === "sync-bag") {
+      const session = await currentSession();
+      if (!session || session.role !== "customer") return fail("Log in to continue.", 401);
+      const replaced = await saveBag(db, session.id, {
+        cart: Array.isArray(body.cart) ? body.cart as CartItem[] : [],
+        wishlist: Array.isArray(body.wishlist) ? (body.wishlist as string[]) : [],
+        couponCode: typeof body.couponCode === "string" ? body.couponCode : null,
+      });
+      return Response.json({ ok: true, ...replaced });
+    }
+
+    if (action === "place-order") {
+      return fail("An order is saved only after the payment is captured.", 410);
     }
 
     const session = await currentSession();
     if (!session) return fail("Log in to continue.", 401);
 
     if (action === "profile") {
-      const name = String(body.name || "").trim();
-      const phone = String(body.phone || "").trim();
-      if (!name) return fail("Add your name.");
-      await users.updateOne({ id: session.id }, { $set: { name, phone } });
+      if (session.role !== "customer") return fail("Log in to continue.", 401);
+      const name = String(body.name || "").trim().replace(/\s+/g, " ");
+      if (name.length < 2 || name.length > 80) return fail("Enter your name.");
+      await users.updateOne({ id: session.id }, { $set: { name, nameSetAt: new Date().toISOString() } });
       const user = await users.findOne({ id: session.id });
       return Response.json({ ok: true, message: "Profile saved.", user: user ? publicUser(user) : null });
     }
 
-    if (action === "save-address" || action === "delete-address") {
+    if ((action === "save-address" || action === "delete-address") && session.role === "customer") {
       const user = await users.findOne({ id: session.id });
       if (!user) return fail("Log in to continue.", 401);
       let addresses = (user.addresses as Address[]) || [];
@@ -222,6 +236,9 @@ export async function POST(request: Request) {
 
     if (action === "save-product") {
       const product = clean(body.product) as Product;
+      if ((product.images || []).some((src) => src.startsWith("data:") || src.startsWith("blob:"))) {
+        return fail("Browse product photos so they upload to the image host. Paths already in the public folder can stay as they are.");
+      }
       await products.updateOne({ id: product.id }, { $set: product }, { upsert: true });
       return Response.json({ ok: true, message: body.isNew ? "Product created." : "Product saved.", product });
     }
@@ -253,8 +270,13 @@ export async function POST(request: Request) {
     }
 
     if (action === "order-status") {
-      await orders.updateOne({ id: String(body.id) }, { $set: { status: body.status as Order["status"] } });
-      return Response.json({ ok: true });
+      try {
+        const order = await applyAdminStatus(db, String(body.id || ""), body.status as Order["status"]);
+        return Response.json({ ok: true, order });
+      } catch (error) {
+        if (error instanceof CheckoutError) return fail(error.message, error.code === "conflict" ? 409 : 400);
+        return fail("Could not update the order.", 500);
+      }
     }
 
     if (action === "save-coupon") {

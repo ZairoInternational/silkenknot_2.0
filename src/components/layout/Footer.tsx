@@ -43,11 +43,11 @@ const columns = [
 export function Footer() {
   return (
     <footer className="bg-ink text-paper">
-      <div className="mx-auto grid max-w-[1440px] gap-12 px-5 py-20 md:grid-cols-[1.3fr_repeat(4,1fr)] md:px-10 md:py-24">
-        <div>
+      <div className="mx-auto grid max-w-[1440px] grid-cols-2 gap-x-6 gap-y-8 px-5 py-12 md:grid-cols-[1.3fr_repeat(4,1fr)] md:gap-12 md:px-10 md:py-24">
+        <div className="col-span-2 md:col-span-1">
           <p className="inline-flex items-center gap-2 font-serif text-3xl">
             <Mark className="h-5 w-5" />
-            Silk Knot
+            Silken Knot
           </p>
           <p className="mt-4 max-w-xs text-sm leading-6 text-paper/70">
             Body care, bath, wellness, and aromatherapy for everyday rituals.
@@ -56,7 +56,7 @@ export function Footer() {
         {columns.map((column) => (
           <nav key={column.title} aria-label={column.title}>
             <p className="eyebrow text-paper/50">{column.title}</p>
-            <ul className="mt-5 space-y-3 text-sm">
+            <ul className="mt-3 space-y-2 text-sm md:mt-5 md:space-y-3">
               {column.links.map(([label, href]) => (
                 <li key={label}>
                   <Link
@@ -73,7 +73,7 @@ export function Footer() {
         ))}
       </div>
       <div className="mx-auto flex max-w-[1440px] flex-col gap-4 border-t border-white/10 px-5 py-6 text-[11px] uppercase tracking-[0.16em] text-paper/55 md:flex-row md:items-center md:justify-between md:px-10">
-        <p>© {new Date().getFullYear()} Silk Knot</p>
+        <p>© {new Date().getFullYear()} Silken Knot</p>
         <div className="flex gap-5">
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>

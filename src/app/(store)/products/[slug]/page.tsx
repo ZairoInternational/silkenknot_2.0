@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ProductView } from "@/components/product/ProductView";
+import ProductPageNew from "../../product-page-new/page";
 import { getSeedProduct } from "@/lib/data";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -11,5 +11,5 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  return <ProductView slug={slug} />;
+  return <ProductPageNew slug={slug} />;
 }

@@ -5,12 +5,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ChevronLeft,
-  ChevronRight,
   Flame,
   Gift,
+  Heart,
   Leaf,
-  Menu,
   RotateCcw,
   Search,
   ShoppingBag,
@@ -21,9 +19,11 @@ import {
 } from "lucide-react";
 import { itemCount } from "@/lib/format";
 import { useStore } from "@/lib/store";
-import { Mark, ease, usePrefersReducedMotion } from "@/components/ui";
+import { Mark, Media, ease, usePrefersReducedMotion } from "@/components/ui";
+import { LogoutConfirm } from "@/components/account/LogoutConfirm";
 import { AccountDrawer } from "@/components/layout/AccountDrawer";
 import { SearchOverlay } from "@/components/layout/SearchOverlay";
+import { useHeroNav } from "@/lib/hero-nav";
 import type { LucideIcon } from "lucide-react";
 
 function EscalatorIcon({ icon: Icon }: { icon: LucideIcon }) {
@@ -59,14 +59,22 @@ const notes = [
   { text: "Candles for the last hour of the day", href: "/shop?category=aromatherapy", icon: Flame },
 ];
 
+const searchHints = [
+  "Search for body butter",
+  "Search for sugar scrub",
+  "Search for bath salts",
+  "Search for soap",
+  "Search for candles",
+];
+
 function Logo({ className = "" }: { className?: string }) {
   return (
     <Link
       href="/"
-      className={`inline-flex items-center gap-2 font-serif text-[1.55rem] leading-none tracking-tight ${className}`}
+      className={`inline-flex items-center gap-2 whitespace-nowrap font-serif text-[1.2rem] leading-none tracking-tight md:text-[1.55rem] ${className}`}
     >
-      <Mark className="h-4 w-4" />
-      Silk Knot
+      <Mark className="h-10 w-10 md:h-4 md:w-4" />
+      <span className="hidden md:inline">Silken Knot</span>
     </Link>
   );
 }
@@ -74,15 +82,18 @@ function Logo({ className = "" }: { className?: string }) {
 export function SiteHeader() {
   const pathname = usePathname();
   const home = pathname === "/";
+  const shop = pathname === "/shop" || pathname.startsWith("/shop/");
   const store = useStore();
   const announceRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const reduced = usePrefersReducedMotion();
   const [note, setNote] = useState(0);
+  const [hint, setHint] = useState(0);
   const noteDirection = useRef(1);
   const [announceOpen, setAnnounceOpen] = useState(true);
   const [mega, setMega] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [narrow, setNarrow] = useState(false);
   const [bar, setBar] = useState({
     hidden: false,
     solid: !home,
@@ -90,8 +101,20 @@ export function SiteHeader() {
   });
 
   useEffect(() => {
+    setAccountOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
     if (document.documentElement.dataset.announce === "off")
       setAnnounceOpen(false);
+  }, []);
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 767px)");
+    const apply = () => setNarrow(query.matches);
+    apply();
+    query.addEventListener("change", apply);
+    return () => query.removeEventListener("change", apply);
   }, []);
 
   const showNote = (step: number) => {
@@ -104,6 +127,11 @@ export function SiteHeader() {
     const timer = window.setInterval(() => showNote(1), 4200);
     return () => window.clearInterval(timer);
   }, [announceOpen]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setHint((index) => (index + 1) % searchHints.length), 2600);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const nav = navRef.current;
@@ -160,7 +188,12 @@ export function SiteHeader() {
     return () => window.removeEventListener("keydown", onKey);
   }, [mega]);
 
-  const tone = bar.solid ? "text-ink" : "text-white";
+  const heroNav = useHeroNav();
+  const onHero = home && !bar.solid;
+  const tone = onHero && heroNav === "white" ? "text-white" : "text-ink";
+  const iconButton = onHero
+    ? "bg-white/15 text-white hover:bg-white/25"
+    : "bg-black/10 text-ink hover:bg-black/18";
   const currentNote = notes[note];
   const NoteIcon = currentNote.icon;
 
@@ -170,13 +203,13 @@ export function SiteHeader() {
         {announceOpen ? (
           <motion.div
             ref={announceRef}
-            className="announcement relative z-[55] overflow-hidden bg-black text-white"
+            className="announcement relative z-55 overflow-hidden bg-black text-white"
             initial={false}
-            animate={{ height: 35, opacity: 1 }}
+            animate={{ height: narrow ? 52 : 35, opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease }}
           >
-            <div className="relative flex h-[35px] items-center justify-center px-10">
+            <div className="relative flex h-full items-center justify-center px-10">
               <motion.span
                 key={`sheen-${note}`}
                 aria-hidden
@@ -185,16 +218,8 @@ export function SiteHeader() {
                 animate={reduced ? undefined : { x: "110vw" }}
                 transition={{ duration: 0.85, ease: "easeOut" }}
               />
-              <div className="relative z-10 flex items-center gap-3">
-                <button
-                  type="button"
-                  className="relative z-20 inline-flex h-8 w-8 items-center justify-center"
-                  aria-label="Previous announcement"
-                  onClick={() => showNote(-1)}
-                >
-                  <ChevronLeft size={13} />
-                </button>
-                <div className="relative h-[35px] w-[min(72vw,420px)] overflow-hidden">
+              <div className="relative z-10 flex h-full w-[min(88vw,420px)] items-center">
+                <div className="relative h-full w-full overflow-hidden">
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                       key={currentNote.text}
@@ -214,14 +239,6 @@ export function SiteHeader() {
                     </motion.div>
                   </AnimatePresence>
                 </div>
-                <button
-                  type="button"
-                  className="relative z-20 inline-flex h-8 w-8 items-center justify-center"
-                  aria-label="Next announcement"
-                  onClick={() => showNote(1)}
-                >
-                  <ChevronRight size={13} />
-                </button>
               </div>
               <button
                 type="button"
@@ -263,17 +280,14 @@ export function SiteHeader() {
         }}
         onMouseLeave={() => setMega(false)}
       >
-        <div className={`pointer-events-auto relative mx-auto flex h-16 items-center border-b px-4 transition-colors duration-300 md:px-8 ${bar.solid ? "border-black/10" : "border-white/45"}`}>
+        <div className={`pointer-events-auto relative mx-auto flex h-16 items-center border-b px-4 transition-colors duration-300 md:px-8 ${tone === "text-white" ? "border-white/45" : "border-black/10"}`}>
           <div className="relative z-20 flex min-w-0 items-center gap-5">
-            <button
-              type="button"
-              className="inline-flex h-9 w-9 items-center justify-center md:hidden"
-              aria-label="Open menu"
-              aria-expanded={store.menuOpen}
-              onClick={store.openMenu}
+            <Link
+              href="/"
+              className="whitespace-nowrap font-serif text-[1.2rem] leading-none tracking-tight md:hidden"
             >
-              <Menu size={18} strokeWidth={1.4} />
-            </button>
+              Silken Knot
+            </Link>
             <nav aria-label="Primary" className="hidden md:block">
               <ul className="flex items-center gap-8 xl:gap-10">
                 {links.map((link) => (
@@ -305,12 +319,12 @@ export function SiteHeader() {
             </nav>
           </div>
 
-          <Logo className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
+          <Logo className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2" />
 
           <div className="relative z-20 ml-auto flex items-center gap-2">
             <button
               type="button"
-              className="group inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/10 text-current transition-colors duration-300 hover:bg-black/18"
+              className={`group h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 ${shop ? "inline-flex" : "hidden md:inline-flex"} ${iconButton}`}
               aria-label="Search"
               onClick={store.openSearch}
             >
@@ -318,25 +332,69 @@ export function SiteHeader() {
             </button>
             <button
               type="button"
-              className="group hidden h-10 w-10 items-center justify-center rounded-full bg-black/10 text-current transition-colors duration-300 hover:bg-black/18 md:inline-flex"
+              className={`group inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 ${iconButton}`}
               aria-label="Account"
               onClick={() => setAccountOpen(true)}
             >
               <EscalatorIcon icon={User} />
             </button>
+            <Link
+              href="/wishlist"
+              aria-label="Wishlist"
+              className={`group relative hidden h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 md:inline-flex ${iconButton}`}
+            >
+              <EscalatorIcon icon={Heart} />
+              {store.wishlist.length > 0 ? (
+                <span className="absolute right-1.5 top-1.5 h-1.25 w-1.25 rounded-full bg-[#d21f2b]" />
+              ) : null}
+            </Link>
             <button
               type="button"
-              className="group relative inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/10 text-current transition-colors duration-300 hover:bg-black/18"
+              className={`group relative hidden h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 md:inline-flex ${iconButton}`}
               aria-label="Bag"
               onClick={store.openCart}
             >
               <EscalatorIcon icon={ShoppingBag} />
               {itemCount(store.cart) > 0 ? (
-                <span className="absolute right-1.5 top-1.5 h-1.25 w-1.25 rounded-full bg-[#d21f2b]" />
+                <span key={itemCount(store.cart)} className="cart-count absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#d21f2b] px-1 text-[10px] leading-none text-white">
+                  {itemCount(store.cart)}
+                </span>
               ) : null}
             </button>
           </div>
         </div>
+        {home && bar.solid ? (
+          <div className="pointer-events-auto bg-white px-4 pb-3 pt-2 md:hidden">
+            <label className="flex h-12 w-full items-center gap-3 rounded-lg border border-black/15 bg-white px-4">
+              <Search size={18} strokeWidth={1.6} className="shrink-0 text-[#6f675d]" />
+              <span className="relative min-w-0 flex-1">
+                <input
+                  readOnly
+                  value=""
+                  aria-label={searchHints[hint]}
+                  onFocus={(event) => {
+                    store.openSearch();
+                    event.currentTarget.blur();
+                  }}
+                  className="h-10 w-full bg-transparent text-base outline-none"
+                />
+                <span className="pointer-events-none absolute inset-0 flex items-center overflow-hidden text-base text-[#8a8178]">
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.span
+                      key={searchHints[hint]}
+                      initial={reduced ? false : { opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={reduced ? undefined : { opacity: 0, y: -8 }}
+                      transition={{ duration: reduced ? 0 : 0.35 }}
+                    >
+                      {searchHints[hint]}
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
+              </span>
+            </label>
+          </div>
+        ) : null}
         <SearchOverlay />
         <MegaMenu open={mega} onClose={() => setMega(false)} />
       </header>
@@ -346,13 +404,23 @@ export function SiteHeader() {
           setAccountOpen(true);
         }}
       />
-      <AccountDrawer open={accountOpen} onClose={() => setAccountOpen(false)} />
+      <AccountDrawer open={accountOpen} onClose={() => setAccountOpen(false)} returnTo={pathname} />
     </>
   );
 }
 
 function MegaMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const store = useStore();
+  const previews: Record<string, string> = {
+    "body-care": "/silknknot/collection-body-care.jpg",
+    "bath-soap": "/silknknot/collection-bath-soap.jpg",
+    aromatherapy: "/silknknot/collection-aromatherapy.jpg",
+    lifestyle: "/silknknot/collection-lifestyle.jpg",
+  };
+  const [activeId, setActiveId] = useState(store.categories[0]?.id ?? "body-care");
+  const active = store.categories.find((category) => category.id === activeId) ?? store.categories[0];
+  const image = previews[activeId] ?? active?.image ?? "/silknknot/collection-body-care.jpg";
+
   return (
     <AnimatePresence>
       {open ? (
@@ -397,7 +465,9 @@ function MegaMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
                   key={category.id}
                   href={`/shop?category=${category.id}`}
                   onClick={onClose}
-                  className="text-sm"
+                  onMouseEnter={() => setActiveId(category.id)}
+                  onFocus={() => setActiveId(category.id)}
+                  className={`text-sm ${category.id === activeId ? "text-mist-ink" : ""}`}
                 >
                   {category.name}
                   <span className="mt-1 block text-xs text-mute">
@@ -407,15 +477,11 @@ function MegaMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
               ))}
             </div>
             <Link
-              href="/shop?category=body-care"
+              href={active ? `/shop?category=${active.id}` : "/shop"}
               onClick={onClose}
-              className="relative block aspect-[4/5] overflow-hidden bg-cream"
+              className="relative block aspect-[4/5] overflow-hidden rounded-xl bg-[#e7dfd4]"
             >
-              <img
-                src="/silknknot/body_butter.jpg"
-                alt=""
-                className="h-full w-full object-contain"
-              />
+              <Media key={image} src={image} alt={active?.name ?? ""} sizes="240px" className="object-contain" />
             </Link>
           </div>
         </motion.div>
@@ -426,71 +492,119 @@ function MegaMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
 
 function MobileMenu({ onAccount }: { onAccount: () => void }) {
   const store = useStore();
+  const pathname = usePathname();
+  const user = store.currentUser;
+  const menuOpen = store.menuOpen;
+  const closeMenu = store.closeMenu;
+  const [confirmLogout, setConfirmLogout] = useState(false);
   useEffect(() => {
-    if (!store.menuOpen) return;
+    if (!menuOpen) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") store.closeMenu();
+      if (event.key === "Escape") closeMenu();
     };
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", onKey);
     };
-  }, [store.menuOpen, store.closeMenu]);
+  }, [menuOpen, closeMenu]);
+
+  const row = "flex w-full items-center justify-between border-b border-line py-3.5 text-left text-[13px] uppercase tracking-[0.14em]";
+
   return (
     <AnimatePresence>
       {store.menuOpen ? (
-        <motion.div
-          id="mobile-menu"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Menu"
-          className="fixed inset-0 z-[60] flex flex-col bg-white px-6 pb-10 pt-5 text-ink"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <div className="flex items-center justify-between">
-            <Logo />
-            <button
-              type="button"
-              aria-label="Close menu"
-              onClick={store.closeMenu}
-              className="inline-flex h-10 w-10 items-center justify-center"
-            >
-              <X size={18} />
-            </button>
-          </div>
-          <nav className="mt-16 flex flex-1 flex-col gap-5" aria-label="Mobile">
-            {links.map((link, index) => (
-              <motion.div
-                key={link.label}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 * index, duration: 0.35, ease }}
+        <>
+          <motion.button
+            type="button"
+            aria-label="Close menu"
+            className="fixed inset-0 z-[60] bg-black/35"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={store.closeMenu}
+          />
+          <motion.div
+            id="mobile-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
+            className="fixed inset-y-0 left-0 z-[70] flex w-[min(86vw,320px)] flex-col bg-paper text-ink shadow-[8px_0_30px_rgba(0,0,0,0.12)]"
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ duration: 0.35, ease }}
+          >
+            <div className="flex items-center justify-between border-b border-line px-5 py-4">
+              <Logo />
+              <button
+                type="button"
+                aria-label="Close menu"
+                onClick={store.closeMenu}
+                className="inline-flex h-9 w-9 items-center justify-center"
               >
-                <Link
-                  href={link.href}
-                  onClick={store.closeMenu}
-                  className="font-serif text-5xl"
-                >
-                  {link.label}
+                <X size={18} />
+              </button>
+            </div>
+            <nav className="flex-1 overflow-y-auto px-5" aria-label="Mobile">
+              {links.map((link) => {
+                const active = pathname === link.href;
+                return (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    onClick={store.closeMenu}
+                    className={row}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    <span className={active ? "text-[#8a7350]" : ""}>{link.label}</span>
+                    <span className={`h-1.5 w-1.5 rounded-full ${active ? "bg-[#CBAC7C]" : "bg-transparent"}`} />
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="border-t border-line px-5 pb-6 pt-2">
+              <Link href="/wishlist" onClick={store.closeMenu} className={row}>
+                <span className="inline-flex items-center gap-2">
+                  <Heart size={16} strokeWidth={1.6} className="text-[#CBAC7C]" fill={store.wishlist.length > 0 ? "currentColor" : "none"} />
+                  Wishlist
+                </span>
+                {store.wishlist.length > 0 ? <span className="text-[11px] tracking-normal text-[#8a7350]">{store.wishlist.length}</span> : null}
+              </Link>
+              {user && user.role !== "admin" ? (
+                <Link href="/account" onClick={store.closeMenu} className={row}>
+                  <span>Account</span>
+                  <User size={16} strokeWidth={1.6} className="text-[#8a7350]" />
                 </Link>
-              </motion.div>
-            ))}
-          </nav>
-          <div className="flex gap-6 text-[11px] uppercase tracking-[0.18em]">
-            <button type="button" onClick={onAccount}>
-              Account
-            </button>
-            <Link href="/wishlist" onClick={store.closeMenu}>
-              Wishlist
-            </Link>
-          </div>
-        </motion.div>
+              ) : (
+                <button type="button" onClick={onAccount} className={row}>
+                  <span>Account</span>
+                  <User size={16} strokeWidth={1.6} className="text-[#8a7350]" />
+                </button>
+              )}
+              {user && user.role !== "admin" ? (
+                <button
+                  type="button"
+                  className="mt-4 flex h-12 w-full items-center justify-center rounded-full border border-[#e3dbd1] bg-white text-[11px] uppercase tracking-[0.16em] text-[#8a7350]"
+                  onClick={() => setConfirmLogout(true)}
+                >
+                  Log out
+                </button>
+              ) : null}
+            </div>
+          </motion.div>
+          <LogoutConfirm
+            open={confirmLogout}
+            onCancel={() => setConfirmLogout(false)}
+            onConfirm={() => {
+              setConfirmLogout(false);
+              void store.logout();
+              store.closeMenu();
+            }}
+          />
+        </>
       ) : null}
     </AnimatePresence>
   );

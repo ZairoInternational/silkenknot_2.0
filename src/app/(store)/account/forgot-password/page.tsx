@@ -1,7 +1,5 @@
-import { ForgotScreen } from "@/components/account/Screens";
-
-export const metadata = { title: "Forgot password" };
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <ForgotScreen />;
+  redirect("/account/login");
 }

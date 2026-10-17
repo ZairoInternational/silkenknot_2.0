@@ -3,7 +3,9 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion as useFramerReduced } from "framer-motion";
+import { Heart } from "lucide-react";
 import { discountPercent, formatPrice } from "@/lib/format";
+import { useStore } from "@/lib/store";
 
 export const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -12,20 +14,44 @@ export function usePrefersReducedMotion() {
   return Boolean(reduced);
 }
 
+export function WishlistButton({ productId, name, className = "" }: { productId: string; name: string; className?: string }) {
+  const store = useStore();
+  const saved = store.wishlist.includes(productId);
+  return (
+    <button
+      type="button"
+      aria-label={saved ? `Remove ${name} from wishlist` : `Save ${name}`}
+      aria-pressed={saved}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        store.toggleWishlist(productId);
+        if (saved) store.notify(`${name} removed`);
+      }}
+      className={`grid size-10 shrink-0 place-items-center bg-transparent text-[#CBAC7C] ${className}`}
+    >
+      <Heart size={24} strokeWidth={1.5} fill={saved ? "currentColor" : "none"} />
+    </button>
+  );
+}
+
 export function useDialog(open: boolean, onClose: () => void) {
   const ref = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement as HTMLElement | null;
     const frame = window.requestAnimationFrame(() => {
+      if (ref.current?.contains(document.activeElement)) return;
       const node = ref.current?.querySelector<HTMLElement>(
         "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])",
       );
       node?.focus();
     });
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") onCloseRef.current();
       if (event.key !== "Tab" || !ref.current) return;
       const nodes = [...ref.current.querySelectorAll<HTMLElement>(
         "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])",
@@ -48,9 +74,9 @@ export function useDialog(open: boolean, onClose: () => void) {
       window.cancelAnimationFrame(frame);
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = overflow;
-      previous?.focus();
+      if (previous && document.contains(previous)) previous.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   return ref;
 }
@@ -151,29 +177,31 @@ export function Quantity({
   onChange,
   max = 99,
   min = 1,
+  compact = false,
 }: {
   value: number;
   onChange: (value: number) => void;
   max?: number;
   min?: number;
+  compact?: boolean;
 }) {
   return (
-    <div className="inline-flex items-center border border-line">
+    <div className={`inline-flex items-center border border-line ${compact ? "rounded-md" : ""}`}>
       <button
         type="button"
-        className="h-10 w-10"
+        className={compact ? "h-7 w-7 text-sm text-[#8a847c]" : "h-10 w-10"}
         aria-label={min < 1 && value <= 1 ? "Remove item" : "Decrease quantity"}
         disabled={value <= min}
         onClick={() => onChange(Math.max(min, value - 1))}
       >
         −
       </button>
-      <span className="min-w-8 text-center text-sm" aria-live="polite">
+      <span className={`text-center text-[#6f675d] ${compact ? "min-w-5 text-xs" : "min-w-8 text-sm"}`} aria-live="polite">
         {value}
       </span>
       <button
         type="button"
-        className="h-10 w-10"
+        className={compact ? "h-7 w-7 text-sm text-[#8a847c]" : "h-10 w-10"}
         aria-label="Increase quantity"
         disabled={value >= max}
         onClick={() => onChange(Math.min(max, value + 1))}
@@ -268,14 +296,14 @@ export function useMeasuredHeader(target: React.RefObject<HTMLElement | null>) {
   return height;
 }
 
-export function Toast({ message }: { message: string | null }) {
+export function Toast({ message, aboveCart = false }: { message: string | null; aboveCart?: boolean }) {
   return (
     <div
       role="status"
       aria-live="polite"
-      className={`pointer-events-none fixed bottom-6 left-1/2 z-[90] -translate-x-1/2 bg-ink px-5 py-3 text-[11px] uppercase tracking-[0.18em] text-paper transition duration-500 ${
-        message ? "opacity-100" : "opacity-0"
-      }`}
+      className={`pointer-events-none fixed right-6 z-[200] rounded-lg bg-[#CBAC7C] px-4 py-3 text-sm text-white shadow-lg transition duration-500 md:right-[60px] ${
+        aboveCart ? "bottom-[calc(min(78vh,560px)+2.75rem)] md:bottom-[calc(min(78vh,560px)+3.25rem)]" : "bottom-6"
+      } ${message ? "opacity-100" : "opacity-0"}`}
     >
       {message}
     </div>

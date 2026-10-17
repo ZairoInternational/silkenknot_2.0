@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import { motion } from "framer-motion";
-import { ritualChapters, seedCategories, seedProducts } from "@/lib/data";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ritualChapters, seedProducts } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import { Media, Reveal } from "@/components/ui";
 
@@ -47,51 +46,82 @@ export function RitualChapters() {
   );
 }
 
-const tiles = [
-  { ...seedCategories[0], className: "md:col-span-7 md:row-span-2 min-h-[78vw] md:min-h-[760px]", href: "/shop?category=body-care" },
-  { ...seedCategories[1], className: "md:col-span-5 min-h-[70vw] md:min-h-0", href: "/shop?category=bath-soap" },
-  { ...seedCategories[2], className: "md:col-span-5 min-h-[70vw] md:min-h-0", href: "/shop?category=aromatherapy" },
-  { ...seedCategories[3], className: "md:col-span-12 min-h-[70vw] md:min-h-[420px]", href: "/shop?category=lifestyle" },
+const collections = [
+  {
+    number: "01",
+    title: "Body Care",
+    description: "Nourish your skin with nature's finest ingredients.",
+    image: "/silknknot/collection-body-care.jpg",
+    href: "/shop?category=body-care",
+    className: "md:col-span-7 md:row-span-2",
+  },
+  {
+    number: "02",
+    title: "Bath & Soap",
+    description: "Gentle care for body and mind.",
+    image: "/silknknot/collection-bath-soap.jpg",
+    href: "/shop?category=bath-soap",
+    className: "md:col-span-5",
+  },
+  {
+    number: "03",
+    title: "Aromatherapy",
+    description: "Find your calm, naturally.",
+    image: "/silknknot/bestseller-candle.jpg",
+    href: "/shop?category=aromatherapy",
+    className: "md:col-span-5",
+  },
+  {
+    number: "04",
+    title: "Lifestyle",
+    description: "Beautiful moments, made more special.",
+    image: "/silknknot/collection-lifestyle.jpg",
+    href: "/shop?category=lifestyle",
+    className: "md:col-span-12",
+  },
 ];
 
 export function CategorySection() {
   return (
-    <section className="bg-paper px-5 py-24 md:px-10 md:py-36">
-      <Reveal>
-        <p className="eyebrow text-mute">The house</p>
-        <h2 className="mt-4 max-w-3xl font-serif text-5xl leading-[0.95] md:text-7xl">Four ways to begin.</h2>
-      </Reveal>
-      <div className="mt-14 grid gap-3 md:grid-cols-12 md:grid-rows-2">
-        {tiles.map((tile, index) => (
-          <Link key={tile.id} href={tile.href} className={`group relative block overflow-hidden bg-sand ${tile.className}`}>
-            <motion.div
-              className="absolute inset-0"
-              initial={{ scale: 1.08 }}
-              whileInView={{ scale: 1 }}
-              viewport={{ once: true, margin: "-10% 0px" }}
-              transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+    <section className="bg-[#f7f4ef] px-4 py-14 sm:px-6 sm:py-16 lg:px-10 lg:py-20">
+      <div className="mx-auto max-w-[1440px]">
+        <div className="mb-7 sm:mb-9">
+          <p className="mb-3 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#59634b]">
+            <span className="h-px w-7 bg-[#59634b]" />
+            Explore the collections
+          </p>
+          <h2 className="font-serif text-3xl leading-tight tracking-tight text-[#292d25] sm:text-4xl lg:text-5xl">Four ways to begin.</h2>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-[#817c71] sm:text-base">
+            Discover your self-care ritual — from nourishing body care to calming scents, thoughtfully crafted for your everyday moments.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-12 md:grid-rows-[225px_225px_240px] lg:gap-4">
+          {collections.map((collection) => (
+            <Link
+              key={collection.number}
+              href={collection.href}
+              className={`group relative min-h-[260px] overflow-hidden rounded-lg bg-[#ded5c8] md:min-h-0 ${collection.className}`}
             >
               <Media
-                src={tile.image}
-                alt=""
-                sizes="(min-width: 768px) 50vw, 100vw"
-                className="object-contain transition duration-700 group-hover:scale-105"
+                src={collection.image}
+                alt={collection.title}
+                sizes="(min-width: 768px) 60vw, 100vw"
+                className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.04]"
               />
-              <span className="absolute inset-0 opacity-0 transition duration-700 group-hover:opacity-100">
-                <Media src={tile.imageAlt} alt="" sizes="(min-width: 768px) 50vw, 100vw" className="object-contain" />
-              </span>
-            </motion.div>
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/55 via-ink/10 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 p-6 text-paper md:p-8">
-              <p className="eyebrow text-paper/70">0{index + 1}</p>
-              <h3 className="mt-2 font-serif text-4xl transition duration-500 group-hover:-translate-y-1 md:text-5xl">{tile.name}</h3>
-              <p className="mt-3 max-w-sm text-sm text-paper/80">{tile.description}</p>
-              <span className="mt-5 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em]">
-                Explore <ArrowUpRight size={14} className="transition group-hover:translate-x-1 group-hover:-translate-y-0.5" />
-              </span>
-            </div>
-          </Link>
-        ))}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-transparent transition duration-500 group-hover:from-black/75" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/5" />
+              <div className="relative flex h-full max-w-[390px] flex-col items-start justify-center p-5 text-white sm:p-7 lg:p-9">
+                <span className="mb-3 text-[10px] font-medium tracking-[0.22em] text-white/85">{collection.number} /</span>
+                <h3 className="font-serif text-3xl leading-tight tracking-tight sm:text-4xl lg:text-[42px]">{collection.title}</h3>
+                <p className="mt-2 max-w-[260px] font-serif text-sm leading-6 text-white/90 sm:text-base">{collection.description}</p>
+                <span className="mt-5 inline-flex min-h-10 items-center gap-3 rounded-full border border-white/60 bg-[#CBAC7C]/90 px-4 py-2 text-[11px] font-medium tracking-wide text-white backdrop-blur-sm transition duration-300 group-hover:border-mist group-hover:bg-[#CBAC7C] sm:px-5 sm:text-xs">
+                  Explore Collection
+                  <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );

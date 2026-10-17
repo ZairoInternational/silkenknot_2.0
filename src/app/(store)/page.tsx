@@ -1,18 +1,27 @@
 import { Hero } from "@/components/home/Hero";
 import { CategoryStrip } from "@/components/home/CategoryStrip";
 import { CategorySection } from "@/components/home/RitualChapters";
-import { BestSellers, BrandStory, HorizontalStory, Newsletter, ProductShowcase, RitualBuilder } from "@/components/home/Flow";
+import { BestsellerScroll } from "@/components/home/BestsellerScroll";
+import { WhySilkKnot } from "@/components/home/WhySilkKnot";
+import { ClaimMarquee } from "@/components/home/ClaimMarquee";
+import { ExploreCollections } from "@/components/home/ExploreCollections";
+import { NewLaunches } from "@/components/home/NewLaunches";
+import { BrandStory, Newsletter } from "@/components/home/Flow";
 
 export default function HomePage() {
   return (
     <>
       <Hero />
       <CategoryStrip />
+      {/* BestSeller1 stays parked. The live row is BestsellerScroll. */}
+      <BestsellerScroll />
+      {/* BestSeller2 stays parked. */}
       <CategorySection />
-      <ProductShowcase />
-      <HorizontalStory />
-      <RitualBuilder />
-      <BestSellers />
+      <WhySilkKnot />
+      <ClaimMarquee />
+      <ExploreCollections />
+      <NewLaunches />
+      {/* RitualBuilder stays parked. */}
       <BrandStory />
       <Newsletter />
     </>

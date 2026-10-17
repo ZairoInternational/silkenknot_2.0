@@ -10,6 +10,7 @@ import type {
   User,
   Variant,
 } from "@/lib/types";
+import { approxProductWeight } from "@/lib/shipping/weight";
 
 const guides: Record<string, { ingredients: string[]; howToUse: string[] }> = {
   "Body Butter": {
@@ -232,6 +233,7 @@ function make(draft: Draft): Product {
     bestseller: draft.bestseller ?? false,
     newArrival: draft.newArrival ?? false,
     active: true,
+    weightGrams: approxProductWeight(draft.type),
     createdAt: draft.createdAt,
     rating: draft.rating,
     reviewCount: draft.reviewCount,
@@ -302,6 +304,9 @@ export const seedProducts: Product[] = [
       review("Meera Iyer", 5, "The finish is the point", "It sinks in. I can dress straight after and my skin still feels looked after at night.", 12),
       review("Anika Shah", 5, "Quiet scent", "Sandalwood without the heavy trail. The 200 ml lives by the shower.", 4),
       review("Rahul Menon", 4, "Rich, not greasy", "A little goes further than I expected. Elbows are finally calm.", 18),
+      review("Leela Krishnan", 5, "Warm skin, then clothes", "I press it in while my skin is still damp. It melts, then settles, and a shirt can go on.", 7),
+      review("Farah Qureshi", 4, "The 100 ml for a week away", "Enough for travel. The scent stays close to the skin instead of filling the room.", 21),
+      review("Sana Kapoor", 5, "A little covers both shins", "A small amount is enough for shins and elbows. I have gone back to the 200 ml.", 27),
     ],
   }),
   make({
@@ -761,7 +766,7 @@ export const seedUsers: User[] = [
   },
   {
     id: "user-admin",
-    name: "Silk Knot Studio",
+    name: "Silken Knot Studio",
     email: "admin@silkknot.com",
     password: "studio123",
     phone: "02240001111",
@@ -866,7 +871,7 @@ export const journal: JournalEntry[] = [
     excerpt: "Cleanse, polish, nourish, then light something. The sequence matters more than the number of products.",
     image: photo("1544161515-4ab6ce6db874"),
     paragraphs: [
-      "A ritual is only a routine you are willing to repeat. At Silk Knot that usually means four gestures, in the same order, even when the evening is short.",
+      "A ritual is only a routine you are willing to repeat. At Silken Knot that usually means four gestures, in the same order, even when the evening is short.",
       "Cleanse first, while the water is still honest. Exfoliate only a few nights a week — skin that is polished daily has nothing left to give. Nourish while you are still damp. Relax last, which is often just a candle and a robe and the decision not to start something else.",
       "You do not need every object at once. You need the order. The butter works better after the salt. The candle works better when your hands are already quiet.",
     ],
@@ -900,11 +905,11 @@ export const journal: JournalEntry[] = [
 export const sharedFaqs: Faq[] = [
   {
     question: "When do I get free shipping?",
-    answer: "Orders of ₹999 and above ship free within India by standard delivery. Express delivery is ₹149.",
+    answer: "Orders of ₹999 and above have free standard delivery within India. Any faster option, and its price, is shown at checkout.",
   },
   {
     question: "How long does delivery take?",
-    answer: "Standard delivery usually arrives in 4–7 days. Express, where available, arrives in 2–4 days. You will see the choice at checkout.",
+    answer: "You will see the delivery time for your PIN at checkout, including a faster option where it is available.",
   },
   {
     question: "Can I return a product?",

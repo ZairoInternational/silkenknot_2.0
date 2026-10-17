@@ -1,4 +1,5 @@
 import type { CartItem, Coupon, Product } from "@/lib/types";
+import { percentOfPaise } from "@/lib/payments/money";
 
 export const FREE_SHIPPING_AT = 999;
 
@@ -57,11 +58,20 @@ export function eligibleAmount(items: CartItem[], coupon: Coupon) {
   return subtotal(items);
 }
 
+export function couponDiscountPaise(items: CartItem[], coupon: Coupon) {
+  const baseRupees = eligibleAmount(items, coupon);
+  if (!Number.isInteger(baseRupees) || baseRupees <= 0) return 0;
+  const base = baseRupees * 100;
+  if (coupon.type === "percent") {
+    if (!Number.isInteger(coupon.value)) return 0;
+    return percentOfPaise(base, coupon.value);
+  }
+  if (!Number.isInteger(coupon.value) || coupon.value <= 0) return 0;
+  return Math.min(coupon.value * 100, base);
+}
+
 export function couponDiscount(items: CartItem[], coupon: Coupon) {
-  const base = eligibleAmount(items, coupon);
-  if (base <= 0) return 0;
-  if (coupon.type === "percent") return Math.round(base * (coupon.value / 100));
-  return Math.min(Math.round(coupon.value), base);
+  return couponDiscountPaise(items, coupon) / 100;
 }
 
 export function withDerivedPrice(product: Product): Product {

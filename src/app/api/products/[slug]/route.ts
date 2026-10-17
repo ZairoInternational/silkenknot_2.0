@@ -7,7 +7,8 @@ export async function GET(_request: Request, context: { params: Promise<{ slug: 
     const db = await getDb();
     const product = await db.collection("products").findOne({ slug, active: true });
     if (!product) return Response.json({ error: "Not found" }, { status: 404 });
-    const { _id, ...rest } = product;
+    const rest: Record<string, unknown> = { ...product };
+    delete rest._id;
     return Response.json({ product: rest });
   }
   const product = findProduct(slug);

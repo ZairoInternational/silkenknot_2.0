@@ -15,6 +15,7 @@ export type Review = {
   title: string;
   body: string;
   date: string;
+  helpful?: number;
 };
 
 export type Faq = {
@@ -44,6 +45,7 @@ export type Product = {
   bestseller: boolean;
   newArrival: boolean;
   active: boolean;
+  weightGrams?: number;
   createdAt: string;
   reviews: Review[];
   faqs: Faq[];
@@ -93,17 +95,88 @@ export type User = {
   phone: string;
   role: "customer" | "admin";
   addresses: Address[];
+  emailVerifiedAt?: string | null;
+  phoneVerifiedAt?: string | null;
+  nameSetAt?: string | null;
 };
 
 export type DeliveryMethod = "standard" | "express";
 export type PaymentMethod = "card" | "upi" | "cod";
+export type ShipmentState =
+  | "not_created"
+  | "pending"
+  | "booked"
+  | "pickup_scheduled"
+  | "picked_up"
+  | "in_transit"
+  | "out_for_delivery"
+  | "delivered"
+  | "delivery_failed"
+  | "cancelled"
+  | "rto_initiated"
+  | "rto_in_transit"
+  | "rto_delivered"
+  | "return_initiated"
+  | "returned"
+  | "exception"
+  | "unknown";
+
+export type TrackingEvent = {
+  at: string;
+  state: ShipmentState;
+  providerStatus: string;
+  location?: string;
+  instructions?: string;
+};
+
+export type ShipmentRecord = {
+  provider: "delhivery" | "manual" | "mock";
+  state: ShipmentState;
+  method: DeliveryMethod;
+  awb?: string;
+  reference?: string;
+  returnAwb?: string;
+  attempts: number;
+  lastError?: string;
+  packageData: "missing" | "store_default_weight" | "product_weights";
+  weightGrams: number;
+  events: TrackingEvent[];
+  lastTrackingAt?: string;
+  bookingRequestedAt?: string;
+  uncertain?: boolean;
+  pickupDate?: string;
+  estimate?: string;
+  estimateSource?: "store_policy" | "delhivery_tat" | "none";
+  test?: boolean;
+};
+export type PaymentState =
+  | "pending"
+  | "authorized"
+  | "captured"
+  | "failed"
+  | "cancelled"
+  | "refund_pending"
+  | "partially_refunded"
+  | "refunded";
+export type OrderLifecycle = "pending_payment" | "confirmed" | "processing" | "cancelled" | "completed";
+export type InventoryState = "not_reserved" | "reserved" | "committed" | "released";
+export type FulfillmentState =
+  | "unfulfilled"
+  | "packed"
+  | "shipped"
+  | "delivered"
+  | "delivery_failed"
+  | "return_to_origin";
 export type OrderStatus =
+  | "pending_payment"
   | "placed"
   | "confirmed"
   | "packed"
   | "shipped"
   | "delivered"
-  | "cancelled";
+  | "cancelled"
+  | "return_requested"
+  | "returned";
 
 export type Order = {
   id: string;
@@ -123,6 +196,22 @@ export type Order = {
   shipping: number;
   total: number;
   couponCode?: string;
+  paymentId?: string;
+  amountPaise?: number;
+  currency?: "INR";
+  paymentState?: PaymentState;
+  orderState?: OrderLifecycle;
+  inventoryState?: InventoryState;
+  fulfillmentState?: FulfillmentState;
+  razorpayOrderId?: string;
+  providerMethod?: string;
+  reserveExpiresAt?: string;
+  consistency?: "transaction" | "compensating";
+  codFee?: number;
+  shippingLabel?: string;
+  shippingQuoteId?: string;
+  shipment?: ShipmentRecord;
+  codCollection?: "due" | "not_applicable";
 };
 
 export type Coupon = {
@@ -135,6 +224,8 @@ export type Coupon = {
   categoryId?: string;
   active: boolean;
   label: string;
+  maxRedemptions?: number;
+  redeemed?: number;
 };
 
 export type JournalEntry = {

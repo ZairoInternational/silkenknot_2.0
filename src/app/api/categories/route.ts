@@ -5,5 +5,9 @@ export async function GET() {
   if (!databaseConfigured()) return Response.json({ categories: listCategories() });
   const db = await getDb();
   const categories = await db.collection("categories").find().sort({ order: 1 }).toArray();
-  return Response.json({ categories: categories.map(({ _id, ...category }) => category) });
+  return Response.json({ categories: categories.map((category) => {
+    const rest: Record<string, unknown> = { ...category };
+    delete rest._id;
+    return rest;
+  }) });
 }
