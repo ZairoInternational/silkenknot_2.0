@@ -390,6 +390,10 @@ export function OrdersScreen() {
 }
 
 export function orderStatus(order: Order) {
+  const cancelled = order.status === "cancelled" || order.orderState === "cancelled" || order.shipment?.state === "cancelled" || order.paymentState === "cancelled";
+  if (cancelled && (order.paymentState === "refund_pending" || order.paymentState === "partially_refunded")) return "Refund in progress";
+  if (cancelled && order.paymentState === "refunded") return "Refunded";
+  if (cancelled) return "Cancelled";
   if (order.paymentState === "refund_pending" || order.paymentState === "partially_refunded") return "Refund in progress";
   if (order.paymentState === "refunded") return "Refunded";
   if (order.shipment?.awb) return waybillListLabel(order.shipment.state);
@@ -419,9 +423,17 @@ export function orderAgain(order: Order, store: ReturnType<typeof useStore>) {
   store.notify("These pieces are unavailable.");
 }
 
-function orderGroup(status: string) {
+function orderGroup(order: Order) {
+  if (
+    order.status === "cancelled" ||
+    order.orderState === "cancelled" ||
+    order.paymentState === "cancelled" ||
+    order.paymentState === "refunded" ||
+    order.shipment?.state === "cancelled"
+  ) return "cancelled";
+  const status = orderStatus(order);
   if (status === "Delivered") return "delivered";
-  if (status === "Cancelled" || status === "Refunded") return "cancelled";
+  if (status === "Cancelled" || status === "Refunded" || status === "Refund in progress") return "cancelled";
   return "progress";
 }
 
@@ -443,7 +455,12 @@ function orderStory(order: Order, status: string) {
   const when = formatDate(order.createdAt);
   const estimate = order.shipment?.estimate?.replace(/^Test · /, "");
   if (status === "Delivered") return { title: `Delivered on ${when}`, body: "Your order has been delivered." };
-  if (status === "Cancelled" || status === "Refunded") return { title: "This order was cancelled", body: "It is no longer on the way." };
+  if (order.status === "cancelled" || order.orderState === "cancelled" || order.shipment?.state === "cancelled" || status === "Cancelled" || status === "Refunded") {
+    return {
+      title: "This order was cancelled",
+      body: status === "Refund in progress" ? "Your refund is in progress." : "It is no longer on the way.",
+    };
+  }
   if (status === "Shipped" || status === "In transit" || status === "Out for delivery") return { title: "On the way", body: estimate ? `Expected ${estimate}` : "Delivery updates show on the order." };
   if (status === "Payment pending") return { title: "Payment is not confirmed yet", body: "This order stays here until payment is confirmed." };
   return { title: "Preparing your order", body: estimate ? `Expected ${estimate}` : "We are getting it ready." };
@@ -465,8 +482,7 @@ function OrderList() {
 
   const needle = query.trim().toLowerCase();
   const visible = orders.filter((order) => {
-    const status = orderStatus(order);
-    if (filter !== "all" && orderGroup(status) !== filter) return false;
+    if (filter !== "all" && orderGroup(order) !== filter) return false;
     if (!needle) return true;
     const haystack = [order.number, order.id, ...order.items.map((item) => item.name)].join(" ").toLowerCase();
     return haystack.includes(needle);
@@ -505,7 +521,7 @@ function OrderList() {
               <Link href="/shop" className="mt-5 inline-flex h-11 items-center rounded-md bg-[#CBAC7C] px-5 text-[11px] uppercase tracking-[0.14em] text-white hover:bg-[#B39668]">Continue shopping</Link>
             </div>
           ) : visible.length === 0 ? (
-            <p className="mt-6 rounded-2xl border border-[#e3dbd1] bg-white px-5 py-8 text-sm text-[#6f675d]">No orders match this search.</p>
+            <p className="mt-6 rounded-2xl border border-[#e3dbd1] bg-white px-5 py-8 text-sm text-[#6f675d]">{needle ? "No orders match this search." : filter === "cancelled" ? "No cancelled orders." : filter === "delivered" ? "No delivered orders." : "No orders in progress."}</p>
           ) : (
             <ul className="mt-4 space-y-4">
               {visible.map((order) => <OrderCard key={order.id} order={order} />)}
@@ -522,7 +538,7 @@ function OrderCard({ order }: { order: Order }) {
   const store = useStore();
   const status = orderStatus(order);
   const story = orderStory(order, status);
-  const group = orderGroup(status);
+  const group = orderGroup(order);
   const shown = order.items.slice(0, 3);
   const extra = order.items.length - shown.length;
   const again = group === "delivered" || group === "cancelled";

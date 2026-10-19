@@ -96,8 +96,8 @@ export function OfferList({ onClose }: { onClose: () => void }) {
     <div className="flex h-full min-h-0 flex-col bg-white">
       <div className="flex items-center justify-between px-5 py-4">
         <p className="text-xl font-medium text-[#2c2926]">Offers</p>
-        <button type="button" aria-label="Close offers" onClick={onClose} className="inline-flex h-8 w-8 items-center justify-center">
-          <X size={16} />
+        <button type="button" aria-label="Close offers" onClick={onClose} className="inline-flex h-8 w-8 items-center justify-center group/close bg-black/10 hover:bg-black/16 rounded-full">
+          <X size={16} className="group-hover/close:rotate-90 transition-transform duration-200"/>
         </button>
       </div>
       <ul className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 pb-5">

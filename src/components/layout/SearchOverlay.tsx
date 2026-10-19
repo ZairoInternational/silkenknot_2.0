@@ -1,39 +1,111 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, Search, X } from "lucide-react";
+import { ArrowUpRight, Loader2, Search, X } from "lucide-react";
 import { Media, useDialog, WishlistButton } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import { formatPrice } from "@/lib/format";
+import { searchProducts, SearchAbortError } from "@/lib/search/client";
+import type { SearchProduct } from "@/lib/search/types";
 
 const ease = [0.76, 0, 0.24, 1] as const;
+
+/** Minimum characters before the search API is called. */
+const MIN_QUERY_LENGTH = 2;
+/** Debounce delay in ms before issuing a new request. */
+const DEBOUNCE_MS = 250;
+/** Maximum suggestions shown in the header overlay. */
+const MAX_SUGGESTIONS = 5;
 
 export function SearchOverlay() {
   const store = useStore();
   const [query, setQuery] = useState("");
   const closeSearch = store.closeSearch;
+
   const close = useCallback(() => {
     setQuery("");
     closeSearch();
   }, [closeSearch]);
+
   const ref = useDialog(store.searchOpen, close);
 
-  const popular = store.activeProducts.filter((product) => product.bestseller).slice(0, 4);
+  // ── API state ──────────────────────────────────────────────────────────────
+  const [results, setResults] = useState<SearchProduct[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState(false);
+  /** Monotonically increasing ID — the only response we accept is the latest. */
+  const reqId = useRef(0);
+  /** AbortController for the in-flight request. */
+  const abortRef = useRef<AbortController | null>(null);
 
-  const results = useMemo(() => {
-    const term = query.trim().toLowerCase();
-    if (term.length < 1) return [];
-    return store.activeProducts
-      .filter((product) =>
-        [product.name, product.type, product.scent, product.shortDescription, product.categoryId]
-          .join(" ")
-          .toLowerCase()
-          .includes(term),
-      )
-      .slice(0, 5);
-  }, [query, store.activeProducts]);
+  // ── Popular products shown when query is empty ────────────────────────────
+  const popular = store.activeProducts.filter((p) => p.bestseller).slice(0, 4);
+
+  // ── Search effect — fires after DEBOUNCE_MS of quiet typing ──────────────
+  useEffect(() => {
+    const term = query.trim();
+
+    if (term.length < MIN_QUERY_LENGTH) {
+      // Clear results immediately; do not call the API.
+      setResults([]);
+      setLoading(false);
+      setSearchError(false);
+      return;
+    }
+
+    const id = ++reqId.current;
+
+    const timer = window.setTimeout(() => {
+      // Cancel the previous in-flight request.
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      setLoading(true);
+      setSearchError(false);
+
+      searchProducts({ q: term, limit: MAX_SUGGESTIONS }, controller.signal)
+        .then((data) => {
+          if (reqId.current !== id) return; // stale response — ignore
+          setResults(data.items);
+          setLoading(false);
+        })
+        .catch((err) => {
+          if (err instanceof SearchAbortError) return; // intentional cancel — no error shown
+          if (reqId.current !== id) return;
+          setLoading(false);
+          setSearchError(true);
+        });
+    }, DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+      // Do NOT abort here — let the debounce timer cancel the previous request
+      // when a new one starts. This avoids double-abort races.
+    };
+  }, [query]);
+
+  // ── Cleanup on unmount ────────────────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
+
+  // ── Reset state when the overlay closes ──────────────────────────────────
+  useEffect(() => {
+    if (!store.searchOpen) {
+      setResults([]);
+      setLoading(false);
+      setSearchError(false);
+      reqId.current = 0;
+    }
+  }, [store.searchOpen]);
+
+  const term = query.trim();
+  const showResults = term.length >= MIN_QUERY_LENGTH;
 
   return (
     <AnimatePresence>
@@ -49,6 +121,7 @@ export function SearchOverlay() {
             exit={{ x: "-50%", y: "28vh", opacity: 0 }}
             transition={{ duration: 0.7, ease }}
           >
+            {/* ── Search input ─────────────────────────────────────────── */}
             <div className="search-field flex h-12 items-center gap-3 rounded-full border border-black/15 bg-white px-4 text-ink shadow-[0_18px_50px_-24px_rgba(0,0,0,0.45)]">
               <Search size={18} strokeWidth={1.6} className="shrink-0 text-ink/70" />
               <input
@@ -58,7 +131,19 @@ export function SearchOverlay() {
                 placeholder="Search body butter, soap, candle…"
                 className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-mute focus-visible:outline-none"
                 autoFocus
+                aria-label="Search products"
+                aria-autocomplete="list"
+                aria-controls="search-suggestions"
+                aria-expanded={showResults}
               />
+              {loading ? (
+                <Loader2
+                  size={16}
+                  strokeWidth={1.6}
+                  className="shrink-0 animate-spin text-mute"
+                  aria-label="Searching…"
+                />
+              ) : null}
               <button
                 type="button"
                 aria-label="Close search"
@@ -69,33 +154,65 @@ export function SearchOverlay() {
               </button>
             </div>
 
+            {/* ── Results panel ─────────────────────────────────────────── */}
             <div className="search-scroll mt-2 flex h-[calc(100svh-var(--announce-h)-var(--nav-h)-1.25rem)] flex-col overflow-y-auto rounded-2xl border border-black/10 bg-white text-ink shadow-[0_18px_50px_-24px_rgba(0,0,0,0.45)]">
-              {query.trim() ? (
-                <ul>
-                  {results.map((product) => (
-                    <li key={product.id}>
-                      <Link
-                        href={`/products/${product.slug}`}
+              {showResults ? (
+                /* ── Active query: show API results ───────────────────── */
+                <ul id="search-suggestions" aria-label="Search suggestions">
+                  {loading && results.length === 0 ? (
+                    /* Skeleton rows while the first response loads */
+                    Array.from({ length: 3 }, (_, i) => (
+                      <li key={i} className="grid grid-cols-[44px_1fr] items-center gap-3 px-4 py-2.5">
+                        <span className="relative block aspect-square animate-pulse rounded bg-[#eee8de]" />
+                        <span className="space-y-2">
+                          <span className="block h-4 w-3/4 animate-pulse rounded bg-[#eee8de]" />
+                          <span className="block h-3 w-1/3 animate-pulse rounded bg-[#eee8de]" />
+                        </span>
+                      </li>
+                    ))
+                  ) : searchError ? (
+                    <li className="px-4 py-6 text-center text-sm text-mute">
+                      Search isn&apos;t available right now.{" "}
+                      <button
+                        type="button"
+                        className="underline"
                         onClick={() => {
-                          store.rememberSearch(query);
-                          close();
+                          setSearchError(false);
+                          setQuery((q) => q); // re-trigger the effect
                         }}
-                        className="grid grid-cols-[44px_1fr_auto] items-center gap-3 px-4 py-2.5 hover:bg-black/5"
                       >
-                        <span className="relative block aspect-square bg-cream">
-                          <Media src={product.images[0]} alt="" sizes="44px" />
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block truncate text-sm">{product.name}</span>
-                          <span className="text-xs text-mute">{product.type}</span>
-                        </span>
-                        <span className="text-sm">{formatPrice(product.price)}</span>
-                      </Link>
+                        Try again
+                      </button>
                     </li>
-                  ))}
-                  {results.length === 0 ? <li className="px-4 py-4 text-sm text-mute">Nothing matches that yet.</li> : null}
+                  ) : results.length > 0 ? (
+                    results.map((product) => (
+                      <li key={product.id}>
+                        <Link
+                          href={`/products/${product.slug}`}
+                          onClick={() => {
+                            store.rememberSearch(query);
+                            close();
+                          }}
+                          className="grid grid-cols-[44px_1fr_auto] items-center gap-3 px-4 py-2.5 hover:bg-black/5"
+                        >
+                          <span className="relative block aspect-square bg-cream">
+                            <Media src={product.images[0]} alt="" sizes="44px" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm">{product.name}</span>
+                            <span className="text-xs text-mute">{product.type}</span>
+                          </span>
+                          <span className="text-sm">{formatPrice(product.price)}</span>
+                        </Link>
+                      </li>
+                    ))
+                  ) : (
+                    /* Zero results — only show after a successful (non-loading) response */
+                    <li className="px-4 py-4 text-sm text-mute">Nothing matches that yet.</li>
+                  )}
                 </ul>
               ) : (
+                /* ── Empty query: recent searches + categories + suggestions ── */
                 <div className="flex min-h-full flex-1 flex-col gap-5 p-4">
                   <div className="hidden shrink-0 md:block">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-mute">Popular search</p>
@@ -105,7 +222,11 @@ export function SearchOverlay() {
                       ) : null}
                       {store.recentSearches.map((term) => (
                         <li key={term}>
-                          <button type="button" className="text-left text-sm" onClick={() => setQuery(term)}>
+                          <button
+                            type="button"
+                            className="text-left text-sm"
+                            onClick={() => setQuery(term)}
+                          >
                             {term}
                           </button>
                         </li>
@@ -163,6 +284,7 @@ export function SearchOverlay() {
               )}
             </div>
           </motion.div>
+
           <button
             type="button"
             aria-label="Close search"

@@ -59,6 +59,20 @@ export function canCancelShipment(state: ShipmentState) {
   return ["not_created", "pending", "booked", "pickup_scheduled", "unknown", "exception"].includes(state);
 }
 
+export function customerCanCancel(order: {
+  status?: string;
+  orderState?: string;
+  paymentState?: string;
+  fulfillmentState?: string;
+  shipment?: { state?: ShipmentState } | null;
+}) {
+  if (order.status === "cancelled" || order.orderState === "cancelled") return false;
+  if (order.paymentState === "refunded" || order.paymentState === "cancelled" || order.paymentState === "failed") return false;
+  if (order.fulfillmentState === "shipped" || order.fulfillmentState === "delivered" || order.fulfillmentState === "return_to_origin" || order.fulfillmentState === "delivery_failed") return false;
+  if (order.status === "shipped" || order.status === "delivered" || order.status === "returned" || order.status === "return_requested") return false;
+  return canCancelShipment(order.shipment?.state || "not_created");
+}
+
 export function canRequestReturn(state: ShipmentState, deliveredAt: string | undefined, now: string, windowDays: number) {
   if (state !== "delivered" || !deliveredAt) return false;
   const end = new Date(deliveredAt).getTime() + windowDays * 24 * 60 * 60 * 1000;
@@ -92,7 +106,8 @@ export function waybillListLabel(state?: ShipmentState) {
   return "Confirmed";
 }
 
-export function customerOrderVisible(order: { paymentState?: string; payment?: string; orderState?: string }) {
+export function customerOrderVisible(order: { status?: string; paymentState?: string; payment?: string; orderState?: string }) {
+  if (order.status === "cancelled" || order.orderState === "cancelled" || order.paymentState === "cancelled") return true;
   if (!order.paymentState) return true;
   if (["captured", "refund_pending", "partially_refunded", "refunded"].includes(order.paymentState)) return true;
   return order.payment === "cod" && order.orderState === "confirmed";

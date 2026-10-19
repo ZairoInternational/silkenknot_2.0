@@ -13,16 +13,16 @@ export default function HomePage() {
     <>
       <Hero />
       <CategoryStrip />
+      <NewLaunches />
       {/* BestSeller1 stays parked. The live row is BestsellerScroll. */}
-      <BestsellerScroll />
       {/* BestSeller2 stays parked. */}
       <CategorySection />
       <WhySilkKnot />
       <ClaimMarquee />
       <ExploreCollections />
-      <NewLaunches />
       {/* RitualBuilder stays parked. */}
       <BrandStory />
+      <BestsellerScroll />
       <Newsletter />
     </>
   );

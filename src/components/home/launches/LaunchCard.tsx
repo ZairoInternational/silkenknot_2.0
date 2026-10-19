@@ -6,7 +6,7 @@ import { Media, PriceTag, Stars, WishlistButton, usePrefersReducedMotion } from 
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 
-const actionClass = "flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#CBAC7C] px-3 text-sm font-medium text-[#1c1b19] transition-colors duration-300 hover:bg-[#b39668] disabled:cursor-not-allowed disabled:bg-[#e7dfd4] disabled:text-[#8a8178] disabled:hover:bg-[#e7dfd4]";
+const actionClass = "flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#CBAC7C] px-3 text-sm font-medium text-white transition-colors duration-300 hover:bg-[#b39668] disabled:cursor-not-allowed disabled:bg-[#e7dfd4] disabled:text-[#8a8178] disabled:hover:bg-[#e7dfd4]";
 
 export function LaunchCard({ product }: { product: Product }) {
   const store = useStore();

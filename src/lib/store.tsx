@@ -113,6 +113,7 @@ type StoreValue = {
   cartOpen: boolean;
   searchOpen: boolean;
   menuOpen: boolean;
+  accountOpen: boolean;
   toast: Toast;
   activeProducts: Product[];
   openCart: () => void;
@@ -121,6 +122,8 @@ type StoreValue = {
   closeSearch: () => void;
   openMenu: () => void;
   closeMenu: () => void;
+  openAccount: () => void;
+  closeAccount: () => void;
   closeOverlays: () => void;
   notify: (message: string) => void;
   addToCart: (productId: string, variantLabel: string, quantity?: number) => Result;
@@ -142,6 +145,7 @@ type StoreValue = {
   logoutAdmin: () => Promise<void>;
   placeOrder: (order: Omit<Order, "id" | "number" | "createdAt" | "status">, checkoutOrderId: string) => Promise<Result & { order?: Order }>;
   acceptServerOrder: (order: Order, products?: Product[]) => void;
+  rememberOrder: (order: Order) => void;
   saveProduct: (product: Product, isNew: boolean) => Promise<Result>;
   deleteProduct: (id: string) => Promise<Result>;
   saveCategory: (category: Category, isNew: boolean) => Promise<Result>;
@@ -227,6 +231,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [toast, setToast] = useState<Toast>(null);
   const dbRef = useRef(db);
   dbRef.current = db;
@@ -312,6 +317,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setCartOpen(false);
     setSearchOpen(false);
     setMenuOpen(false);
+    setAccountOpen(false);
   }, []);
 
   const addToCart = useCallback((productId: string, variantLabel: string, quantity = 1): Result => {
@@ -612,6 +618,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   }, [patch]);
 
+  const rememberOrder = useCallback((order: Order) => {
+    const orders = dbRef.current.orders;
+    const exists = orders.some((item) => item.id === order.id);
+    patch({ orders: exists ? orders.map((item) => (item.id === order.id ? order : item)) : [order, ...orders] });
+  }, [patch]);
+
   const updateOrderStatus = useCallback(async (id: string, status: OrderStatus) => {
     const previous = dbRef.current.orders;
     patch({ orders: previous.map((order) => (order.id === id ? { ...order, status } : order)) });
@@ -691,26 +703,37 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     cartOpen,
     searchOpen,
     menuOpen,
+    accountOpen,
     toast,
     activeProducts,
     openCart: () => {
       setSearchOpen(false);
       setMenuOpen(false);
+      setAccountOpen(false);
       setCartOpen(true);
     },
     closeCart: () => setCartOpen(false),
     openSearch: () => {
       setCartOpen(false);
       setMenuOpen(false);
+      setAccountOpen(false);
       setSearchOpen(true);
     },
     closeSearch: () => setSearchOpen(false),
     openMenu: () => {
       setCartOpen(false);
       setSearchOpen(false);
+      setAccountOpen(false);
       setMenuOpen(true);
     },
     closeMenu: () => setMenuOpen(false),
+    openAccount: () => {
+      setCartOpen(false);
+      setSearchOpen(false);
+      setMenuOpen(false);
+      setAccountOpen(true);
+    },
+    closeAccount: () => setAccountOpen(false),
     closeOverlays,
     notify,
     addToCart,
@@ -732,6 +755,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     logoutAdmin,
     placeOrder,
     acceptServerOrder,
+    rememberOrder,
     saveProduct,
     deleteProduct,
     saveCategory,
@@ -752,9 +776,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       return [...(product?.reviews ?? []), ...(db.extraReviews[productId] ?? [])];
     },
   }), [
-    ready, db, currentUser, cartOpen, searchOpen, menuOpen, toast, activeProducts, closeOverlays, notify,
+    ready, db, currentUser, cartOpen, searchOpen, menuOpen, accountOpen, toast, activeProducts, closeOverlays, notify,
     addToCart, setQuantity, removeFromCart, moveToWishlist, applyCoupon, toggleWishlist, requestOtp, verifyOtp, logout,
-    updateProfile, saveAddress, deleteAddress, loginAdmin, logoutAdmin, placeOrder, acceptServerOrder, saveProduct, deleteProduct,
+    updateProfile, saveAddress, deleteAddress, loginAdmin, logoutAdmin, placeOrder, acceptServerOrder, rememberOrder, saveProduct, deleteProduct,
     saveCategory, deleteCategory, moveCategory, updateOrderStatus, saveCoupon, deleteCoupon, addReview, voteReview, reportReview, loadReviewVotes, rememberSearch, patch,
   ]);
 

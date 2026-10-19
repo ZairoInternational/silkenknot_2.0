@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useLenis } from "lenis/react";
-import { Heart, House, ShoppingBag, Store } from "lucide-react";
+import { House, ShoppingBag, Store, User } from "lucide-react";
 import { itemCount } from "@/lib/format";
 import type { LucideIcon } from "lucide-react";
 import { useStore } from "@/lib/store";
@@ -23,12 +22,12 @@ export function accountBarPath(pathname: string) {
   return true;
 }
 
-function itemsFor(pathname: string, cartOpen: boolean): BarItem[] {
+function itemsFor(pathname: string, cartOpen: boolean, accountOpen: boolean): BarItem[] {
   return [
     { key: "home", label: "Home", icon: House, href: "/", active: pathname === "/" },
     { key: "shop", label: "Shop", icon: Store, href: "/shop", active: pathname.startsWith("/shop") || pathname.startsWith("/products") },
-    { key: "wishlist", label: "Wishlist", icon: Heart, href: "/wishlist", active: pathname.startsWith("/wishlist") },
     { key: "bag", label: "Bag", icon: ShoppingBag, active: cartOpen },
+    { key: "account", label: "Account", icon: User, active: accountOpen || pathname.startsWith("/account") },
   ];
 }
 
@@ -36,43 +35,43 @@ export function MobileAccountBar() {
   const pathname = usePathname();
   const store = useStore();
   const [shown, setShown] = useState(true);
-  const idle = useRef<number | undefined>(undefined);
-
-  function revealSoon() {
-    window.clearTimeout(idle.current);
-    idle.current = window.setTimeout(() => setShown(true), 220);
-  }
 
   useEffect(() => {
-    function onScroll() {
-      if (window.scrollY < 8) {
-        window.clearTimeout(idle.current);
-        setShown(true);
+    let frame = 0;
+    let last = window.scrollY;
+    let intent = 0;
+    let visible = true;
+    const apply = (y: number) => {
+      const delta = y - last;
+      last = y;
+      if (y <= 8) {
+        intent = 0;
+        if (!visible) {
+          visible = true;
+          setShown(true);
+        }
         return;
       }
-      setShown(false);
-      revealSoon();
-    }
+      if ((intent > 0 && delta < 0) || (intent < 0 && delta > 0)) intent = 0;
+      intent += delta;
+      const next = intent > 8 ? false : intent < -8 ? true : visible;
+      if (next === visible) return;
+      visible = next;
+      setShown(next);
+    };
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        apply(window.scrollY);
+      });
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
-    document.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", onScroll);
-      document.removeEventListener("scroll", onScroll);
-      window.clearTimeout(idle.current);
+      window.cancelAnimationFrame(frame);
     };
   }, []);
-
-  useLenis((lenis) => {
-    if (!lenis || lenis.scroll < 8) {
-      window.clearTimeout(idle.current);
-      setShown(true);
-      return;
-    }
-    if (lenis.isScrolling) {
-      setShown(false);
-      revealSoon();
-    }
-  });
 
   useEffect(() => {
     const root = document.documentElement;
@@ -84,7 +83,7 @@ export function MobileAccountBar() {
 
   if (!accountBarPath(pathname) || !store.ready) return null;
 
-  const items = itemsFor(pathname, store.cartOpen);
+  const items = itemsFor(pathname, store.cartOpen, store.accountOpen);
 
   return (
     <nav aria-label="Mobile" className={`fixed inset-x-0 bottom-0 z-40 border-t border-[#efe6d8] bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur transition-transform duration-200 md:hidden ${shown ? "translate-y-0" : "translate-y-full"}`}>
@@ -103,7 +102,12 @@ export function MobileAccountBar() {
           const label = <span className="text-[10px] font-normal leading-none">{item.label}</span>;
           if (!item.href) {
             return (
-              <button key={item.key} type="button" className={className} onClick={() => store.openCart()}>
+              <button
+                key={item.key}
+                type="button"
+                className={className}
+                onClick={() => (item.key === "account" ? store.openAccount() : store.openCart())}
+              >
                 {icon}
                 {label}
               </button>

@@ -7,7 +7,7 @@ import { policyFromEnv } from "./policy";
 import { deliveryBy, describePin, formatTransit } from "./estimate";
 import { nextMockStep } from "./mock";
 import { createManifest, DelhiveryError, fetchPackingSlip, parsePackingSlip, requestPickup, trackWaybill } from "./delhivery";
-import { applyTracking, canCancelShipment, canRequestReturn, customerOrderVisible, normalizeDelhiveryStatus, shipmentTransition, waybillListLabel, waybillProgress } from "./states";
+import { applyTracking, canCancelShipment, canRequestReturn, customerCanCancel, customerOrderVisible, normalizeDelhiveryStatus, shipmentTransition, waybillListLabel, waybillProgress } from "./states";
 import type { TrackingEvent } from "../types";
 
 const policy = policyFromEnv({
@@ -81,6 +81,10 @@ test("tracking does not downgrade a delivered shipment or accept an older step",
 test("cancellation and returns follow shipment progress", () => {
   assert.equal(canCancelShipment("booked"), true);
   assert.equal(canCancelShipment("picked_up"), false);
+  assert.equal(customerCanCancel({ status: "confirmed", shipment: { state: "pickup_scheduled" } }), true);
+  assert.equal(customerCanCancel({ status: "shipped", shipment: { state: "in_transit" } }), false);
+  assert.equal(customerCanCancel({ fulfillmentState: "shipped", shipment: { state: "booked" } }), false);
+  assert.equal(customerCanCancel({ status: "cancelled", shipment: { state: "not_created" } }), false);
   assert.equal(canRequestReturn("delivered", "2026-10-01T00:00:00.000Z", "2026-10-05T00:00:00.000Z", 7), true);
   assert.equal(canRequestReturn("delivered", "2026-10-01T00:00:00.000Z", "2026-10-20T00:00:00.000Z", 7), false);
 });
@@ -89,6 +93,7 @@ test("customers only see their paid or confirmed COD orders", () => {
   assert.equal(customerOrderVisible({ paymentState: "pending", payment: "upi", orderState: "pending_payment" }), false);
   assert.equal(customerOrderVisible({ paymentState: "pending", payment: "cod", orderState: "confirmed" }), true);
   assert.equal(customerOrderVisible({ paymentState: "captured", payment: "upi" }), true);
+  assert.equal(customerOrderVisible({ status: "cancelled", paymentState: "cancelled", payment: "cod", orderState: "cancelled" }), true);
 });
 
 test("origin PIN is kept only when it is 6 digits", () => {

@@ -53,8 +53,8 @@ export function CartSheet() {
           <>
           <div className="flex items-center justify-between px-5 py-4">
             <p className="text-xl font-medium">Your bag</p>
-            <button type="button" aria-label="Close bag" onClick={store.closeCart} className="inline-flex h-8 w-8 items-center justify-center">
-              <X size={16} />
+            <button type="button" aria-label="Close bag" onClick={store.closeCart} className="inline-flex h-8 w-8 items-center justify-center group/close bg-black/10 hover:bg-black/16 rounded-full">
+              <X size={16} className="transition-transform duration-200 group-hover/close:rotate-90" />
             </button>
           </div>
           {store.cart.length === 0 ? (

@@ -4,7 +4,7 @@ import { databaseConfigured, getDb } from "@/lib/mongo";
 import { publicOrder, type StoredOrder } from "@/lib/payments/service";
 import { cancelShipment, loadPolicy } from "@/lib/shipping/booking";
 import { DelhiveryError } from "@/lib/shipping/delhivery";
-import { canCancelShipment, canRequestReturn } from "@/lib/shipping/states";
+import { canRequestReturn, customerCanCancel } from "@/lib/shipping/states";
 import { currentSession } from "@/lib/session";
 import type { ShipmentRecord } from "@/lib/types";
 
@@ -31,9 +31,23 @@ export async function POST(request: Request) {
       await db.collection("orders").updateOne({ id: order.id }, { $set: { status: "return_requested" }, $push: { audit: { at: new Date().toISOString(), event: "return_requested" } } } as never);
       return NextResponse.json({ order: publicOrder({ ...order, status: "return_requested" }) });
     }
-    if (!canCancelShipment(state)) return NextResponse.json({ error: "This shipment can no longer be cancelled." }, { status: 409 });
+    if (!customerCanCancel(order)) return NextResponse.json({ error: "This order has been dispatched and can no longer be cancelled." }, { status: 409 });
     if (shipment?.awb) await cancelShipment(db, order.id);
-    else await db.collection("orders").updateOne({ id: order.id }, { $set: { "shipment.state": "cancelled", status: order.paymentState === "captured" ? order.status : "cancelled" } });
+    const now = new Date().toISOString();
+    const captured = order.paymentState === "captured" || order.paymentState === "refund_pending";
+    await db.collection("orders").updateOne({ id: order.id }, {
+      $set: {
+        status: "cancelled",
+        orderState: "cancelled",
+        "shipment.state": "cancelled",
+        ...(captured ? { paymentState: "refund_pending" } : order.payment === "cod" ? { paymentState: "cancelled" } : {}),
+        updatedAt: now,
+      },
+      $push: {
+        audit: { at: now, event: "customer_cancel" },
+        ...(captured ? { refunds: { id: `rfd_${now.replace(/\W/g, "").slice(-12)}`, amountPaise: order.amountPaise, status: "refund_pending", reason: "customer_cancel", createdAt: now } } : {}),
+      },
+    } as never);
     const saved = await db.collection<StoredOrder>("orders").findOne({ id: order.id });
     return NextResponse.json({ order: saved ? publicOrder(saved) : null, refunded: false });
   } catch (error) {

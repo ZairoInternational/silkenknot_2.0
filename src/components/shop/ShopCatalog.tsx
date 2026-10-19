@@ -1,14 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowUpDown, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import {
+  ArrowUpDown,
+  ChevronDown,
+  RefreshCw,
+  Search,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import { BottomSheet, Media, WishlistButton } from "@/components/ui";
-import { seedCategories, seedProducts } from "@/lib/data";
+import { seedCategories } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
 import { useStore } from "@/lib/store";
+import {
+  SearchAbortError,
+  searchProducts,
+} from "@/lib/search/client";
+import type { SearchProduct } from "@/lib/search/types";
 import type { Product } from "@/lib/types";
+
+// ── Constants ──────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 8;
 
@@ -20,39 +40,82 @@ const SORT_OPTIONS = [
   ["price-high", "Price, high to low"],
 ] as const;
 
+const DEBOUNCE_MS = 250;
+
+// ── API state shape ────────────────────────────────────────────────────────
+
+type ApiState =
+  | { status: "idle" }
+  | { status: "loading"; items: SearchProduct[]; total: number }
+  | { status: "success"; items: SearchProduct[]; total: number; correctedQuery: string | null }
+  | { status: "error"; items: SearchProduct[]; total: number };
+
+const IDLE: ApiState = { status: "idle" };
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function normalizeSort(value: string | null) {
+  if (value === "price-asc" || value === "price-low") return "price-low";
+  if (value === "price-desc" || value === "price-high") return "price-high";
+  if (value === "newest" || value === "rating") return value;
+  return "featured";
+}
+
+// ── Main component ─────────────────────────────────────────────────────────
+
 export function ShopCatalog() {
   const store = useStore();
   const params = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const catalog = store.activeProducts.length ? store.activeProducts : seedProducts.filter((product) => product.active);
+
+  // Use store.activeProducts ONLY for price-range slider metadata and category
+  // counts — not for filtering or rendering product cards.
+  const fullCatalog = store.activeProducts;
   const categories = store.categories.length ? store.categories : seedCategories;
 
-  const priceFloor = catalog.reduce((min, product) => Math.min(min, product.price), catalog[0]?.price ?? 0);
-  const priceCeil = catalog.reduce((max, product) => Math.max(max, product.price), catalog[0]?.price ?? 0);
-
+  // ── URL-driven filter state ────────────────────────────────────────────
   const category = params.get("category") ?? "all";
   const sort = normalizeSort(params.get("sort"));
+  const urlQuery = params.get("q") ?? "";
+  const page = Math.max(1, Number(params.get("page") || 1));
+  const bestseller = params.get("bestseller") === "1";
+  const typeParam = params.get("type") ?? "";
+
+  // Price range — derive floor/ceil from the full catalog for the slider UI.
+  const priceFloor = fullCatalog.length
+    ? fullCatalog.reduce((m, p) => Math.min(m, p.price), fullCatalog[0].price)
+    : 0;
+  const priceCeil = fullCatalog.length
+    ? fullCatalog.reduce((m, p) => Math.max(m, p.price), fullCatalog[0].price)
+    : 9999;
+
   const minPrice = params.get("min") ? Math.max(priceFloor, Number(params.get("min"))) : priceFloor;
   const maxPrice = params.get("max") ? Math.min(priceCeil, Number(params.get("max"))) : priceCeil;
   const minRating = Number(params.get("rating") || 0);
-  const bestseller = params.get("bestseller") === "1";
-  const types = (params.get("type") ?? "").split(",").map((item) => item.trim()).filter(Boolean);
-  const urlQuery = params.get("q") ?? "";
-  const page = Math.max(1, Number(params.get("page") || 1));
 
+  // ── Local UI state ─────────────────────────────────────────────────────
   const [draft, setDraft] = useState(urlQuery);
   const [seenQuery, setSeenQuery] = useState(urlQuery);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [desktopSortOpen, setDesktopSortOpen] = useState(false);
-  const sortMenuRef = useRef<HTMLDivElement>(null);
   const [suggestOpen, setSuggestOpen] = useState(false);
+  const sortMenuRef = useRef<HTMLDivElement>(null);
+
+  // Sync draft when URL query changes (e.g. browser back).
   if (urlQuery !== seenQuery) {
     setSeenQuery(urlQuery);
     setDraft(urlQuery);
   }
 
+  // ── API state ──────────────────────────────────────────────────────────
+  const [api, setApi] = useState<ApiState>(IDLE);
+  /** Monotonically increasing request ID for stale-response protection. */
+  const reqId = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // ── Write URL params ───────────────────────────────────────────────────
   function write(next: Record<string, string | undefined>) {
     const search = new URLSearchParams(params.toString());
     Object.entries(next).forEach(([key, value]) => {
@@ -63,6 +126,18 @@ export function ShopCatalog() {
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   }
 
+  // ── Debounce typed text → URL ──────────────────────────────────────────
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      const current = params.get("q") ?? "";
+      if (draft === current) return;
+      write({ q: draft.trim() || undefined, page: undefined });
+    }, DEBOUNCE_MS);
+    return () => window.clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft]);
+
+  // ── Close desktop sort on outside click ───────────────────────────────
   useEffect(() => {
     if (!desktopSortOpen) return;
     const close = (event: MouseEvent) => {
@@ -79,57 +154,137 @@ export function ShopCatalog() {
     };
   }, [desktopSortOpen]);
 
+  // ── Fetch from search API whenever URL params change ──────────────────
   useEffect(() => {
-    const handle = window.setTimeout(() => {
-      const current = params.get("q") ?? "";
-      if (draft === current) return;
-      write({ q: draft.trim() || undefined, page: undefined });
-    }, 250);
-    return () => window.clearTimeout(handle);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draft]);
+    const id = ++reqId.current;
 
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    // Preserve existing items during background refetch so the page doesn't
+    // blank out — show them dimmed (see CSS class "is-loading" below).
+    setApi((prev) => ({
+      status: "loading",
+      items: prev.status !== "idle" ? prev.items : [],
+      total: prev.status !== "idle" ? prev.total : 0,
+    }));
+
+    const minP = minPrice > priceFloor ? minPrice : undefined;
+    const maxP = maxPrice < priceCeil ? maxPrice : undefined;
+    const ratingP = minRating >= 3 ? minRating : undefined;
+
+    searchProducts(
+      {
+        q: urlQuery || undefined,
+        category: category !== "all" ? category : undefined,
+        min: minP,
+        max: maxP,
+        rating: ratingP,
+        bestseller: bestseller || undefined,
+        type: typeParam || undefined,
+        sort,
+        page,
+        limit: PAGE_SIZE,
+      },
+      controller.signal,
+    )
+      .then((data) => {
+        if (reqId.current !== id) return; // stale
+        setApi({
+          status: "success",
+          items: data.items,
+          total: data.total,
+          correctedQuery: data.correctedQuery,
+        });
+      })
+      .catch((err) => {
+        if (err instanceof SearchAbortError) return; // intentional cancel
+        if (reqId.current !== id) return;
+        setApi((prev) => ({
+          status: "error",
+          items: prev.status !== "idle" ? prev.items : [],
+          total: prev.status !== "idle" ? prev.total : 0,
+        }));
+      });
+
+    return () => {
+      // Don't abort here — let the ID guard handle stale responses.
+      // Aborting in cleanup causes double-abort races in StrictMode.
+    };
+  // NOTE: priceFloor/priceCeil are derived from fullCatalog, not URL params,
+  // so they must not be in deps (changes to fullCatalog should not re-fetch).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlQuery, category, minPrice, maxPrice, minRating, bestseller, typeParam, sort, page]);
+
+  // ── Cleanup on unmount ─────────────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
+
+  // ── Inline suggestions (client-side from full catalog, for the dropdown) ──
   const suggestions = useMemo(() => {
-    const query = draft.trim().toLowerCase();
-    if (!query) return [];
-    return catalog
-      .filter((product) => `${product.name} ${product.type} ${product.scent} ${product.shortDescription}`.toLowerCase().includes(query))
+    const q = draft.trim().toLowerCase();
+    if (!q) return [];
+    return fullCatalog
+      .filter((p) =>
+        `${p.name} ${p.type} ${p.scent} ${p.shortDescription}`
+          .toLowerCase()
+          .includes(q),
+      )
       .slice(0, 6);
-  }, [catalog, draft]);
+  }, [fullCatalog, draft]);
 
-  const filtered = useMemo(() => {
-    const query = urlQuery.trim().toLowerCase();
-    let list = catalog.filter((product) => {
-      if (category !== "all" && product.categoryId !== category) return false;
-      if (product.price < minPrice || product.price > maxPrice) return false;
-      if (minRating && product.rating < minRating) return false;
-      if (bestseller && !product.bestseller) return false;
-      if (types.length && !types.includes(product.type)) return false;
-      if (query) {
-        const haystack = `${product.name} ${product.type} ${product.scent} ${product.shortDescription}`.toLowerCase();
-        if (!haystack.includes(query)) return false;
-      }
-      return true;
-    });
-    list = [...list].sort((a, b) => compare(a, b, sort));
-    return list;
-  }, [catalog, category, minPrice, maxPrice, minRating, bestseller, types, urlQuery, sort]);
-
-  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  // ── Derived display values ─────────────────────────────────────────────
+  const isLoading = api.status === "loading";
+  const isError = api.status === "error";
+  const items: SearchProduct[] = api.status !== "idle" ? api.items : [];
+  const total = api.status !== "idle" ? api.total : 0;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const safePage = Math.min(page, pages);
-  const visible = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
-  const categoryName = categories.find((item) => item.id === category)?.name;
+
+  const correctedQuery =
+    api.status === "success" ? api.correctedQuery : null;
+
   const priceActive = minPrice > priceFloor || maxPrice < priceCeil;
   const ratingChoice = minRating >= 4 ? 4 : minRating >= 3 ? 3 : 0;
-  const activeCount = [category !== "all", priceActive, minRating > 0, bestseller, types.length > 0, Boolean(urlQuery.trim())].filter(Boolean).length;
+  const activeCount = [
+    category !== "all",
+    priceActive,
+    minRating > 0,
+    bestseller,
+    Boolean(typeParam),
+    Boolean(urlQuery.trim()),
+  ].filter(Boolean).length;
 
+  const categoryName = categories.find((c) => c.id === category)?.name;
+
+  // ── Helpers ────────────────────────────────────────────────────────────
+  const clearAll = () => {
+    setDraft("");
+    write({
+      category: undefined,
+      type: undefined,
+      min: undefined,
+      max: undefined,
+      rating: undefined,
+      bestseller: undefined,
+      q: undefined,
+      sort: undefined,
+      page: undefined,
+    });
+  };
+
+  // ── Sub-component: chips and filter fields ────────────────────────────
   const chips = (
     <ActiveFilters
       categoryName={category !== "all" ? categoryName : undefined}
       priceLabel={priceActive ? `${formatPrice(minPrice)} – ${formatPrice(maxPrice)}` : undefined}
       ratingLabel={ratingChoice ? `${ratingChoice}★ and above` : undefined}
       bestseller={bestseller}
-      types={types}
+      types={typeParam ? [typeParam] : []}
       query={urlQuery.trim()}
       onClear={(key) => {
         if (key === "category") write({ category: undefined, page: undefined });
@@ -148,7 +303,7 @@ export function ShopCatalog() {
   const fields = (
     <FilterFields
       categories={categories}
-      catalog={catalog}
+      catalog={fullCatalog}
       category={category}
       priceFloor={priceFloor}
       priceCeil={priceCeil}
@@ -169,23 +324,10 @@ export function ShopCatalog() {
     />
   );
 
-  const clearAll = () => {
-    setDraft("");
-    write({
-      category: undefined,
-      type: undefined,
-      min: undefined,
-      max: undefined,
-      rating: undefined,
-      bestseller: undefined,
-      q: undefined,
-      sort: undefined,
-      page: undefined,
-    });
-  };
-
+  // ── Render ─────────────────────────────────────────────────────────────
   return (
     <div className="bg-[#f6f3ee] pt-[calc(var(--nav-h)+var(--announce-h))] text-[#2c2926]">
+      {/* Hero banner */}
       <section className="grid md:min-h-[440px] md:grid-cols-[0.9fr_1.1fr]">
         <div className="relative order-first min-h-[240px] md:order-last md:min-h-full">
           <Media src="/silknknot/collection-body-care.jpg" alt="Silken Knot body care" sizes="(min-width: 768px) 55vw, 100vw" className="object-cover" />
@@ -202,18 +344,46 @@ export function ShopCatalog() {
         </div>
       </section>
 
+      {/* Product listing */}
       <section id="products" className="scroll-mt-28 px-5 py-8 lg:grid lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-10 lg:px-10 lg:py-12">
         <aside className="hidden lg:block">{fields}</aside>
         <div>
+          {/* ── Header row ─────────────────────────────────────────────── */}
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#8a7350] md:text-sm">The Silken Knot collection</p>
-              <h2 className="mt-2 text-3xl font-medium md:text-4xl">{category === "all" ? "All products" : categoryName}</h2>
+              <h2 className="mt-2 text-3xl font-medium md:text-4xl">
+                {category === "all" ? "All products" : categoryName}
+              </h2>
               <p className="mt-2 text-base text-[#4e4943] md:text-lg">Little luxuries. Everyday moments.</p>
+
+              {/* "Did you mean …?" banner */}
+              {correctedQuery && urlQuery ? (
+                <p className="mt-2 text-sm text-[#8a7350]">
+                  Showing results for <em className="font-medium not-italic">{correctedQuery}</em>.{" "}
+                  <button
+                    type="button"
+                    className="underline"
+                    onClick={() => {
+                      setDraft(urlQuery);
+                      write({ q: urlQuery, page: undefined });
+                    }}
+                  >
+                    Search for &ldquo;{urlQuery}&rdquo; instead
+                  </button>
+                </p>
+              ) : null}
             </div>
-            <p className="text-base text-[#4e4943]">{filtered.length} products</p>
+            <p className="text-base text-[#4e4943]">
+              {isLoading && total === 0 ? (
+                <span className="inline-block h-4 w-16 animate-pulse rounded bg-[#e6e0d6]" />
+              ) : (
+                `${total} product${total !== 1 ? "s" : ""}`
+              )}
+            </p>
           </div>
 
+          {/* ── Desktop search + sort row ─────────────────────────────── */}
           <div className="mt-5 hidden gap-3 lg:flex lg:flex-row lg:items-start">
             <div className="relative min-w-0 flex-1">
               <label className="search-field flex h-16 min-w-0 items-center gap-3 rounded-full border border-black/15 bg-white px-8 lg:h-12 lg:gap-2 lg:px-4">
@@ -279,6 +449,8 @@ export function ShopCatalog() {
                 </ul>
               ) : null}
             </div>
+
+            {/* Desktop sort dropdown */}
             <div ref={sortMenuRef} className="relative hidden lg:block">
               <button
                 type="button"
@@ -321,6 +493,7 @@ export function ShopCatalog() {
             </div>
           </div>
 
+          {/* ── Mobile sort + filter buttons ──────────────────────────── */}
           <div className="mt-3 grid grid-cols-2 gap-3 lg:hidden">
             <button
               type="button"
@@ -337,47 +510,104 @@ export function ShopCatalog() {
             >
               <SlidersHorizontal size={16} />
               Filter
-              {activeCount > 0 ? <span className="grid size-5 place-items-center rounded-full border border-[#e3dbd1] bg-white text-xs text-[#2c2926]">{activeCount}</span> : null}
+              {activeCount > 0 ? (
+                <span className="grid size-5 place-items-center rounded-full border border-[#e3dbd1] bg-white text-xs text-[#2c2926]">{activeCount}</span>
+              ) : null}
             </button>
           </div>
           {activeCount > 0 ? <div className="mt-3 lg:hidden">{chips}</div> : null}
 
-          {visible.length ? (
+          {/* ── Product grid ──────────────────────────────────────────── */}
+          {isError ? (
+            <div className="mt-6 border border-[#e6e0d6] px-6 py-16 text-center">
+              <RefreshCw size={24} className="mx-auto mb-4 text-[#8a7350]" />
+              <h3 className="text-2xl font-medium">Something went wrong</h3>
+              <p className="mx-auto mt-3 max-w-sm text-base leading-7 text-[#4e4943]">
+                We couldn&apos;t load products right now.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  // Re-trigger the fetch effect by bumping a page and back.
+                  // Simplest retry: force a re-render by resetting api state.
+                  setApi(IDLE);
+                  reqId.current++; // allow the next effect to run
+                  write({ page: undefined }); // triggers URL-params effect
+                }}
+                className="mt-6 rounded-full bg-[#CBAC7C] px-6 py-3 text-base text-white hover:bg-[#B39668]"
+              >
+                Retry
+              </button>
+            </div>
+          ) : api.status === "idle" || (isLoading && items.length === 0) ? (
+            /* ── Skeleton grid on initial load ────────────────────────── */
             <div className="mt-6 grid grid-cols-2 items-stretch gap-x-3 gap-y-8 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
-              {visible.map((product) => (
+              {Array.from({ length: PAGE_SIZE }, (_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : items.length > 0 ? (
+            <div
+              className={`mt-6 grid grid-cols-2 items-stretch gap-x-3 gap-y-8 md:grid-cols-3 md:gap-6 lg:grid-cols-4 transition-opacity duration-150 ${isLoading ? "opacity-60 pointer-events-none" : "opacity-100"}`}
+            >
+              {items.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (
+            /* Zero results — only shown after a successful empty response */
             <div className="mt-6 border border-[#e6e0d6] px-6 py-16 text-center">
               <h3 className="text-2xl font-medium">No products found</h3>
-              <p className="mx-auto mt-3 max-w-sm text-base leading-7 text-[#4e4943]">Try a different search or clear a filter.</p>
-              <button type="button" onClick={clearAll} className="mt-6 rounded-full bg-[#CBAC7C] px-6 py-3 text-base text-white hover:bg-[#B39668]">
+              <p className="mx-auto mt-3 max-w-sm text-base leading-7 text-[#4e4943]">
+                Try a different search or clear a filter.
+              </p>
+              <button
+                type="button"
+                onClick={clearAll}
+                className="mt-6 rounded-full bg-[#CBAC7C] px-6 py-3 text-base text-white hover:bg-[#B39668]"
+              >
                 Clear filters
               </button>
             </div>
           )}
 
+          {/* ── Pagination ─────────────────────────────────────────────── */}
           {pages > 1 ? (
             <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-              <PageButton disabled={safePage === 1} onClick={() => write({ page: safePage - 1 <= 1 ? undefined : String(safePage - 1) })} label="Previous page">←</PageButton>
+              <PageButton
+                disabled={safePage === 1}
+                onClick={() => write({ page: safePage - 1 <= 1 ? undefined : String(safePage - 1) })}
+                label="Previous page"
+              >
+                ←
+              </PageButton>
               {Array.from({ length: pages }, (_, index) => index + 1).map((number) => (
-                <PageButton key={number} current={number === safePage} onClick={() => write({ page: number <= 1 ? undefined : String(number) })} label={`Page ${number}`}>
+                <PageButton
+                  key={number}
+                  current={number === safePage}
+                  onClick={() => write({ page: number <= 1 ? undefined : String(number) })}
+                  label={`Page ${number}`}
+                >
                   {number}
                 </PageButton>
               ))}
-              <PageButton disabled={safePage === pages} onClick={() => write({ page: String(safePage + 1) })} label="Next page">→</PageButton>
+              <PageButton
+                disabled={safePage === pages}
+                onClick={() => write({ page: String(safePage + 1) })}
+                label="Next page"
+              >
+                →
+              </PageButton>
             </div>
           ) : null}
         </div>
       </section>
 
+      {/* ── Mobile sort bottom sheet ─────────────────────────────────────── */}
       <BottomSheet open={sortOpen} onClose={() => setSortOpen(false)} label="Sort">
         <div className="flex items-center justify-between border-b border-[#e6e0d6] px-5 py-4">
           <h2 className="text-2xl font-medium">Sort</h2>
-          <button type="button" onClick={() => setSortOpen(false)} className="text-base">
-            Close
-          </button>
+          <button type="button" onClick={() => setSortOpen(false)} className="text-base">Close</button>
         </div>
         <div className="flex flex-col gap-1 px-3 py-3">
           {SORT_OPTIONS.map(([value, label]) => (
@@ -398,12 +628,11 @@ export function ShopCatalog() {
         </div>
       </BottomSheet>
 
+      {/* ── Mobile filter bottom sheet ───────────────────────────────────── */}
       <BottomSheet open={filtersOpen} onClose={() => setFiltersOpen(false)} label="Filters" tall>
         <div className="flex items-center justify-between border-b border-[#e6e0d6] px-5 py-4">
           <h2 className="text-2xl font-medium">Filters</h2>
-          <button type="button" onClick={() => setFiltersOpen(false)} className="text-base">
-            Close
-          </button>
+          <button type="button" onClick={() => setFiltersOpen(false)} className="text-base">Close</button>
         </div>
         <div className="overflow-y-auto px-5 py-5">
           {activeCount > 0 ? (
@@ -421,11 +650,12 @@ export function ShopCatalog() {
             Clear
           </button>
           <button type="button" onClick={() => setFiltersOpen(false)} className="h-12 flex-[1.4] rounded-full bg-[#CBAC7C] text-base text-white hover:bg-[#B39668]">
-            Show {filtered.length} products
+            Show {total} products
           </button>
         </div>
       </BottomSheet>
 
+      {/* ── Collection editorial banner ──────────────────────────────────── */}
       <section className="grid bg-[#efeae3] md:grid-cols-2">
         <div className="relative min-h-[220px] md:min-h-[320px]">
           <Media src="/silknknot/collection-lifestyle-wide.jpg" alt="" sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
@@ -444,6 +674,93 @@ export function ShopCatalog() {
     </div>
   );
 }
+
+// ── Skeleton product card ──────────────────────────────────────────────────
+
+function ProductCardSkeleton() {
+  return (
+    <article className="flex h-full min-w-0 flex-col" aria-hidden="true">
+      <div className="overflow-hidden rounded-lg bg-[#eee8de]">
+        <div className="aspect-square animate-pulse bg-[#e0d8cc]" />
+      </div>
+      <div className="flex flex-1 flex-col gap-2 pt-3">
+        <div className="h-5 w-4/5 animate-pulse rounded bg-[#e6e0d6]" />
+        <div className="h-4 w-3/5 animate-pulse rounded bg-[#e6e0d6]" />
+        <div className="h-4 w-2/5 animate-pulse rounded bg-[#e6e0d6]" />
+        <div className="h-5 w-1/3 animate-pulse rounded bg-[#e6e0d6]" />
+        <div className="mt-auto pt-3">
+          <div className="h-11 w-full animate-pulse rounded-full bg-[#e6e0d6]" />
+        </div>
+      </div>
+    </article>
+  );
+}
+
+// ── Product card ───────────────────────────────────────────────────────────
+
+// ProductCard accepts SearchProduct (the lean list type) — it uses only the
+// fields that SearchProduct provides.
+function ProductCard({ product }: { product: SearchProduct }) {
+  const store = useStore();
+  const inCart = store.cart.some((item) => item.productId === product.id);
+  const variant = product.variants[0];
+  const badge = product.bestseller ? "Bestseller" : product.newArrival ? "New" : null;
+  const full = Math.round(product.rating);
+
+  const add = () => {
+    if (!variant) {
+      store.notify("This product has no available size.");
+      return;
+    }
+    const result = store.addToCart(product.id, variant.label, 1);
+    if (!result.ok && result.message) store.notify(result.message);
+  };
+
+  return (
+    <article className="flex h-full min-w-0 flex-col">
+      <div className="relative overflow-hidden rounded-lg bg-[#eee8de]">
+        <Link href={`/products/${product.slug}`} className="relative block aspect-square">
+          <Media src={product.images[0]} alt={product.name} sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, 46vw" className="object-cover" />
+        </Link>
+        {badge ? (
+          <span className="absolute left-2 top-2 max-w-[70%] truncate rounded-full border border-[#e3dbd1] bg-white px-2.5 py-1 text-xs text-[#2c2926] md:left-3 md:top-3">
+            {badge}
+          </span>
+        ) : null}
+      </div>
+      <div className="flex flex-1 flex-col pt-3">
+        <div className="flex items-start gap-1">
+          <Link href={`/products/${product.slug}`} title={product.name} className="line-clamp-2 h-[2.75em] min-w-0 flex-1 overflow-hidden text-base font-medium leading-snug md:text-lg">
+            {product.name}
+          </Link>
+          <WishlistButton productId={product.id} name={product.name} className="-mr-2 -mt-1" />
+        </div>
+        <p title={product.scent} className="mt-1 truncate text-sm capitalize text-[#4e4943] md:text-base">
+          {product.scent}
+        </p>
+        <p className="mt-2 truncate text-sm text-[#8a7350] md:text-base">
+          {"★".repeat(full)}
+          <span className="text-[#cfc4b6]">{"★".repeat(Math.max(0, 5 - full))}</span>
+          <span className="ml-2 text-[#4e4943]">({product.reviewCount})</span>
+        </p>
+        <p className="mt-2 truncate text-base font-medium md:text-lg">{formatPrice(product.price)}</p>
+        <div className="mt-auto pt-3">
+          {inCart ? (
+            <button type="button" onClick={store.openCart} className="h-11 w-full rounded-full border border-[#CBAC7C] bg-white text-sm text-[#2c2926] md:text-base">
+              Go to cart
+            </button>
+          ) : (
+            <button type="button" onClick={add} className="h-11 w-full rounded-full bg-[#CBAC7C] text-sm text-white hover:bg-[#B39668] md:text-base">
+              Add to cart
+            </button>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+// ── Filter fields ──────────────────────────────────────────────────────────
 
 function FilterFields({
   categories,
@@ -480,7 +797,10 @@ function FilterFields({
       <p className="text-base font-medium md:text-lg">Category</p>
       <div className="mt-3 space-y-1" role="radiogroup" aria-label="Category">
         {options.map((item) => {
-          const count = item.id === "all" ? catalog.length : catalog.filter((product) => product.categoryId === item.id).length;
+          const count =
+            item.id === "all"
+              ? catalog.length
+              : catalog.filter((p) => p.categoryId === item.id).length;
           return (
             <Choice
               key={item.id}
@@ -509,6 +829,8 @@ function FilterFields({
     </div>
   );
 }
+
+// ── Price range slider ─────────────────────────────────────────────────────
 
 function PriceRange({
   floor,
@@ -563,7 +885,6 @@ function PriceRange({
     setDraft(next);
     commit(next);
   };
-
   const release = () => {
     dragging.current = false;
     commit(draftRef.current, true);
@@ -588,10 +909,7 @@ function PriceRange({
           max={ceil}
           step={1}
           value={draft.low}
-          onPointerDown={() => {
-            dragging.current = true;
-            setFront("low");
-          }}
+          onPointerDown={() => { dragging.current = true; setFront("low"); }}
           onChange={(event) => setLow(Number(event.target.value))}
           className={front === "low" ? "z-20" : "z-10"}
         />
@@ -602,10 +920,7 @@ function PriceRange({
           max={ceil}
           step={1}
           value={draft.high}
-          onPointerDown={() => {
-            dragging.current = true;
-            setFront("high");
-          }}
+          onPointerDown={() => { dragging.current = true; setFront("high"); }}
           onChange={(event) => setHigh(Number(event.target.value))}
           className={front === "high" ? "z-20" : "z-10"}
         />
@@ -613,6 +928,8 @@ function PriceRange({
     </div>
   );
 }
+
+// ── Choice button ──────────────────────────────────────────────────────────
 
 function Choice({
   checked,
@@ -637,6 +954,8 @@ function Choice({
     </button>
   );
 }
+
+// ── Active filter chips ────────────────────────────────────────────────────
 
 function ActiveFilters({
   categoryName,
@@ -678,6 +997,8 @@ function ActiveFilters({
   );
 }
 
+// ── Pagination button ──────────────────────────────────────────────────────
+
 function PageButton({
   children,
   onClick,
@@ -703,73 +1024,4 @@ function PageButton({
       {children}
     </button>
   );
-}
-
-function ProductCard({ product }: { product: Product }) {
-  const store = useStore();
-  const inCart = store.cart.some((item) => item.productId === product.id);
-  const variant = product.variants[0];
-  const badge = product.bestseller ? "Bestseller" : product.newArrival ? "New" : null;
-  const full = Math.round(product.rating);
-
-  const add = () => {
-    if (!variant) {
-      store.notify("This product has no available size.");
-      return;
-    }
-    const result = store.addToCart(product.id, variant.label, 1);
-    if (!result.ok && result.message) store.notify(result.message);
-  };
-
-  return (
-    <article className="flex h-full min-w-0 flex-col">
-      <div className="relative overflow-hidden rounded-lg bg-[#eee8de]">
-        <Link href={`/products/${product.slug}`} className="relative block aspect-square">
-          <Media src={product.images[0]} alt={product.name} sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, 46vw" className="object-cover" />
-        </Link>
-        {badge ? <span className="absolute left-2 top-2 max-w-[70%] truncate rounded-full border border-[#e3dbd1] bg-white px-2.5 py-1 text-xs text-[#2c2926] md:left-3 md:top-3">{badge}</span> : null}
-      </div>
-      <div className="flex flex-1 flex-col pt-3">
-        <div className="flex items-start gap-1">
-          <Link href={`/products/${product.slug}`} title={product.name} className="line-clamp-2 h-[2.75em] min-w-0 flex-1 overflow-hidden text-base font-medium leading-snug md:text-lg">
-            {product.name}
-          </Link>
-          <WishlistButton productId={product.id} name={product.name} className="-mr-2 -mt-1" />
-        </div>
-        <p title={product.scent} className="mt-1 truncate text-sm capitalize text-[#4e4943] md:text-base">{product.scent}</p>
-        <p className="mt-2 truncate text-sm text-[#8a7350] md:text-base">
-          {"★".repeat(full)}
-          <span className="text-[#cfc4b6]">{"★".repeat(Math.max(0, 5 - full))}</span>
-          <span className="ml-2 text-[#4e4943]">({product.reviewCount})</span>
-        </p>
-        <p className="mt-2 truncate text-base font-medium md:text-lg">{formatPrice(product.price)}</p>
-        <div className="mt-auto pt-3">
-          {inCart ? (
-            <button type="button" onClick={store.openCart} className="h-11 w-full rounded-full border border-[#CBAC7C] bg-white text-sm text-[#2c2926] md:text-base">
-              Go to cart
-            </button>
-          ) : (
-            <button type="button" onClick={add} className="h-11 w-full rounded-full bg-[#CBAC7C] text-sm text-white hover:bg-[#B39668] md:text-base">
-              Add to cart
-            </button>
-          )}
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function normalizeSort(value: string | null) {
-  if (value === "price-asc" || value === "price-low") return "price-low";
-  if (value === "price-desc" || value === "price-high") return "price-high";
-  if (value === "newest" || value === "rating") return value;
-  return "featured";
-}
-
-function compare(a: Product, b: Product, sort: string) {
-  if (sort === "price-low") return a.price - b.price;
-  if (sort === "price-high") return b.price - a.price;
-  if (sort === "rating") return b.rating - a.rating;
-  if (sort === "newest") return Number(b.newArrival) - Number(a.newArrival) || b.createdAt.localeCompare(a.createdAt);
-  return Number(b.bestseller) - Number(a.bestseller) || b.rating - a.rating;
 }

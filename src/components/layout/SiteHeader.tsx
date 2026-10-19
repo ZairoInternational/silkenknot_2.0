@@ -92,7 +92,6 @@ export function SiteHeader() {
   const noteDirection = useRef(1);
   const [announceOpen, setAnnounceOpen] = useState(true);
   const [mega, setMega] = useState(false);
-  const [accountOpen, setAccountOpen] = useState(false);
   const [narrow, setNarrow] = useState(false);
   const [bar, setBar] = useState({
     hidden: false,
@@ -101,7 +100,8 @@ export function SiteHeader() {
   });
 
   useEffect(() => {
-    setAccountOpen(false);
+    store.closeAccount();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   useEffect(() => {
@@ -224,16 +224,35 @@ export function SiteHeader() {
                     <motion.div
                       key={currentNote.text}
                       className="absolute inset-0 flex items-center justify-center"
-                      initial={reduced ? false : { y: noteDirection.current > 0 ? 16 : -16, opacity: 0 }}
+                      initial={
+                        reduced
+                          ? false
+                          : {
+                              y: noteDirection.current > 0 ? 16 : -16,
+                              opacity: 0,
+                            }
+                      }
                       animate={{ y: 0, opacity: 1 }}
-                      exit={reduced ? undefined : { y: noteDirection.current > 0 ? -16 : 16, opacity: 0 }}
+                      exit={
+                        reduced
+                          ? undefined
+                          : {
+                              y: noteDirection.current > 0 ? -16 : 16,
+                              opacity: 0,
+                            }
+                      }
                       transition={{ duration: reduced ? 0 : 0.38, ease }}
                     >
                       <Link
                         href={currentNote.href}
                         className="inline-flex items-center gap-2 whitespace-nowrap text-[12px] font-medium uppercase tracking-[0.08em]"
                       >
-                        <NoteIcon size={13} strokeWidth={1.75} className="shrink-0 text-[#f0c9a0]" aria-hidden />
+                        <NoteIcon
+                          size={13}
+                          strokeWidth={1.75}
+                          className="shrink-0 text-[#f0c9a0]"
+                          aria-hidden
+                        />
                         {currentNote.text}
                       </Link>
                     </motion.div>
@@ -242,7 +261,7 @@ export function SiteHeader() {
               </div>
               <button
                 type="button"
-                className="absolute right-1 inline-flex h-6 w-6 items-center justify-center"
+                className="group/close absolute right-1 inline-flex h-6 w-6 items-center justify-center bg-white/10 hover:bg-white/18 rounded-full"
                 aria-label="Dismiss announcement"
                 onClick={() => {
                   setAnnounceOpen(false);
@@ -254,7 +273,7 @@ export function SiteHeader() {
                   sessionStorage.setItem("silkknot.announce", "off");
                 }}
               >
-                <X size={12} />
+                <X size={12} className="transition-transform duration-300 group-hover/close:rotate-90" />
               </button>
             </div>
           </motion.div>
@@ -276,11 +295,14 @@ export function SiteHeader() {
         style={{
           top: bar.top,
           backgroundColor: bar.solid ? "rgba(255,255,255,0.96)" : "transparent",
-          transition: "top 300ms ease-out, background-color 300ms ease-out, color 300ms ease-out",
+          transition:
+            "top 300ms ease-out, background-color 300ms ease-out, color 300ms ease-out",
         }}
         onMouseLeave={() => setMega(false)}
       >
-        <div className={`pointer-events-auto relative mx-auto flex h-16 items-center border-b px-4 transition-colors duration-300 md:px-8 ${tone === "text-white" ? "border-white/45" : "border-black/10"}`}>
+        <div
+          className={`pointer-events-auto relative mx-auto flex h-16 items-center border-b px-4 transition-colors duration-300 md:px-8 ${tone === "text-white" ? "border-white/45" : "border-black/10"}`}
+        >
           <div className="relative z-20 flex min-w-0 items-center gap-5">
             <Link
               href="/"
@@ -332,16 +354,16 @@ export function SiteHeader() {
             </button>
             <button
               type="button"
-              className={`group inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 ${iconButton}`}
+              className={`group hidden h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 md:inline-flex ${iconButton}`}
               aria-label="Account"
-              onClick={() => setAccountOpen(true)}
+              onClick={() => store.openAccount()}
             >
               <EscalatorIcon icon={User} />
             </button>
             <Link
               href="/wishlist"
               aria-label="Wishlist"
-              className={`group relative hidden h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 md:inline-flex ${iconButton}`}
+              className={`group relative inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 ${iconButton}`}
             >
               <EscalatorIcon icon={Heart} />
               {store.wishlist.length > 0 ? (
@@ -356,7 +378,10 @@ export function SiteHeader() {
             >
               <EscalatorIcon icon={ShoppingBag} />
               {itemCount(store.cart) > 0 ? (
-                <span key={itemCount(store.cart)} className="cart-count absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#d21f2b] px-1 text-[10px] leading-none text-white">
+                <span
+                  key={itemCount(store.cart)}
+                  className="cart-count absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#d21f2b] px-1 text-[10px] leading-none text-white"
+                >
                   {itemCount(store.cart)}
                 </span>
               ) : null}
@@ -366,7 +391,11 @@ export function SiteHeader() {
         {home && bar.solid ? (
           <div className="pointer-events-auto bg-white px-4 pb-3 pt-2 md:hidden">
             <label className="flex h-12 w-full items-center gap-3 rounded-lg border border-black/15 bg-white px-4">
-              <Search size={18} strokeWidth={1.6} className="shrink-0 text-[#6f675d]" />
+              <Search
+                size={18}
+                strokeWidth={1.6}
+                className="shrink-0 text-[#6f675d]"
+              />
               <span className="relative min-w-0 flex-1">
                 <input
                   readOnly
@@ -398,13 +427,12 @@ export function SiteHeader() {
         <SearchOverlay />
         <MegaMenu open={mega} onClose={() => setMega(false)} />
       </header>
-      <MobileMenu
-        onAccount={() => {
-          store.closeMenu();
-          setAccountOpen(true);
-        }}
+      <MobileMenu onAccount={() => store.openAccount()} />
+      <AccountDrawer
+        open={store.accountOpen}
+        onClose={() => store.closeAccount()}
+        returnTo={pathname}
       />
-      <AccountDrawer open={accountOpen} onClose={() => setAccountOpen(false)} returnTo={pathname} />
     </>
   );
 }

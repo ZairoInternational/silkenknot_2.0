@@ -120,25 +120,49 @@ export function AccountDrawer({ open, onClose, next, returnTo }: { open: boolean
         >
           <div className="flex items-start justify-between gap-4 px-5 pb-2 pt-5">
             <div>
-              <h2 className="text-lg font-semibold tracking-tight">My Account</h2>
-              <p className="mt-1 text-sm text-[#8a8178]">Manage your profile, orders and preferences</p>
+              <h2 className="text-lg font-semibold tracking-tight">
+                My Account
+              </h2>
+              <p className="mt-1 text-sm text-[#8a8178]">
+                Manage your profile, orders and preferences
+              </p>
             </div>
-            <button type="button" aria-label="Close account" onClick={onClose} className="inline-flex size-8 items-center justify-center text-[#2c2926]">
-              <X size={18} />
+            <button
+              type="button"
+              aria-label="Close account"
+              onClick={onClose}
+              className="group/close inline-flex size-8 items-center justify-center text-[#2c2926] bg-black/10 hover:bg-black/18 focus-visible:outline-none rounded-full"
+            >
+              <X
+                size={18} strokeWidth={1.6}
+                className="transition-transform duration-300 group-hover/close:rotate-90"
+              />
             </button>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6 pt-3">
             {showAuth || !user ? (
-              <OtpAuth next={next} returnTo={returnTo || next} onDone={onClose} />
+              <OtpAuth
+                next={next}
+                returnTo={returnTo || next}
+                onDone={onClose}
+              />
             ) : (
               <div className="space-y-3">
-                <Link href="/account" onClick={onClose} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-4 shadow-[0_1px_2px_rgba(28,27,25,0.04)]">
+                <Link
+                  href="/account"
+                  onClick={onClose}
+                  className="flex items-center gap-3 rounded-2xl bg-white px-4 py-4 shadow-[0_1px_2px_rgba(28,27,25,0.04)]"
+                >
                   <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#f3efe8] text-[#8a7350]">
                     <User size={22} strokeWidth={1.6} />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[15px] font-semibold">{user.name || "Your account"}</span>
-                    <span className="mt-0.5 block truncate text-sm text-[#8a8178]">{user.phone ? displayPhone(user.phone) : user.email}</span>
+                    <span className="block truncate text-[15px] font-semibold">
+                      {user.name || "Your account"}
+                    </span>
+                    <span className="mt-0.5 block truncate text-sm text-[#8a8178]">
+                      {user.phone ? displayPhone(user.phone) : user.email}
+                    </span>
                     {verified ? (
                       <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-[#e7f6ec] px-2 py-0.5 text-[11px] font-medium text-[#1f8a4c]">
                         <span aria-hidden>✓</span> Verified
@@ -156,8 +180,19 @@ export function AccountDrawer({ open, onClose, next, returnTo }: { open: boolean
                 </div>
 
                 <div className="divide-y divide-[#efeae3] overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(28,27,25,0.04)]">
-                  <MenuRow href="/contact" icon={Headphones} title="Help & Support" detail="Get help with your orders and more" onClick={onClose} />
-                  <MenuRow icon={LogOut} title="Log Out" detail="Sign out from your account" onClick={() => setConfirmLogout(true)} />
+                  <MenuRow
+                    href="/contact"
+                    icon={Headphones}
+                    title="Help & Support"
+                    detail="Get help with your orders and more"
+                    onClick={onClose}
+                  />
+                  <MenuRow
+                    icon={LogOut}
+                    title="Log Out"
+                    detail="Sign out from your account"
+                    onClick={() => setConfirmLogout(true)}
+                  />
                 </div>
               </div>
             )}

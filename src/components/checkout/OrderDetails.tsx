@@ -8,7 +8,8 @@ import { Media } from "@/components/ui";
 import { csrfHeaders } from "@/lib/auth/browser";
 import { ORDER_STORAGE_KEY, type CheckoutDraft } from "@/lib/checkout";
 import { formatPrice } from "@/lib/format";
-import { waybillProgress } from "@/lib/shipping/states";
+import { customerCanCancel, waybillProgress } from "@/lib/shipping/states";
+import { useStore } from "@/lib/store";
 import type { Order } from "@/lib/types";
 
 function shipmentLabel(state?: string) {
@@ -93,6 +94,7 @@ function stepDates(order: Order | null, createdAt: string, index: number) {
 export function OrderDetails({ id }: { id: string }) {
   const [order, setOrder] = useState<CheckoutDraft | null>(null);
   const [status, setStatus] = useState("Order received");
+  const store = useStore();
   const [serverOrder, setServerOrder] = useState<Order | null>(null);
 
   useEffect(() => {
@@ -258,6 +260,49 @@ export function OrderDetails({ id }: { id: string }) {
                 <div className="flex justify-between gap-4"><span>Shipping</span><span className={order.shipping === 0 ? "font-semibold text-[#1f7a4d]" : undefined}>{order.shipping === 0 ? "Free" : formatPrice(order.shipping)}</span></div>
                 <div className="flex justify-between gap-4 border-t border-[#e3dbd1] pt-3 text-[#2c2926]"><span>Total</span><strong className="text-lg font-semibold">{formatPrice(order.total)}</strong></div>
                 <div className="flex justify-between gap-4"><span>Payment</span><span>{serverOrder?.payment === "cod" || order.status === "Pending" ? "Pay on delivery" : "Paid online"}</span></div>
+              {serverOrder && customerCanCancel(serverOrder) ? (
+                <div className="mt-5 border-t border-[#e3dbd1] pt-4">
+                  {confirmCancel ? (
+                    <div>
+                      <p className="text-sm leading-6 text-[#4e4943]">Cancel this order? It has not been dispatched yet.</p>
+                      {cancelError ? <p className="mt-2 text-sm text-[#8a4b3c]">{cancelError}</p> : null}
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          type="button"
+                          disabled={cancelling}
+                          onClick={() => {
+                            setCancelling(true);
+                            setCancelError("");
+                            fetch("/api/checkout/cancel", { method: "POST", headers: csrfHeaders(), body: JSON.stringify({ orderId: serverOrder.id }) })
+                              .then(async (response) => {
+                                const body = await response.json();
+                                if (!response.ok) throw new Error(body.error || "This order could not be cancelled.");
+                                if (body.order) {
+                                  setServerOrder(body.order);
+                                  setStatus(orderStatus(body.order));
+                                  store.rememberOrder(body.order);
+                                }
+                                setConfirmCancel(false);
+                              })
+                              .catch((error: Error) => setCancelError(error.message))
+                              .finally(() => setCancelling(false));
+                          }}
+                          className="h-10 flex-1 rounded-full bg-[#8a4b3c] text-sm text-white disabled:opacity-60"
+                        >
+                          {cancelling ? "Cancelling…" : "Confirm cancel"}
+                        </button>
+                        <button type="button" disabled={cancelling} onClick={() => { setConfirmCancel(false); setCancelError(""); }} className="h-10 flex-1 rounded-full border border-[#e3dbd1] text-sm text-[#2c2926]">
+                          Keep order
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => setConfirmCancel(true)} className="h-10 w-full rounded-full border border-[#e3dbd1] text-sm text-[#8a4b3c]">
+                      Cancel order
+                    </button>
+                  )}
+                </div>
+              ) : null}
                 <div className="flex justify-between gap-4"><span>Status</span><span className="text-right">{status}</span></div>
               </div>
             </aside>
