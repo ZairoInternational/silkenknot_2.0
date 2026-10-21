@@ -96,6 +96,9 @@ export function OrderDetails({ id }: { id: string }) {
   const [status, setStatus] = useState("Order received");
   const store = useStore();
   const [serverOrder, setServerOrder] = useState<Order | null>(null);
+  const [confirmCancel, setConfirmCancel] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
