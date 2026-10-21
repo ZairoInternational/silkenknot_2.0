@@ -332,7 +332,7 @@ export function Newsletter() {
       <div className="pointer-events-none absolute inset-0">
         <Media src="/silknknot/collection-lifestyle-wide.jpg" alt="" sizes="100vw" className="object-cover" />
       </div>
-      <div className="pointer-events-none absolute inset-0 bg-white/40 md:bg-gradient-to-r md:from-white/55 md:via-white/25 md:to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-white/5 md:bg-gradient-to-r md:from-white/55 md:via-white/25 md:to-transparent" />
       <div className="site-container relative z-10 flex flex-col items-center gap-6 px-6 py-12 text-center md:gap-10 md:px-8 md:py-20">
         <div className="w-full">
           <h2 className="text-[1.85rem] leading-tight text-[#2c2926] md:text-5xl">Join the Silken Knot list</h2>

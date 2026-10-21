@@ -1,12 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Ban, Check, ShoppingBag, SlidersHorizontal } from "lucide-react";
 import { Media, PriceTag, Stars, WishlistButton, usePrefersReducedMotion } from "@/components/ui";
+import { ProductCartCta } from "@/components/home/ProductCartCta";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
-
-const actionClass = "flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#CBAC7C] px-3 text-sm font-medium text-white transition-colors duration-300 hover:bg-[#b39668] disabled:cursor-not-allowed disabled:bg-[#e7dfd4] disabled:text-[#8a8178] disabled:hover:bg-[#e7dfd4]";
 
 export function LaunchCard({ product }: { product: Product }) {
   const store = useStore();
@@ -17,7 +15,6 @@ export function LaunchCard({ product }: { product: Product }) {
   );
   const price = variant?.price ?? product.price;
   const soldOut = product.variants.length > 0 && product.variants.every((item) => item.stock <= 0);
-  const single = product.variants.length === 1;
   const inBag = Boolean(
     variant && store.cart.some((item) => item.productId === product.id && item.variantLabel === variant.label),
   );
@@ -63,7 +60,10 @@ export function LaunchCard({ product }: { product: Product }) {
       <div className="flex flex-1 flex-col px-1 pt-3">
         <p className="text-[11px] uppercase tracking-[0.16em] text-[#8a8178]">{product.type}</p>
         <h3 className="mt-1 font-serif text-[1.65rem] leading-none text-[#2c2926]">
-          <Link href={`/products/${product.slug}`} className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]">
+          <Link
+            href={`/products/${product.slug}`}
+            className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
+          >
             {product.name}
           </Link>
         </h3>
@@ -71,30 +71,21 @@ export function LaunchCard({ product }: { product: Product }) {
         {product.reviewCount > 0 ? (
           <p className="mt-2 flex items-center gap-2 text-xs text-[#8a8178]">
             <Stars rating={product.rating} />
-            <span>{product.rating.toFixed(1)} ({product.reviewCount})</span>
+            <span>
+              {product.rating.toFixed(1)} ({product.reviewCount})
+            </span>
           </p>
         ) : null}
         <div className="mt-3">
           <PriceTag price={price} compare={variant?.compareAtPrice} />
         </div>
         <div className="mt-auto pt-4">
-          {soldOut ? (
-            <button type="button" disabled className={actionClass}>
-              <Ban size={16} aria-hidden /> Sold out
-            </button>
-          ) : single && inBag ? (
-            <button type="button" onClick={store.openCart} className={actionClass}>
-              <Check size={16} aria-hidden /> In bag
-            </button>
-          ) : single ? (
-            <button type="button" onClick={add} className={actionClass}>
-              <ShoppingBag size={16} aria-hidden /> Add to bag
-            </button>
-          ) : (
-            <Link href={`/products/${product.slug}`} className={actionClass}>
-              <SlidersHorizontal size={16} aria-hidden /> Choose option
-            </Link>
-          )}
+          <ProductCartCta
+            soldOut={soldOut}
+            inCart={inBag}
+            onAdd={add}
+            onOpenCart={store.openCart}
+          />
         </div>
       </div>
     </article>

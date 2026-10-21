@@ -1,44 +1,88 @@
 import Link from "next/link";
+import {
+  Award,
+  Bath,
+  BookOpen,
+  Droplets,
+  FileText,
+  Flame,
+  HelpCircle,
+  Leaf,
+  Mail,
+  Newspaper,
+  RotateCcw,
+  Shield,
+  Sparkles,
+  Truck,
+  type LucideIcon,
+} from "lucide-react";
 import { Mark } from "@/components/ui";
 
-const columns = [
+type FooterLink = {
+  label: string;
+  href: string;
+  icon?: LucideIcon;
+};
+
+const columns: { title: string; links: FooterLink[] }[] = [
   {
     title: "Shop",
     links: [
-      ["Body Care", "/shop?category=body-care"],
-      ["Bath", "/shop?type=Bath%20Salts,Sugar%20Scrub,Whipped%20Soap"],
-      ["Soap", "/shop?category=bath-soap"],
-      ["Candles", "/shop?category=aromatherapy"],
-      ["Lifestyle", "/shop?category=lifestyle"],
-      ["Best Sellers", "/shop?bestseller=1"],
+      { label: "Body Care", href: "/shop?category=body-care", icon: Droplets },
+      { label: "Bath", href: "/shop?type=Bath%20Salts,Sugar%20Scrub,Whipped%20Soap", icon: Bath },
+      { label: "Soap", href: "/shop?category=bath-soap", icon: Sparkles },
+      { label: "Candles", href: "/shop?category=aromatherapy", icon: Flame },
+      { label: "Lifestyle", href: "/shop?category=lifestyle", icon: Leaf },
+      { label: "Best Sellers", href: "/shop?bestseller=1", icon: Award },
     ],
   },
   {
     title: "Help",
     links: [
-      ["Contact", "/contact"],
-      ["Shipping", "/shipping"],
-      ["Returns", "/returns"],
-      ["FAQ", "/faq"],
+      { label: "Contact", href: "/contact", icon: Mail },
+      { label: "Shipping", href: "/shipping", icon: Truck },
+      { label: "Returns", href: "/returns", icon: RotateCcw },
+      { label: "FAQ", href: "/faq", icon: HelpCircle },
     ],
   },
   {
     title: "About",
     links: [
-      ["Our Story", "/about"],
-      ["Ingredients", "/ingredients"],
-      ["Journal", "/journal"],
+      { label: "Our Story", href: "/about", icon: BookOpen },
+      { label: "Ingredients", href: "/ingredients", icon: Leaf },
+      { label: "Journal", href: "/journal", icon: Newspaper },
     ],
   },
   {
     title: "Social",
+    // Lucide has no brand logos for Instagram / Facebook / Pinterest.
     links: [
-      ["Instagram", "https://www.instagram.com"],
-      ["Facebook", "https://www.facebook.com"],
-      ["Pinterest", "https://www.pinterest.com"],
+      { label: "Instagram", href: "https://www.instagram.com" },
+      { label: "Facebook", href: "https://www.facebook.com" },
+      { label: "Pinterest", href: "https://www.pinterest.com" },
     ],
   },
 ];
+
+const legalLinks: FooterLink[] = [
+  { label: "Privacy", href: "/privacy", icon: Shield },
+  { label: "Terms", href: "/terms", icon: FileText },
+  { label: "Shipping", href: "/shipping", icon: Truck },
+];
+
+function FooterNavLink({ label, href, icon: Icon }: FooterLink) {
+  const external = href.startsWith("http");
+  return (
+    <Link
+      href={href}
+      className="inline-flex items-center gap-2 text-paper/85 transition-opacity hover:opacity-60"
+      {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
+    >
+      {Icon ? <Icon size={14} strokeWidth={1.6} className="shrink-0 opacity-70" aria-hidden /> : null}
+      {label}
+    </Link>
+  );
+}
 
 export function Footer() {
   return (
@@ -57,15 +101,9 @@ export function Footer() {
           <nav key={column.title} aria-label={column.title}>
             <p className="eyebrow text-paper/50">{column.title}</p>
             <ul className="mt-3 space-y-2 text-sm md:mt-5 md:space-y-3">
-              {column.links.map(([label, href]) => (
-                <li key={label}>
-                  <Link
-                    href={href}
-                    className="text-paper/85 transition-opacity hover:opacity-60"
-                    {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
-                  >
-                    {label}
-                  </Link>
+              {column.links.map((link) => (
+                <li key={link.label}>
+                  <FooterNavLink {...link} />
                 </li>
               ))}
             </ul>
@@ -74,10 +112,10 @@ export function Footer() {
       </div>
       <div className="mx-auto flex max-w-[1440px] flex-col gap-4 border-t border-white/10 px-5 py-6 text-[11px] uppercase tracking-[0.16em] text-paper/55 md:flex-row md:items-center md:justify-between md:px-10">
         <p>© {new Date().getFullYear()} Silken Knot</p>
-        <div className="flex gap-5">
-          <Link href="/privacy">Privacy</Link>
-          <Link href="/terms">Terms</Link>
-          <Link href="/shipping">Shipping</Link>
+        <div className="flex flex-wrap gap-5">
+          {legalLinks.map((link) => (
+            <FooterNavLink key={link.label} {...link} />
+          ))}
         </div>
       </div>
     </footer>

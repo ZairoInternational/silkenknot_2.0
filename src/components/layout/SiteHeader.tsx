@@ -191,9 +191,12 @@ export function SiteHeader() {
   const heroNav = useHeroNav();
   const onHero = home && !bar.solid;
   const tone = onHero && heroNav === "white" ? "text-white" : "text-ink";
-  const iconButton = onHero
-    ? "bg-white/15 text-white hover:bg-white/25"
-    : "bg-black/10 text-ink hover:bg-black/18";
+  // Solid bar keeps the usual ink chips. On the home transparent hero only,
+  // right-side icons stay on that same ink chip instead of flipping to white.
+  const iconButton =
+    home || !onHero
+      ? "bg-black/10 text-ink hover:bg-black/18"
+      : "bg-white/15 text-white hover:bg-white/25";
   const currentNote = notes[note];
   const NoteIcon = currentNote.icon;
 
