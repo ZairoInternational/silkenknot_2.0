@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test src/lib/payments/payment.test.ts src/lib/shipping/shipping.test.ts src/lib/search/search.test.ts"
+    "test": "tsx --test src/lib/payments/payment.test.ts src/lib/shipping/shipping.test.ts src/lib/search/search.test.ts src/lib/media/media.test.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -20,7 +20,8 @@
     "nodemailer": "^10.1.2",
     "razorpay": "^2.9.8",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
@@ -29,6 +30,7 @@
     "@types/nodemailer": "^8.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sharp": "^0.31.1",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
     "tailwindcss": "^4",

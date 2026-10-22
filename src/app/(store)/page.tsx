@@ -4,9 +4,11 @@ import { CategorySection } from "@/components/home/RitualChapters";
 import { BestsellerScroll } from "@/components/home/BestsellerScroll";
 import { WhySilkKnot } from "@/components/home/WhySilkKnot";
 import { ClaimMarquee } from "@/components/home/ClaimMarquee";
-import { ExploreCollections } from "@/components/home/ExploreCollections";
 import { NewLaunches } from "@/components/home/NewLaunches";
 import { BrandStory, Newsletter } from "@/components/home/Flow";
+import Reviews from "@/components/home/Reviews";
+import { GiftSets } from "@/components/home/GiftSets";
+import { BuildYourRitual } from "@/components/home/Buildyourrituals";
 
 export default function HomePage() {
   return (
@@ -14,15 +16,14 @@ export default function HomePage() {
       <Hero />
       <CategoryStrip />
       <NewLaunches />
-      {/* BestSeller1 stays parked. The live row is BestsellerScroll. */}
-      {/* BestSeller2 stays parked. */}
       <CategorySection />
+      <BestsellerScroll />
       <WhySilkKnot />
       <ClaimMarquee />
-      <ExploreCollections />
-      {/* RitualBuilder stays parked. */}
+      <Reviews/>
       <BrandStory />
-      <BestsellerScroll />
+      {/* <GiftSets/> */}
+      {/* <BuildYourRitual/> */}
       <Newsletter />
     </>
   );

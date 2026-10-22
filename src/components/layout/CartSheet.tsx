@@ -41,7 +41,7 @@ export function CartSheet() {
           role="dialog"
           aria-modal="true"
           aria-label="Your bag"
-          className="fixed bottom-4 right-4 z-[70] flex h-[min(78vh,560px)] w-[min(400px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl bg-white text-ink shadow-[0_24px_60px_-24px_rgba(0,0,0,0.45)] md:bottom-6 md:right-[60px]"
+          className="fixed bottom-4 right-4 z-[70] flex h-[max(78vh,560px)] w-[min(400px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl bg-white text-ink shadow-[0_24px_60px_-24px_rgba(0,0,0,0.45)] md:bottom-6 md:right-[60px]"
           initial={{ y: "120%" }}
           animate={{ y: 0 }}
           exit={{ y: "120%" }}

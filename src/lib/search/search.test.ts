@@ -138,6 +138,18 @@ test("corrections: bttr → butter", () => {
   assert.equal(normalized, "butter");
 });
 
+test("corrections: batter → butter (common vowel swap)", () => {
+  const { normalized, correctedQuery } = normalizeQuery("batter");
+  assert.equal(normalized, "butter");
+  assert.equal(correctedQuery, "butter");
+});
+
+test("corrections: body batter → body butter", () => {
+  const { normalized, correctedQuery } = normalizeQuery("body batter");
+  assert.equal(normalized, "body butter");
+  assert.equal(correctedQuery, "body butter");
+});
+
 test("corrections: suggar → sugar", () => {
   const { normalized } = normalizeQuery("suggar");
   assert.equal(normalized, "sugar");

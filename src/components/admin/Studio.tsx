@@ -161,8 +161,13 @@ export function ProductEditor({ id }: { id?: string }) {
 }
 
 function blankProduct(): Product {
+  // Stable id before first save so Bunny paths can use products/{id}/… immediately.
+  const id =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? `p-${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`
+      : `p-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
   return {
-    id: "",
+    id,
     slug: "",
     name: "",
     categoryId: "body-care",
@@ -196,11 +201,17 @@ function ProductForm({ initial }: { initial?: Product }) {
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  /** CDN URLs removed in the editor — deleted only after a successful product save. */
+  const [pendingDeletes, setPendingDeletes] = useState<string[]>([]);
 
   const set = <K extends keyof Product>(key: K, value: Product[K]) => setProduct((current) => ({ ...current, [key]: value }));
 
   const onFiles = async (files: FileList | null) => {
     if (!files?.length || uploading) return;
+    if (!product.id) {
+      setError("Save a product id before uploading images.");
+      return;
+    }
     setUploading(true);
     setError("");
     try {
@@ -208,7 +219,9 @@ function ProductForm({ initial }: { initial?: Product }) {
       for (const file of [...files]) {
         const prepared = await compress(file);
         const body = new FormData();
-        body.append("file", prepared, "product.jpg");
+        body.append("file", prepared, "product.webp");
+        body.append("productId", product.id);
+        body.append("role", product.images.length + urls.length === 0 ? "main" : "gallery");
         const response = await fetch("/api/admin/media", {
           method: "POST",
           headers: csrfHeaders(false),
@@ -226,11 +239,19 @@ function ProductForm({ initial }: { initial?: Product }) {
     }
   };
 
+  const removeImage = (index: number) => {
+    const src = product.images[index];
+    set("images", product.images.filter((_, item) => item !== index));
+    if (!src || src.startsWith("/") || src.startsWith("data:") || src.startsWith("blob:")) return;
+    setPendingDeletes((current) => (current.includes(src) ? current : [...current, src]));
+  };
+
   return (
     <form
       className="mx-auto max-w-3xl space-y-10"
       onSubmit={async (event) => {
         event.preventDefault();
+        const nextImages = product.images;
         const result = await store.saveProduct(
           {
             ...product,
@@ -242,6 +263,20 @@ function ProductForm({ initial }: { initial?: Product }) {
           !initial,
         );
         if (!result.ok) return setError(result.message);
+        // Delete CDN objects only after DB save succeeds and the URL is no longer on this product.
+        const toDelete = pendingDeletes.filter((url) => !nextImages.includes(url));
+        for (const url of toDelete) {
+          try {
+            await fetch("/api/admin/media", {
+              method: "DELETE",
+              headers: { ...csrfHeaders(), "Content-Type": "application/json" },
+              body: JSON.stringify({ url }),
+            });
+          } catch {
+            // Orphan cleanup can retry later; product record is already correct.
+          }
+        }
+        setPendingDeletes([]);
         router.push("/admin/products");
       }}
     >
@@ -333,7 +368,7 @@ function ProductForm({ initial }: { initial?: Product }) {
               <span className="relative block aspect-[4/5] bg-cream">
                 <Media src={src} alt="" sizes="96px" />
               </span>
-              <button type="button" className="mt-1 text-[11px] uppercase tracking-[0.14em]" onClick={() => set("images", product.images.filter((_, item) => item !== index))}>
+              <button type="button" className="mt-1 text-[11px] uppercase tracking-[0.14em]" onClick={() => void removeImage(index)}>
                 Remove
               </button>
             </li>

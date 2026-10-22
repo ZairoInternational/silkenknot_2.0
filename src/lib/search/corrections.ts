@@ -61,6 +61,11 @@ export const WORD_CORRECTIONS: Readonly<Record<string, string>> = Object.freeze(
   buter: "butter",
   butr: "butter",
   buuter: "butter",
+  // "batter" is distance 1 from "butter", but Atlas name fuzzy uses
+  // prefixLength: 2 ("ba" ≠ "bu"), and the regex fallback has no fuzzy at all.
+  batter: "butter",
+  buttter: "butter",
+  buttre: "butter",
   // ── scrub ─────────────────────────────────────────────────────────────────
   scrb: "scrub",
   scurb: "scrub",   // vowel transposition

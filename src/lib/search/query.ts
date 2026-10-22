@@ -193,11 +193,13 @@ export function buildAtlasPipeline(
   if (isRelevanceSort) {
     dataStages.push({ $addFields: { _score: { $meta: "searchScore" } } });
   }
+  // Inclusion-only projection. Do not mix `_score: 0` here — Mongo rejects
+  // exclusions inside an inclusion $project. Omitting `_score` drops it.
   dataStages.push(
     { $sort: sortSpec },
     { $skip: skip },
     { $limit: limit },
-    { $project: { ...PROJECT_FIELDS, _score: 0 } },
+    { $project: PROJECT_FIELDS },
   );
 
   const pipeline: Document[] = [searchStage];

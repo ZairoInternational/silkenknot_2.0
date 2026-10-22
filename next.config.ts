@@ -5,8 +5,14 @@ function bunnyHost() {
   if (!raw) return [];
   try {
     const hostname = new URL(raw).hostname;
-    if (!hostname || hostname.endsWith(".b-cdn.net")) return [];
-    return [{ protocol: "https" as const, hostname, pathname: "/**" }];
+    if (!hostname) return [];
+    // Pin the configured pull-zone hostname (narrower than *.b-cdn.net alone).
+    return [
+      { protocol: "https" as const, hostname, pathname: "/products/**" },
+      { protocol: "https" as const, hostname, pathname: "/categories/**" },
+      { protocol: "https" as const, hostname, pathname: "/banners/**" },
+      { protocol: "https" as const, hostname, pathname: "/brands/**" },
+    ];
   } catch {
     return [];
   }
@@ -27,7 +33,22 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "*.b-cdn.net",
-        pathname: "/**",
+        pathname: "/products/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.b-cdn.net",
+        pathname: "/categories/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.b-cdn.net",
+        pathname: "/banners/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.b-cdn.net",
+        pathname: "/brands/**",
       },
       ...bunnyHost(),
     ],
