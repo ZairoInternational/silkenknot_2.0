@@ -7,8 +7,8 @@ import { ClaimMarquee } from "@/components/home/ClaimMarquee";
 import { NewLaunches } from "@/components/home/NewLaunches";
 import { BrandStory, Newsletter } from "@/components/home/Flow";
 import Reviews from "@/components/home/Reviews";
-import { GiftSets } from "@/components/home/GiftSets";
-import { BuildYourRitual } from "@/components/home/Buildyourrituals";
+// import { GiftSets } from "@/components/home/GiftSets";
+// import { BuildYourRitual } from "@/components/home/Buildyourrituals";
 
 export default function HomePage() {
   return (
