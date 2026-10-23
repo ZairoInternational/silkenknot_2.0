@@ -16,7 +16,6 @@ type Policy = {
   codEnabled: boolean;
   codFeePaise: number;
   bookingMode: "auto" | "manual";
-  returnWindowDays: number;
   credentialsSet: boolean;
   webhookConfigured: boolean;
   gstConfigured: boolean;
@@ -30,7 +29,11 @@ export default function ShippingSettingsPage() {
   useEffect(() => {
     fetch("/api/admin/fulfilment", { headers: csrfHeaders(false) })
       .then((response) => response.json())
-      .then((body) => setPolicy(body.policy || null))
+      .then((body) => {
+        const next = body.policy as Policy | null;
+        if (!next) { setPolicy(null); return; }
+        setPolicy(next);
+      })
       .catch(() => setMessage("Shipping settings could not be loaded."));
   }, []);
 
@@ -58,19 +61,18 @@ export default function ShippingSettingsPage() {
       <p className="text-sm text-mute">{policy.mode === "mock" ? "Mock mode is on. Paid orders get a test waybill. Refresh tracking steps the status. Nothing is sent to Delhivery." : `Delhivery ${policy.credentialsSet ? "token is set" : "token is missing"}`} · Webhook {policy.webhookConfigured ? "token is set" : "push is off"} · GST {policy.gstConfigured ? "is set" : "is missing"} · Origin PIN {policy.originPin || "is missing"} · {policy.environment}</p>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={policy.delhiveryEnabled} onChange={(event) => setPolicy({ ...policy, delhiveryEnabled: event.target.checked })} /> Enable Delhivery</label>
       <label className="block text-sm">Pickup location<input value={policy.pickupLocation} onChange={(event) => setPolicy({ ...policy, pickupLocation: event.target.value })} className="mt-1 h-11 w-full border-b border-line bg-transparent" /></label>
-      <p className="text-sm text-mute">Checkout prices each order from Delhivery’s shipping estimate plus ₹10, rounded to the nearest rupee. Every order uses the configured parcel weight. Express appears when Delhivery returns an express estimate.</p>
+      <p className="text-sm text-mute">Checkout prices each order from Delhivery's shipping estimate plus ₹10, rounded to the nearest rupee. Every order uses the configured parcel weight. Express appears when Delhivery returns an express estimate.</p>
       <label className="block text-sm">Free shipping above (paise)<input type="number" value={policy.freeShippingPaise} onChange={(event) => setPolicy({ ...policy, freeShippingPaise: Number(event.target.value) })} className="mt-1 h-11 w-full border-b border-line bg-transparent" /></label>
       <label className="block text-sm">Standard estimate label<input value={policy.standardEta} onChange={(event) => setPolicy({ ...policy, standardEta: event.target.value })} className="mt-1 h-11 w-full border-b border-line bg-transparent" /></label>
       <label className="block text-sm">Express estimate label<input value={policy.expressEta} onChange={(event) => setPolicy({ ...policy, expressEta: event.target.value })} className="mt-1 h-11 w-full border-b border-line bg-transparent" /></label>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={policy.codEnabled} onChange={(event) => setPolicy({ ...policy, codEnabled: event.target.checked })} /> Allow cash on delivery</label>
-      <p className="text-sm text-mute">Cash on delivery, when allowed, uses Delhivery’s COD estimate plus ₹10. A separate COD fee is not added.</p>
+      <p className="text-sm text-mute">Cash on delivery, when allowed, uses Delhivery's COD estimate plus ₹10. A separate COD fee is not added.</p>
       <label className="block text-sm">Booking
         <select value={policy.bookingMode} onChange={(event) => setPolicy({ ...policy, bookingMode: event.target.value as "auto" | "manual" })} className="mt-1 h-11 w-full border-b border-line bg-transparent">
           <option value="auto">Automatic after payment</option>
           <option value="manual">Manual</option>
         </select>
       </label>
-      <label className="block text-sm">Return window (days)<input type="number" value={policy.returnWindowDays} onChange={(event) => setPolicy({ ...policy, returnWindowDays: Number(event.target.value) })} className="mt-1 h-11 w-full border-b border-line bg-transparent" /></label>
       {message ? <p className="text-sm">{message}</p> : null}
       <button type="submit" className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper">Save shipping settings</button>
     </form>

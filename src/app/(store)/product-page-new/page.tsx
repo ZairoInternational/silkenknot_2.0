@@ -10,6 +10,7 @@ import { seedProducts } from "@/lib/data";
 import { FREE_SHIPPING_AT, formatPrice } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import type { Coupon, Product, Review } from "@/lib/types";
+import { productShowsSection } from "@/lib/types";
 
 export default function ProductPageNew({ slug = "silk-veil-body-butter" }: { slug?: string }) {
   const store = useStore();
@@ -74,7 +75,18 @@ function ProductLayout({
   const loginHref = `/account/login?next=${encodeURIComponent(pathname || `/products/${product.slug}`)}`;
   const [activeImage, setActiveImage] = useState(0);
   const [variantLabel, setVariantLabel] = useState(product.variants[0]?.label ?? "");
-  const [detail, setDetail] = useState<"description" | "ingredients" | "steps">("description");
+  const detailTabs = (
+    [
+      productShowsSection(product, "description") || productShowsSection(product, "benefits")
+        ? (["description", "Description"] as const)
+        : null,
+      productShowsSection(product, "ingredients") ? (["ingredients", "Ingredients"] as const) : null,
+      productShowsSection(product, "howToUse") ? (["steps", "How to Use"] as const) : null,
+    ].filter(Boolean) as Array<readonly ["description" | "ingredients" | "steps", string]>
+  );
+  const [detail, setDetail] = useState<"description" | "ingredients" | "steps">(
+    detailTabs[0]?.[0] ?? "description",
+  );
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [helpful, setHelpful] = useState<Record<string, "yes" | "no">>({});
@@ -382,50 +394,49 @@ function ProductLayout({
         </ul>
       </section>
 
+      {detailTabs.length ? (
       <section className="mx-auto max-w-[1200px] px-4 py-14 md:px-8">
         <div className="flex gap-6 overflow-x-auto border-b border-[#e6e0d6] text-base [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist">
-          {(
-            [
-              ["description", "Description"],
-              ["ingredients", "Ingredients"],
-              ["steps", "How to Use"],
-            ] as const
-          ).map(([id, label]) => (
+          {detailTabs.map(([id, label]) => (
             <button key={id} type="button" role="tab" aria-selected={detail === id} onClick={() => setDetail(id)} className={`shrink-0 pb-3 ${detail === id ? "border-b-2 border-[#2c2926] font-medium" : "text-[#6f675d]"}`}>
               {label}
             </button>
           ))}
         </div>
-        {detail === "description" ? (
+        {detail === "description" && (productShowsSection(product, "description") || productShowsSection(product, "benefits")) ? (
           <div className="mt-8 grid items-center gap-8 lg:grid-cols-2">
             <div>
-              <p className="max-w-xl text-base leading-7 text-[#4e4943]">{product.description}</p>
-              <ul className="mt-5 space-y-3">
-                {product.benefits.map((benefit) => (
-                  <li key={benefit} className="flex items-start gap-2 text-base text-[#2c2926]">
-                    <Check size={16} className="mt-1 shrink-0 text-[#8a7350]" />
-                    <span>{benefit}</span>
-                  </li>
-                ))}
-              </ul>
+              {productShowsSection(product, "description") ? (
+                <p className="max-w-xl text-base leading-7 text-[#4e4943]">{product.description}</p>
+              ) : null}
+              {productShowsSection(product, "benefits") ? (
+                <ul className={`space-y-3 ${productShowsSection(product, "description") ? "mt-5" : ""}`}>
+                  {product.benefits.filter((benefit) => benefit.trim()).map((benefit) => (
+                    <li key={benefit} className="flex items-start gap-2 text-base text-[#2c2926]">
+                      <Check size={16} className="mt-1 shrink-0 text-[#8a7350]" />
+                      <span>{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
             <div className="relative min-h-[220px] overflow-hidden rounded-xl bg-[#eee8de]">
               <Media src={images[0]} alt={product.name} sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" />
             </div>
           </div>
         ) : null}
-        {detail === "ingredients" ? (
+        {detail === "ingredients" && productShowsSection(product, "ingredients") ? (
           <ul className="mt-8 grid gap-3 sm:grid-cols-2">
-            {product.ingredients.map((item) => (
+            {product.ingredients.filter((item) => item.trim()).map((item) => (
               <li key={item} className="rounded-lg border border-[#e6e0d6] bg-white px-4 py-3 text-base text-[#2c2926]">
                 {item}
               </li>
             ))}
           </ul>
         ) : null}
-        {detail === "steps" ? (
+        {detail === "steps" && productShowsSection(product, "howToUse") ? (
           <ol className="mt-8 space-y-4">
-            {product.howToUse.map((step, index) => (
+            {product.howToUse.filter((step) => step.trim()).map((step, index) => (
               <li key={step} className="flex items-start gap-3 text-base leading-7 text-[#2c2926]">
                 <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#CBAC7C] text-sm text-white">{index + 1}</span>
                 <span>{step}</span>
@@ -434,6 +445,7 @@ function ProductLayout({
           </ol>
         ) : null}
       </section>
+      ) : null}
 
       <section id="customer-reviews" className="mx-auto max-w-[1200px] px-4 pb-14 md:px-8">
         <h2 className="text-lg font-medium md:text-3xl">Reviews and rating</h2>

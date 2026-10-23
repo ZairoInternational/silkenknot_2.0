@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -9,7 +10,6 @@ import {
   Gift,
   Heart,
   Leaf,
-  RotateCcw,
   Search,
   ShoppingBag,
   Sparkles,
@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { itemCount } from "@/lib/format";
 import { useStore } from "@/lib/store";
-import { Mark, Media, ease, usePrefersReducedMotion } from "@/components/ui";
+import { Media, ease, usePrefersReducedMotion } from "@/components/ui";
 import { LogoutConfirm } from "@/components/account/LogoutConfirm";
 import { AccountDrawer } from "@/components/layout/AccountDrawer";
 import { SearchOverlay } from "@/components/layout/SearchOverlay";
@@ -55,7 +55,6 @@ const notes = [
   { text: "Free shipping on orders over ₹999", href: "/shipping", icon: Truck },
   { text: "Save 10% with code RITUAL10", href: "/shop", icon: Gift },
   { text: "Body butters for everyday skin", href: "/shop?category=body-care", icon: Leaf },
-  { text: "14-day returns on unopened care", href: "/returns", icon: RotateCcw },
   { text: "Candles for the last hour of the day", href: "/shop?category=aromatherapy", icon: Flame },
 ];
 
@@ -71,10 +70,17 @@ function Logo({ className = "" }: { className?: string }) {
   return (
     <Link
       href="/"
-      className={`inline-flex items-center gap-2 whitespace-nowrap font-serif text-[1.2rem] leading-none tracking-tight md:text-[1.55rem] ${className}`}
+      aria-label="Silken Knot home"
+      className={`inline-flex items-center ${className}`}
     >
-      <Mark className="h-10 w-10 md:h-4 md:w-4" />
-      <span className="hidden md:inline">Silken Knot</span>
+      <Image
+        src="/silknknot/logo.png"
+        alt="SilkenKnot"
+        width={160}
+        height={160}
+        priority
+        className="h-11 w-auto object-contain md:h-14"
+      />
     </Link>
   );
 }

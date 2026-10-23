@@ -10,11 +10,13 @@ import {
   Copy,
   Pause,
   Play,
-  RefreshCcw,
+  ShieldCheck,
   Truck,
 } from "lucide-react";
 import { Media, ease, usePrefersReducedMotion } from "@/components/ui";
 import { setHeroNav } from "@/lib/hero-nav";
+import type { HeroOffer } from "@/lib/hero/content";
+import { DEFAULT_HERO_OFFER } from "@/lib/hero/content";
 
 /* Palette (existing): ivory #f6f1ea / #f7f3ee, sand #CBAC7C, bronze #9a7352,
    gold text #8a7350 / #a68456, ink #2c2926. New, matched to the set: marigold
@@ -32,28 +34,20 @@ type Slide = {
   note: string;
   cta: string;
   href: string;
+  secondaryCta: string;
+  secondaryHref: string;
   image: string;
   alt: string;
   cardTag: string;
   cardName: string;
   chips: string[];
+  couponCode?: string;
+  sealLabel?: string;
+  sealPercent?: string;
+  isOffer?: boolean;
 };
 
-const slides: Slide[] = [
-  {
-    id: "sale",
-    label: "Diwali glow sale",
-    pill: "Diwali glow sale",
-    title: ["Glow brighter", "this Diwali."],
-    note: "Up to 25% off selected body care, bath, and candles.",
-    cta: "Shop the sale",
-    href: "/shop",
-    image: "/silknknot/new_updates/all_combined.png",
-    alt: "Silken Knot body butter with marigolds and diyas",
-    cardTag: "Sale edit",
-    cardName: "Diwali glow",
-    chips: ["25% off", "DIWALI20"],
-  },
+const evergreenSlides: Slide[] = [
   {
     id: "butter",
     label: "Body butter",
@@ -62,6 +56,8 @@ const slides: Slide[] = [
     note: "Shea and murumuru for the hour after bathing, with a finish that lets you dress.",
     cta: "Shop body butter",
     href: "/shop?category=body-care",
+    secondaryCta: "Browse everything",
+    secondaryHref: "/shop",
     image: "/silknknot/new_updates/body_butter.png",
     alt: "Silken Knot body butter jar",
     cardTag: "Body care",
@@ -76,6 +72,8 @@ const slides: Slide[] = [
     note: "The grains soften as you massage, so skin feels smooth rather than stripped.",
     cta: "Shop sugar scrub",
     href: "/shop?category=body-care",
+    secondaryCta: "Browse everything",
+    secondaryHref: "/shop",
     image: "/silknknot/new_updates/sugar_scrap.png",
     alt: "Silken Knot sugar scrub",
     cardTag: "Body care",
@@ -90,6 +88,8 @@ const slides: Slide[] = [
     note: "Pour them in before the butter. The bath is the first step, not a scent in the room.",
     cta: "Shop bath salts",
     href: "/shop?category=bath-soap",
+    secondaryCta: "Browse everything",
+    secondaryHref: "/shop",
     image: "/silknknot/new_updates/bath-salts.jfif",
     alt: "Silken Knot bath salts",
     cardTag: "Bath",
@@ -98,11 +98,46 @@ const slides: Slide[] = [
   },
 ];
 
+function offerToSlide(offer: HeroOffer): Slide {
+  return {
+    id: "sale",
+    label: offer.pill,
+    pill: offer.pill,
+    title: [offer.titleLine1, offer.titleLine2],
+    note: offer.note,
+    cta: offer.cta,
+    href: offer.href,
+    secondaryCta: offer.secondaryCta,
+    secondaryHref: offer.secondaryHref,
+    image: offer.image,
+    alt: offer.alt,
+    cardTag: offer.cardTag,
+    cardName: offer.cardName,
+    chips: offer.chips,
+    couponCode: offer.couponCode,
+    sealLabel: offer.sealLabel,
+    sealPercent: offer.sealPercent,
+    isOffer: true,
+  };
+}
+
+function buildSlides(offer: HeroOffer): Slide[] {
+  return offer.enabled ? [offerToSlide(offer), ...evergreenSlides] : evergreenSlides;
+}
+
 const marquee = ["Body butter", "Bath soap", "Sugar scrub", "Candles"];
 
-/* Rotating "Up to 25% off" seal, shown on the sale slide */
-function SaleSeal({ reduced }: { reduced: boolean }) {
+function SaleSeal({
+  reduced,
+  label,
+  percent,
+}: {
+  reduced: boolean;
+  label: string;
+  percent: string;
+}) {
   const id = useId().replace(/:/g, "");
+  const ring = `${label} • ${label} • `;
   return (
     <motion.div
       className="absolute -right-2 top-10 z-20 md:-right-10 md:top-16"
@@ -135,15 +170,13 @@ function SaleSeal({ reduced }: { reduced: boolean }) {
             textLength="284"
             lengthAdjust="spacing"
           >
-            <textPath href={`#${id}`}>
-              DIWALI GLOW SALE • DIWALI GLOW SALE •
-            </textPath>
+            <textPath href={`#${id}`}>{ring}</textPath>
           </text>
         </motion.svg>
         <span className="text-center leading-none">
           <span className="block text-[10px] opacity-70">up to</span>
           <span className="block font-serif text-[1.55rem] md:text-3xl">
-            25%
+            {percent.replace(/\s*off$/i, "").trim() || percent}
           </span>
           <span className="block text-[10px] opacity-70">off</span>
         </span>
@@ -152,11 +185,11 @@ function SaleSeal({ reduced }: { reduced: boolean }) {
   );
 }
 
-function Coupon() {
+function Coupon({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText("DIWALI20");
+      await navigator.clipboard.writeText(code);
     } catch {
       /* clipboard can be blocked, the code is still visible */
     }
@@ -168,10 +201,10 @@ function Coupon() {
       type="button"
       onClick={copy}
       className={`mt-5 inline-flex items-center gap-3 rounded-full border border-dashed border-[#CBAC7C] bg-white/70 px-4 py-2 text-left transition-colors hover:bg-white ${FOCUS}`}
-      aria-label="Copy code DIWALI20"
+      aria-label={`Copy code ${code}`}
     >
       <span className="text-[11px] text-[#8a7350]">Code</span>
-      <span className="text-sm font-medium tracking-[0.12em] text-[#2c2926]">DIWALI20</span>
+      <span className="text-sm font-medium tracking-[0.12em] text-[#2c2926]">{code}</span>
       <span className="inline-flex items-center gap-1 text-xs text-[#9a7352]" aria-live="polite">
         {copied ? <Check size={13} /> : <Copy size={13} />}
         {copied ? "Copied" : "Copy"}
@@ -190,14 +223,20 @@ const rise = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease } },
 };
 
-export function Hero() {
+export function Hero({ offer = DEFAULT_HERO_OFFER }: { offer?: HeroOffer }) {
   const reduced = usePrefersReducedMotion();
+  const slides = buildSlides(offer);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const slide = slides[index];
-  const isSale = index === 0;
+  const safeIndex = Math.min(index, slides.length - 1);
+  const slide = slides[safeIndex] ?? slides[0];
+  const isSale = Boolean(slide?.isOffer);
   const auto = playing && !reduced;
   const go = (next: number) => setIndex((next + slides.length) % slides.length);
+
+  useEffect(() => {
+    setIndex(0);
+  }, [offer.enabled, offer.pill, offer.titleLine1]);
 
   // The hero is always ivory now, so the transparent navbar always uses dark ink.
   useEffect(() => {
@@ -260,9 +299,9 @@ export function Hero() {
                   {slide.note}
                 </motion.p>
 
-                {isSale ? (
+                {isSale && slide.couponCode ? (
                   <motion.div variants={rise}>
-                    <Coupon />
+                    <Coupon code={slide.couponCode} />
                   </motion.div>
                 ) : null}
 
@@ -280,10 +319,10 @@ export function Hero() {
                     </span>
                   </Link>
                   <Link
-                    href={isSale ? "/shop?bestseller=1" : "/shop"}
+                    href={slide.secondaryHref}
                     className={`inline-flex items-center gap-2 text-sm text-[#2c2926] underline decoration-[#CBAC7C] decoration-2 underline-offset-[6px] ${FOCUS}`}
                   >
-                    {isSale ? "See best sellers" : "Browse everything"}
+                    {slide.secondaryCta}
                     <ArrowRight size={14} />
                   </Link>
                 </motion.div>
@@ -296,12 +335,12 @@ export function Hero() {
                 Free shipping over ₹999
               </li>
               <li className="inline-flex items-center gap-2">
-                <RefreshCcw
+                <ShieldCheck
                   size={16}
                   strokeWidth={1.5}
                   className="text-[#9a7352]"
                 />{" "}
-                Hassle-Free Replacements
+                Cancel before dispatch
               </li>
             </ul>
 
@@ -312,7 +351,7 @@ export function Hero() {
               aria-label="Hero products"
             >
               {slides.map((item, itemIndex) => {
-                const active = itemIndex === index;
+                const active = itemIndex === safeIndex;
                 return (
                   <button
                     key={item.id}
@@ -328,7 +367,7 @@ export function Hero() {
                     >
                       {active ? (
                         <motion.span
-                          key={`${index}-${auto}`}
+                          key={`${safeIndex}-${auto}`}
                           className="absolute inset-0 origin-left rounded-full bg-[#2c2926]"
                           initial={{ scaleX: auto ? 0 : 1 }}
                           animate={{ scaleX: 1 }}
@@ -337,7 +376,7 @@ export function Hero() {
                             ease: "linear",
                           }}
                           onAnimationComplete={() => {
-                            if (auto) go(index + 1);
+                            if (auto) go(safeIndex + 1);
                           }}
                         />
                       ) : null}
@@ -380,7 +419,7 @@ export function Hero() {
                   Math.abs(info.offset.x) > 50 &&
                   Math.abs(info.offset.x) > Math.abs(info.offset.y)
                 ) {
-                  go(index + (info.offset.x < 0 ? 1 : -1));
+                  go(safeIndex + (info.offset.x < 0 ? 1 : -1));
                 }
               }}
             >
@@ -409,7 +448,14 @@ export function Hero() {
             </motion.div>
 
             <AnimatePresence>
-              {isSale ? <SaleSeal key="seal" reduced={reduced} /> : null}
+              {isSale && slide.sealLabel && slide.sealPercent ? (
+                <SaleSeal
+                  key="seal"
+                  reduced={reduced}
+                  label={slide.sealLabel}
+                  percent={slide.sealPercent}
+                />
+              ) : null}
             </AnimatePresence>
 
             {/* Floating product card */}

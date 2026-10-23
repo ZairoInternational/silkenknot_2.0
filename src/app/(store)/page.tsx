@@ -7,20 +7,24 @@ import { ClaimMarquee } from "@/components/home/ClaimMarquee";
 import { NewLaunches } from "@/components/home/NewLaunches";
 import { BrandStory, Newsletter } from "@/components/home/Flow";
 import Reviews from "@/components/home/Reviews";
+import { getHeroOffer } from "@/lib/hero/server";
 // import { GiftSets } from "@/components/home/GiftSets";
 // import { BuildYourRitual } from "@/components/home/Buildyourrituals";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const offer = await getHeroOffer();
   return (
     <>
-      <Hero />
+      <Hero offer={offer} />
       <CategoryStrip />
       <NewLaunches />
       <CategorySection />
       <BestsellerScroll />
       <WhySilkKnot />
       <ClaimMarquee />
-      <Reviews/>
+      <Reviews />
       <BrandStory />
       {/* <GiftSets/> */}
       {/* <BuildYourRitual/> */}

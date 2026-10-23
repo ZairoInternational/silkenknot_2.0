@@ -1,7 +1,7 @@
 import { randomBytes } from "crypto";
 import { MediaError, mediaCorrelationId } from "@/lib/media/errors";
 import { processProductImage } from "@/lib/media/image";
-import { assertSafeId, buildProductAssetKey } from "@/lib/media/paths";
+import { assertSafeId, buildBannerAssetKey, buildProductAssetKey } from "@/lib/media/paths";
 
 export type BunnyConfig = {
   zone: string;
@@ -189,8 +189,34 @@ export async function uploadProductImage(input: UploadProductImageInput): Promis
   };
 }
 
-/** Delete a managed CDN object. No-op safety: refuses non-CDN URLs. */
-export async function deleteManagedAsset(url: string, correlationId = mediaCorrelationId()) {
+export type UploadBannerImageInput = {
+  bytes: Buffer;
+  scope?: "homepage" | string;
+  correlationId?: string;
+};
+
+export async function uploadBannerImage(input: UploadBannerImageInput) {
+  const correlationId = input.correlationId || mediaCorrelationId();
+  const config = requireBunnyConfig(correlationId);
+  const scope = (input.scope || "homepage").trim() || "homepage";
+  const processed = await processProductImage(input.bytes, correlationId);
+  const assetId = randomBytes(12).toString("hex");
+  const key = buildBannerAssetKey(scope === "homepage" ? "homepage" : scope, assetId);
+  await putObject(config, key, processed.buffer, processed.contentType, correlationId);
+  return {
+    url: publicCdnUrl(config, key),
+    key,
+    assetId,
+    contentType: processed.contentType,
+    width: processed.width,
+    height: processed.height,
+    bytes: processed.bytes,
+    scope,
+    role: "banner" as const,
+  };
+}
+
+async function deleteBunnyObject(url: string, correlationId: string) {
   const config = requireBunnyConfig(correlationId);
   let key: string;
   try {
@@ -222,5 +248,29 @@ export async function deleteManagedAsset(url: string, correlationId = mediaCorre
   } finally {
     clearTimeout(timer);
   }
+}
+
+/**
+ * Reusable Bunny CDN remove. Accepts one public CDN URL or many.
+ * Refuses URLs outside this store's configured pull zone. Already-deleted objects (404) succeed.
+ */
+export async function removeFromBunny(
+  urlOrUrls: string | string[],
+  correlationId = mediaCorrelationId(),
+) {
+  const urls = [...new Set(
+    (Array.isArray(urlOrUrls) ? urlOrUrls : [urlOrUrls])
+      .map((item) => String(item || "").trim())
+      .filter(Boolean),
+  )];
+  for (const url of urls) {
+    await deleteBunnyObject(url, correlationId);
+  }
+  return { ok: true as const, removed: urls.length, correlationId };
+}
+
+/** @deprecated Prefer removeFromBunny — kept for existing admin callers. */
+export async function deleteManagedAsset(url: string, correlationId = mediaCorrelationId()) {
+  await removeFromBunny(url, correlationId);
 }
 

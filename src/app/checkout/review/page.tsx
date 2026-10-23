@@ -140,7 +140,7 @@ export default function ReviewPage() {
       return;
     }
     if (!accepted) {
-      setError("Please agree to the Terms, Privacy Policy, and Shipping and Returns policies.");
+      setError("Please agree to the Terms, Privacy Policy, and Shipping policy.");
       return;
     }
     sessionStorage.setItem(TERMS_STORAGE_KEY, "true");
@@ -327,7 +327,7 @@ export default function ReviewPage() {
             <label className="checkLine termsCheck">
               <input type="checkbox" checked={accepted} onChange={(event) => { setAccepted(event.target.checked); setError(""); }} />
               <span>
-                I agree to the <a href="/terms" target="_blank">Terms</a>, <a href="/privacy" target="_blank">Privacy Policy</a>, <a href="/shipping" target="_blank">Shipping</a>, and <a href="/returns" target="_blank">Returns</a> policies.
+                I agree to the <a href="/terms" target="_blank">Terms</a>, <a href="/privacy" target="_blank">Privacy Policy</a>, and <a href="/shipping" target="_blank">Shipping</a> policy.
               </span>
             </label>
           </div>

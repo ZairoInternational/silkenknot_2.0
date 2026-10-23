@@ -43,7 +43,6 @@ export default function CheckoutShell({
           <Link href="/terms">Terms</Link>
           <Link href="/privacy">Privacy</Link>
           <Link href="/shipping">Shipping</Link>
-          <Link href="/returns">Returns</Link>
         </div>
       </footer>
     </main>

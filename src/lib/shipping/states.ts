@@ -69,23 +69,21 @@ export function customerCanCancel(order: {
   if (order.status === "cancelled" || order.orderState === "cancelled") return false;
   if (order.paymentState === "refunded" || order.paymentState === "cancelled" || order.paymentState === "failed") return false;
   if (order.fulfillmentState === "shipped" || order.fulfillmentState === "delivered" || order.fulfillmentState === "return_to_origin" || order.fulfillmentState === "delivery_failed") return false;
-  if (order.status === "shipped" || order.status === "delivered" || order.status === "returned" || order.status === "return_requested") return false;
+  if (
+    order.status === "shipped"
+    || order.status === "delivered"
+  ) return false;
   return canCancelShipment(order.shipment?.state || "not_created");
 }
 
-export function canRequestReturn(state: ShipmentState, deliveredAt: string | undefined, now: string, windowDays: number) {
-  if (state !== "delivered" || !deliveredAt) return false;
-  const end = new Date(deliveredAt).getTime() + windowDays * 24 * 60 * 60 * 1000;
-  return new Date(now).getTime() <= end;
-}
 
 export function waybillProgress(state?: ShipmentState): { index: number; badge: string; alert: boolean } {
-  if (state === "delivered") return { index: 3, badge: "Delivered", alert: false };
-  if (state === "out_for_delivery") return { index: 2, badge: "On the way", alert: false };
-  if (state === "delivery_failed") return { index: 2, badge: "Delivery attempted", alert: true };
+  if (state === "delivered") return { index: 4, badge: "Delivered", alert: false };
+  if (state === "out_for_delivery") return { index: 3, badge: "Out for delivery", alert: false };
+  if (state === "delivery_failed") return { index: 3, badge: "Delivery attempted", alert: true };
   if (state === "picked_up" || state === "in_transit") return { index: 2, badge: "Shipped", alert: false };
   if (state === "rto_initiated" || state === "rto_in_transit" || state === "rto_delivered" || state === "return_initiated" || state === "returned") {
-    return { index: 2, badge: "Returning", alert: true };
+    return { index: 2, badge: "Return to origin", alert: true };
   }
   if (state === "cancelled") return { index: -1, badge: "Cancelled", alert: true };
   if (state === "exception" || state === "unknown") return { index: 1, badge: "Needs attention", alert: true };
@@ -102,7 +100,7 @@ export function waybillListLabel(state?: ShipmentState) {
   if (state === "pickup_scheduled") return "Pickup scheduled";
   if (state === "booked" || state === "pending") return "Processing";
   if (state === "cancelled") return "Cancelled";
-  if (state === "rto_initiated" || state === "rto_in_transit" || state === "rto_delivered" || state === "return_initiated" || state === "returned") return "Returning";
+  if (state === "rto_initiated" || state === "rto_in_transit" || state === "rto_delivered" || state === "return_initiated" || state === "returned") return "Return to origin";
   return "Confirmed";
 }
 

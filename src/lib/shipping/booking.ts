@@ -340,37 +340,3 @@ export async function schedulePickup(db: Db, orderId: string) {
   await db.collection("orders").updateOne({ id: orderId }, { $set: { "shipment.state": "pickup_scheduled", "shipment.pickupDate": pickup.pickupDate } });
 }
 
-export async function createReturnManifest(db: Db, orderId: string) {
-  const order = await db.collection("orders").findOne({ id: orderId });
-  const shipment = order?.shipment as ShipmentRecord | undefined;
-  if (!order || shipment?.state !== "delivered") throw new DelhiveryError("rejected", "A return pickup is available after delivery.");
-  if (shipment.test) {
-    const waybill = `TEST${randomBytes(5).toString("hex").toUpperCase()}`;
-    await db.collection("orders").updateOne({ id: orderId, "shipment.test": true }, {
-      $set: { "shipment.state": "return_initiated", "shipment.returnAwb": waybill, status: "return_requested" },
-    });
-    return waybill;
-  }
-  const policy = await loadPolicy(db);
-  const address = order.address as { name?: string; line1?: string; line2?: string; city?: string; state?: string; postal?: string; phone?: string };
-  const result = await createManifest(policy, {
-    orderNumber: `RVP${String(order.number).replace(/\W/g, "").slice(0, 16)}${randomBytes(2).toString("hex")}`,
-    name: String(address.name || ""),
-    address: [address.line1, address.line2].filter(Boolean).join(", "),
-    city: String(address.city || ""),
-    state: String(address.state || ""),
-    pin: String(address.postal || ""),
-    phone: String(address.phone || ""),
-    paymentMode: "Pickup",
-    amountRupees: paiseToRupees(Number(order.amountPaise || 0)),
-    codAmountRupees: 0,
-    weightGrams: shipment.weightGrams || policy.defaultWeightGrams,
-    shippingMode: "Surface",
-    products: "Return",
-  });
-  if (!("waybill" in result)) throw new DelhiveryError("unavailable", "Delhivery did not confirm the return pickup.");
-  await db.collection("orders").updateOne({ id: orderId }, {
-    $set: { "shipment.state": "return_initiated", "shipment.returnAwb": result.waybill, status: "return_requested" },
-  });
-  return result.waybill;
-}

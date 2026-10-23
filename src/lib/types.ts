@@ -23,6 +23,8 @@ export type Faq = {
   answer: string;
 };
 
+export type ProductDetailSection = "description" | "ingredients" | "howToUse" | "benefits";
+
 export type Product = {
   id: string;
   slug: string;
@@ -39,6 +41,11 @@ export type Product = {
   benefits: string[];
   ingredients: string[];
   howToUse: string[];
+  /** When false, hide on storefront. Undefined = legacy (show if content exists). */
+  showDescription?: boolean;
+  showIngredients?: boolean;
+  showHowToUse?: boolean;
+  showBenefits?: boolean;
   images: string[];
   variants: Variant[];
   featured: boolean;
@@ -50,6 +57,28 @@ export type Product = {
   reviews: Review[];
   faqs: Faq[];
 };
+
+function sectionHasContent(product: Product, section: ProductDetailSection) {
+  if (section === "description") return Boolean(product.description?.trim());
+  if (section === "ingredients") return product.ingredients.some((item) => item.trim());
+  if (section === "howToUse") return product.howToUse.some((item) => item.trim());
+  return product.benefits.some((item) => item.trim());
+}
+
+/** Storefront visibility for optional product detail blocks. */
+export function productShowsSection(product: Product, section: ProductDetailSection) {
+  const flag =
+    section === "description"
+      ? product.showDescription
+      : section === "ingredients"
+        ? product.showIngredients
+        : section === "howToUse"
+          ? product.showHowToUse
+          : product.showBenefits;
+  if (flag === false) return false;
+  if (!sectionHasContent(product, section)) return false;
+  return flag === true || flag === undefined;
+}
 
 export type Category = {
   id: string;
@@ -135,7 +164,6 @@ export type ShipmentRecord = {
   method: DeliveryMethod;
   awb?: string;
   reference?: string;
-  returnAwb?: string;
   attempts: number;
   lastError?: string;
   packageData: "missing" | "store_default_weight" | "product_weights";
@@ -174,9 +202,7 @@ export type OrderStatus =
   | "packed"
   | "shipped"
   | "delivered"
-  | "cancelled"
-  | "return_requested"
-  | "returned";
+  | "cancelled";
 
 export type Order = {
   id: string;

@@ -10,7 +10,6 @@ import {
   Leaf,
   Mail,
   Newspaper,
-  RotateCcw,
   Shield,
   Sparkles,
   Truck,
@@ -41,7 +40,6 @@ const columns: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: "Contact", href: "/contact", icon: Mail },
       { label: "Shipping", href: "/shipping", icon: Truck },
-      { label: "Returns", href: "/returns", icon: RotateCcw },
       { label: "FAQ", href: "/faq", icon: HelpCircle },
     ],
   },

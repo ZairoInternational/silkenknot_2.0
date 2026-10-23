@@ -7,7 +7,7 @@ import { policyFromEnv } from "./policy";
 import { deliveryBy, describePin, formatTransit } from "./estimate";
 import { nextMockStep } from "./mock";
 import { createManifest, DelhiveryError, fetchPackingSlip, parsePackingSlip, requestPickup, trackWaybill } from "./delhivery";
-import { applyTracking, canCancelShipment, canRequestReturn, customerCanCancel, customerOrderVisible, normalizeDelhiveryStatus, shipmentTransition, waybillListLabel, waybillProgress } from "./states";
+import { applyTracking, canCancelShipment, customerCanCancel, customerOrderVisible, normalizeDelhiveryStatus, shipmentTransition, waybillListLabel, waybillProgress } from "./states";
 import type { TrackingEvent } from "../types";
 
 const policy = policyFromEnv({
@@ -65,7 +65,11 @@ test("a waybill keeps the customer status on the courier, not the studio dropdow
   assert.equal(waybillProgress("pickup_scheduled").badge, "Processing");
   assert.equal(waybillProgress("pickup_scheduled").index, 1);
   assert.equal(waybillListLabel("pickup_scheduled"), "Pickup scheduled");
+  assert.equal(waybillProgress("in_transit").index, 2);
+  assert.equal(waybillProgress("out_for_delivery").badge, "Out for delivery");
+  assert.equal(waybillProgress("out_for_delivery").index, 3);
   assert.equal(waybillProgress("delivered").badge, "Delivered");
+  assert.equal(waybillProgress("delivered").index, 4);
   assert.equal(waybillListLabel("in_transit"), "In transit");
 });
 
@@ -78,15 +82,13 @@ test("tracking does not downgrade a delivered shipment or accept an older step",
   assert.equal(applied.state, "delivered");
 });
 
-test("cancellation and returns follow shipment progress", () => {
+test("cancellation follows shipment progress", () => {
   assert.equal(canCancelShipment("booked"), true);
   assert.equal(canCancelShipment("picked_up"), false);
   assert.equal(customerCanCancel({ status: "confirmed", shipment: { state: "pickup_scheduled" } }), true);
   assert.equal(customerCanCancel({ status: "shipped", shipment: { state: "in_transit" } }), false);
   assert.equal(customerCanCancel({ fulfillmentState: "shipped", shipment: { state: "booked" } }), false);
   assert.equal(customerCanCancel({ status: "cancelled", shipment: { state: "not_created" } }), false);
-  assert.equal(canRequestReturn("delivered", "2026-10-01T00:00:00.000Z", "2026-10-05T00:00:00.000Z", 7), true);
-  assert.equal(canRequestReturn("delivered", "2026-10-01T00:00:00.000Z", "2026-10-20T00:00:00.000Z", 7), false);
 });
 
 test("customers only see their paid or confirmed COD orders", () => {

@@ -2,6 +2,7 @@ import { MongoClient, type Db } from "mongodb";
 import { ensurePaymentIndexes } from "@/lib/payments/indexes";
 import bcrypt from "bcryptjs";
 import { seedCategories, seedCoupons, seedProducts, seedUsers } from "@/lib/data";
+import { ensureHeroContent } from "@/lib/hero/server";
 import { approxProductWeight } from "@/lib/shipping/weight";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 
@@ -84,6 +85,7 @@ async function seedIfEmpty(db: Db) {
     );
     await users.insertMany(seededUsers);
   }
+  await ensureHeroContent(db);
   await ensureAuthCollections(db);
   await ensurePaymentIndexes(db);
 }

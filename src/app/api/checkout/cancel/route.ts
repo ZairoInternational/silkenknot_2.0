@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { csrfHeaderMatches, sameOrigin } from "@/lib/auth/http";
 import { databaseConfigured, getDb } from "@/lib/mongo";
 import { publicOrder, type StoredOrder } from "@/lib/payments/service";
-import { cancelShipment, loadPolicy } from "@/lib/shipping/booking";
+import { cancelShipment } from "@/lib/shipping/booking";
 import { DelhiveryError } from "@/lib/shipping/delhivery";
-import { canRequestReturn, customerCanCancel } from "@/lib/shipping/states";
+import { customerCanCancel } from "@/lib/shipping/states";
 import { currentSession } from "@/lib/session";
 import type { ShipmentRecord } from "@/lib/types";
 
@@ -20,17 +20,7 @@ export async function POST(request: Request) {
   const order = await db.collection<StoredOrder>("orders").findOne({ id: String(body.orderId || ""), userId: session.id });
   if (!order) return NextResponse.json({ error: "Order not found." }, { status: 404 });
   const shipment = order.shipment as ShipmentRecord | undefined;
-  const state = shipment?.state || "not_created";
-  const deliveredAt = shipment?.events.find((event) => event.state === "delivered")?.at;
   try {
-    if (body.intent === "return") {
-      const policy = await loadPolicy(db);
-      if (!canRequestReturn(state, deliveredAt, new Date().toISOString(), policy.returnWindowDays)) {
-        return NextResponse.json({ error: "This order is outside the return window." }, { status: 409 });
-      }
-      await db.collection("orders").updateOne({ id: order.id }, { $set: { status: "return_requested" }, $push: { audit: { at: new Date().toISOString(), event: "return_requested" } } } as never);
-      return NextResponse.json({ order: publicOrder({ ...order, status: "return_requested" }) });
-    }
     if (!customerCanCancel(order)) return NextResponse.json({ error: "This order has been dispatched and can no longer be cancelled." }, { status: 409 });
     if (shipment?.awb) await cancelShipment(db, order.id);
     const now = new Date().toISOString();

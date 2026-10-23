@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Check, CircleHelp, Heart, MapPin, MessageCircle, Package, Pencil, Plus, RefreshCw, Search, Trash2, Truck, User } from "lucide-react";
+import { Check, CircleHelp, Heart, MapPin, MessageCircle, Package, Pencil, Plus, Search, Trash2, Truck, User } from "lucide-react";
 import { INDIAN_STATES } from "@/app/checkout/shipping/page";
 import { formatDate, formatPrice } from "@/lib/format";
 import { useStore } from "@/lib/store";
@@ -394,6 +394,7 @@ export function orderStatus(order: Order) {
   if (cancelled && (order.paymentState === "refund_pending" || order.paymentState === "partially_refunded")) return "Refund in progress";
   if (cancelled && order.paymentState === "refunded") return "Refunded";
   if (cancelled) return "Cancelled";
+  const shipment = order.shipment?.state;
   if (order.paymentState === "refund_pending" || order.paymentState === "partially_refunded") return "Refund in progress";
   if (order.paymentState === "refunded") return "Refunded";
   if (order.shipment?.awb) return waybillListLabel(order.shipment.state);
@@ -591,7 +592,6 @@ function OrderCard({ order }: { order: Order }) {
 function OrderHelp() {
   const links = [
     { href: "/shipping", label: "Shipping information", icon: <Truck size={16} /> },
-    { href: "/returns", label: "Returns and exchanges", icon: <RefreshCw size={16} /> },
     { href: "/faq", label: "Track an order", icon: <MapPin size={16} /> },
     { href: "/faq", label: "FAQs", icon: <CircleHelp size={16} /> },
   ];

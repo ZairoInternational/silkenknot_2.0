@@ -46,3 +46,4 @@ export function buildBannerAssetKey(scope: "homepage" | string, assetId: string)
   assertSafeId(scope, "campaign id");
   return `banners/campaigns/${scope}/${assetId}.webp`;
 }
+

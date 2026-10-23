@@ -62,17 +62,7 @@ export function ShippingPage() {
     <Editorial eyebrow="Help" title="Shipping" lede="We deliver within India.">
       <p>Delivery is free on orders of ₹999 and above. Below that, the delivery price for your PIN is shown at checkout.</p>
       <p>Where a faster option is available, you can choose it at checkout. The arrival time is shown there for your PIN.</p>
-      <p>Candles and glass are packed to travel. If something arrives damaged, write to us with a photograph and we will replace it.</p>
-    </Editorial>
-  );
-}
-
-export function ReturnsPage() {
-  return (
-    <Editorial eyebrow="Help" title="Returns" lede="Fourteen days, with a few honest limits.">
-      <p>Unopened body care, soap, and candles can be returned within 14 days of delivery. Apparel can be returned unworn, with tags attached, in the same window.</p>
-      <p>Opened care products cannot be returned, for hygiene. If a formula is faulty, we will replace it.</p>
-      <p>Start a return from the contact page with your order number. Refunds go back to the original payment method once the parcel reaches the studio.</p>
+      <p>Candles and glass are packed to travel.</p>
     </Editorial>
   );
 }
@@ -80,9 +70,9 @@ export function ReturnsPage() {
 export function PrivacyPage() {
   return (
     <Editorial eyebrow="Studio" title="Privacy" lede="This preview keeps your account in your browser.">
-      <p>Silken Knot’s preview store keeps your bag on this device. An account, when you sign in, is stored for that login.</p>
+      <p>Silken Knot's preview store keeps your bag on this device. An account, when you sign in, is stored for that login.</p>
       <p>Payment details are entered in a secure payment window. Silken Knot does not store your full card number, CVV, or UPI PIN. We keep the name, contact, address, and payment reference needed to deliver the order.</p>
-      <p>That information is used to fulfil the order, send delivery updates, and handle a return. It is not sold.</p>
+      <p>That information is used to fulfil the order and send delivery updates. It is not sold.</p>
     </Editorial>
   );
 }

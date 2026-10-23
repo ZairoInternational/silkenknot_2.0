@@ -10,6 +10,7 @@ import { getSeedProduct } from "@/lib/data";
 import { categoryName, formatDate } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
+import { productShowsSection } from "@/lib/types";
 
 export function ProductView({ slug }: { slug: string }) {
   const store = useStore();
@@ -167,14 +168,17 @@ function ProductDetail({ product }: { product: Product }) {
       </div>
 
       <div className="mx-auto mt-20 max-w-3xl space-y-12 px-5">
+        {productShowsSection(product, "description") ? (
         <section>
           <h2 className="font-serif text-4xl">Description</h2>
           <p className="mt-4 leading-7 text-mute">{product.description}</p>
         </section>
+        ) : null}
+        {productShowsSection(product, "benefits") ? (
         <section>
           <h2 className="font-serif text-4xl">Benefits</h2>
           <ol className="mt-6 space-y-4">
-            {product.benefits.map((benefit, index) => (
+            {product.benefits.filter((benefit) => benefit.trim()).map((benefit, index) => (
               <li key={benefit} className="grid grid-cols-[auto_1fr] gap-4">
                 <span className="font-serif text-3xl text-stone">0{index + 1}</span>
                 <span className="pt-2">{benefit}</span>
@@ -182,25 +186,30 @@ function ProductDetail({ product }: { product: Product }) {
             ))}
           </ol>
         </section>
+        ) : null}
+        {productShowsSection(product, "ingredients") ? (
         <section>
           <h2 className="font-serif text-4xl">Ingredients</h2>
           <ul className="mt-4 space-y-2 text-mute">
-            {product.ingredients.map((item) => <li key={item}>{item}</li>)}
+            {product.ingredients.filter((item) => item.trim()).map((item) => <li key={item}>{item}</li>)}
           </ul>
         </section>
+        ) : null}
+        {productShowsSection(product, "howToUse") ? (
         <section>
           <h2 className="font-serif text-4xl">How to use</h2>
           <ol className="mt-4 list-decimal space-y-2 pl-5 text-mute">
-            {product.howToUse.map((item) => <li key={item}>{item}</li>)}
+            {product.howToUse.filter((item) => item.trim()).map((item) => <li key={item}>{item}</li>)}
           </ol>
         </section>
+        ) : null}
         <section>
           <h2 className="font-serif text-4xl">Shipping</h2>
           <p className="mt-4 leading-7 text-mute">Standard delivery within India is free on orders over ₹999, otherwise ₹79. Express delivery is ₹149 and usually arrives in 2–4 days. Candles and jars are packed to travel.</p>
         </section>
         <section>
           <h2 className="font-serif text-4xl">Returns</h2>
-          <p className="mt-4 leading-7 text-mute">Unopened care, soap, and candles can come back within 14 days. Apparel can be returned unworn, with tags, in the same window. Opened formulas are final.</p>
+          <p className="mt-4 leading-7 text-mute">All products are final sale for hygiene and safety reasons. You can cancel an order before it is dispatched.</p>
         </section>
         <section id="reviews">
           <h2 className="font-serif text-4xl">Reviews</h2>

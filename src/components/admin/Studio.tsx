@@ -6,6 +6,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { formatDate, formatPrice, slugify } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import type { Category, Coupon, Order, OrderStatus, Product, Variant } from "@/lib/types";
+import type { HeroOffer } from "@/lib/hero/content";
+import { DEFAULT_HERO_OFFER } from "@/lib/hero/content";
+function linesToList(value: string) {
+  return value.split("\n").map((item) => item.trimEnd());
+}
 import { Media } from "@/components/ui";
 import { csrfHeaders } from "@/lib/auth/browser";
 
@@ -17,6 +22,7 @@ const links = [
   ["Shipping", "/admin/shipping"],
   ["Customers", "/admin/customers"],
   ["Offers", "/admin/offers"],
+  ["Hero", "/admin/hero"],
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
@@ -178,9 +184,13 @@ function blankProduct(): Product {
     reviewCount: 0,
     shortDescription: "",
     description: "",
-    benefits: ["", "", ""],
+    benefits: [""],
     ingredients: [""],
     howToUse: [""],
+    showDescription: true,
+    showIngredients: false,
+    showHowToUse: false,
+    showBenefits: false,
     images: [],
     variants: [{ id: "standard", label: "Standard", price: 0, stock: 0 }],
     featured: false,
@@ -307,13 +317,53 @@ function ProductForm({ initial }: { initial?: Product }) {
           <span className="mt-2 block text-xs text-mute">Used to estimate the parcel for this product. Shoppers do not see it. The shipment uses the total of the items in the order.</span>
         </label>
         <label className="block text-sm">
-          Description
-          <textarea value={product.description} onChange={(event) => set("description", event.target.value)} className="mt-2 min-h-28 w-full border-b border-line bg-transparent outline-none" />
-        </label>
-        <label className="block text-sm">
           Short description
           <textarea value={product.shortDescription} onChange={(event) => set("shortDescription", event.target.value)} className="mt-2 min-h-20 w-full border-b border-line bg-transparent outline-none" />
         </label>
+      </section>
+      <section className="space-y-4 bg-paper p-6">
+        <p className="eyebrow text-mute">Detail sections (optional)</p>
+        <p className="text-xs text-mute">Check a section to show it on the product page, then author the copy. One item per line for lists.</p>
+        {([
+          ["showDescription", "Show description", "description"] as const,
+          ["showBenefits", "Show benefits", "benefits"] as const,
+          ["showIngredients", "Show ingredients", "ingredients"] as const,
+          ["showHowToUse", "Show how to use", "howToUse"] as const,
+        ]).map(([flag, label, field]) => {
+          const hasList = field === "benefits" || field === "ingredients" || field === "howToUse";
+          const enabled =
+            product[flag] ??
+            (field === "description"
+              ? Boolean(product.description.trim())
+              : product[field].some((item) => item.trim()));
+          return (
+            <div key={flag} className="space-y-2 border-t border-line pt-3 first:border-t-0 first:pt-0">
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={enabled} onChange={(event) => set(flag, event.target.checked)} />
+                {label}
+              </label>
+              {enabled ? (
+                <label className="block text-sm">
+                  {field === "description"
+                    ? "Description"
+                    : field === "benefits"
+                      ? "Benefits (one per line)"
+                      : field === "ingredients"
+                        ? "Ingredients (one per line)"
+                        : "How to use (one step per line)"}
+                  <textarea
+                    value={hasList ? product[field].join("\n") : product.description}
+                    onChange={(event) => {
+                      if (hasList) set(field, linesToList(event.target.value));
+                      else set("description", event.target.value);
+                    }}
+                    className="mt-2 min-h-24 w-full border-b border-line bg-transparent outline-none"
+                  />
+                </label>
+              ) : null}
+            </div>
+          );
+        })}
       </section>
       <section className="bg-paper p-6">
         <p className="eyebrow text-mute">Media</p>
@@ -525,7 +575,7 @@ export function OrderIndex() {
         <label className="text-sm">
           Status
           <select value={status} onChange={(event) => setStatus(event.target.value)} className="ml-3 h-10 border-b border-line bg-transparent">
-            {["all", "pending_payment", "confirmed", "shipped", "delivered", "cancelled", "return_requested"].map((item) => <option key={item}>{item}</option>)}
+            {["all", "pending_payment", "confirmed", "shipped", "delivered", "cancelled"].map((item) => <option key={item}>{item}</option>)}
           </select>
         </label>
       <label className="text-sm">
@@ -632,6 +682,164 @@ export function CustomerDetail({ id }: { id: string }) {
           <li key={order.id}><Link href={`/admin/orders/${order.id}`}>{order.number}</Link> · {order.status} · {formatPrice(order.total)}</li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+export function HeroManager() {
+  const [draft, setDraft] = useState<HeroOffer>(DEFAULT_HERO_OFFER);
+  const [chipsText, setChipsText] = useState(DEFAULT_HERO_OFFER.chips.join(", "));
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/admin/hero", { headers: csrfHeaders() });
+        const data = (await response.json()) as { ok?: boolean; offer?: HeroOffer; error?: string };
+        if (!response.ok || !data.offer) throw new Error(data.error || "Could not load the hero offer.");
+        if (cancelled) return;
+        setDraft(data.offer);
+        setChipsText(data.offer.chips.join(", "));
+      } catch (failure) {
+        if (!cancelled) setError(failure instanceof Error ? failure.message : "Could not load the hero offer.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const patch = (next: Partial<HeroOffer>) => setDraft((current) => ({ ...current, ...next }));
+
+  const onUpload = async (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file || uploading) return;
+    setUploading(true);
+    setError("");
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("role", "banner");
+      body.append("scope", "homepage");
+      const response = await fetch("/api/admin/media", { method: "POST", headers: csrfHeaders(false), body });
+      const payload = (await response.json()) as { url?: string; message?: string };
+      if (!response.ok || !payload.url) throw new Error(payload.message || "Could not upload that image.");
+      patch({ image: payload.url });
+      setMessage("Image uploaded.");
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : "Could not upload that image.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  if (loading) return <p className="text-mute">Loading hero…</p>;
+
+  return (
+    <div className="max-w-2xl">
+      <h1 className="font-serif text-5xl">Hero</h1>
+      <p className="mt-3 max-w-xl text-sm text-mute">
+        Configure the homepage campaign slide (sale / festival). Turn it off to hide the offer without touching code. Product slides stay as they are.
+      </p>
+
+      <form
+        className="mt-8 space-y-4"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          setSaving(true);
+          setError("");
+          setMessage("");
+          const chips = chipsText
+            .split(",")
+            .map((chip) => chip.trim())
+            .filter(Boolean);
+          const offer: HeroOffer = { ...draft, chips };
+          try {
+            const response = await fetch("/api/admin/hero", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json", ...csrfHeaders() },
+              body: JSON.stringify({ offer }),
+            });
+            const data = (await response.json()) as { ok?: boolean; offer?: HeroOffer; message?: string; error?: string };
+            if (!response.ok || !data.offer) throw new Error(data.error || "Could not save.");
+            setDraft(data.offer);
+            setChipsText(data.offer.chips.join(", "));
+            setMessage(data.message || "Saved.");
+          } catch (failure) {
+            setError(failure instanceof Error ? failure.message : "Could not save.");
+          } finally {
+            setSaving(false);
+          }
+        }}
+      >
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={draft.enabled} onChange={(event) => patch({ enabled: event.target.checked })} />
+          Show campaign slide on the homepage
+        </label>
+
+        <AdminField label="Pill label" value={draft.pill} onChange={(pill) => patch({ pill })} />
+        <AdminField label="Title line 1" value={draft.titleLine1} onChange={(titleLine1) => patch({ titleLine1 })} />
+        <AdminField label="Title line 2 (accent)" value={draft.titleLine2} onChange={(titleLine2) => patch({ titleLine2 })} />
+        <label className="block text-sm">
+          Supporting note
+          <textarea
+            value={draft.note}
+            onChange={(event) => patch({ note: event.target.value })}
+            rows={3}
+            className="mt-2 w-full border-b border-line bg-transparent outline-none"
+          />
+        </label>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <AdminField label="Primary CTA" value={draft.cta} onChange={(cta) => patch({ cta })} />
+          <AdminField label="Primary link" value={draft.href} onChange={(href) => patch({ href })} />
+          <AdminField label="Secondary CTA" value={draft.secondaryCta} onChange={(secondaryCta) => patch({ secondaryCta })} />
+          <AdminField label="Secondary link" value={draft.secondaryHref} onChange={(secondaryHref) => patch({ secondaryHref })} />
+        </div>
+
+        <AdminField label="Coupon code" value={draft.couponCode} onChange={(couponCode) => patch({ couponCode })} />
+        <AdminField label="Seal label (rotating ring)" value={draft.sealLabel} onChange={(sealLabel) => patch({ sealLabel })} />
+        <AdminField label="Seal percent" value={draft.sealPercent} onChange={(sealPercent) => patch({ sealPercent })} />
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <AdminField label="Card tag" value={draft.cardTag} onChange={(cardTag) => patch({ cardTag })} />
+          <AdminField label="Card name" value={draft.cardName} onChange={(cardName) => patch({ cardName })} />
+        </div>
+        <AdminField label="Chips (comma-separated)" value={chipsText} onChange={setChipsText} />
+
+        <AdminField label="Image URL" value={draft.image} onChange={(image) => patch({ image })} />
+        <AdminField label="Image alt text" value={draft.alt} onChange={(alt) => patch({ alt })} />
+        <label className="block text-sm">
+          Upload hero image
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={uploading}
+            className="mt-2 block w-full text-sm"
+            onChange={(event) => void onUpload(event.target.files)}
+          />
+          <span className="mt-1 block text-xs text-mute">{uploading ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
+        </label>
+
+        {draft.image ? (
+          <div className="relative h-40 w-full max-w-sm overflow-hidden rounded-lg border border-line bg-paper">
+            <Media src={draft.image} alt={draft.alt || "Hero preview"} className="object-cover" />
+          </div>
+        ) : null}
+
+        {error ? <p role="status" className="text-sm text-red-700">{error}</p> : null}
+        {message ? <p role="status" className="text-sm text-mute">{message}</p> : null}
+        <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
+          {saving ? "Saving…" : "Save hero offer"}
+        </button>
+      </form>
     </div>
   );
 }
@@ -806,7 +1014,6 @@ function FulfilmentPanel({ orderId, initial }: { orderId: string; initial: Order
         <button type="button" className="h-10 border-b border-line text-sm" onClick={() => run("pickup")}>Request pickup</button>
         <button type="button" className="h-10 border-b border-line text-sm" onClick={() => run("cancel-shipment", { confirm: window.confirm("Cancel this shipment?") })}>Cancel shipment</button>
         <button type="button" className="h-10 border-b border-line text-sm" onClick={() => run("manual")}>Manual fulfilment</button>
-        <button type="button" className="h-10 border-b border-line text-sm" onClick={() => run("approve-return")}>Book return pickup</button>
         <button type="button" className="h-10 border-b border-line text-sm" onClick={() => run("refund")}>Request refund</button>
       </div>
       {message ? <p className="mt-3 text-sm">{message}</p> : null}

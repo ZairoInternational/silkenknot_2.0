@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { csrfHeaderMatches, sameOrigin } from "@/lib/auth/http";
 import { databaseConfigured, getDb } from "@/lib/mongo";
 import { publicOrder, requestRefund, type StoredOrder } from "@/lib/payments/service";
-import { bookOrder, cancelShipment, createReturnManifest, loadPolicy, refreshTracking, schedulePickup, shippingLabel } from "@/lib/shipping/booking";
+import { bookOrder, cancelShipment, loadPolicy, refreshTracking, schedulePickup, shippingLabel } from "@/lib/shipping/booking";
 import { DelhiveryError } from "@/lib/shipping/delhivery";
 import { publicPolicy } from "@/lib/shipping/policy";
 import { currentSession } from "@/lib/session";
@@ -44,7 +44,6 @@ export async function POST(request: Request) {
         pickupLocation: String(body.pickupLocation || ""),
         standardEta: String(body.standardEta || ""),
         expressEta: String(body.expressEta || ""),
-        returnWindowDays: Number(body.returnWindowDays),
       };
       await db.collection("storeSettings").updateOne({ id: "shipping" }, { $set: { id: "shipping", overrides, updatedAt: new Date().toISOString() } }, { upsert: true });
       return NextResponse.json({ policy: publicPolicy(await loadPolicy(db)) });
@@ -72,10 +71,6 @@ export async function POST(request: Request) {
     else if (action === "manual") {
       await db.collection("orders").updateOne({ id: orderId }, { $set: { "shipment.provider": "manual", "shipment.state": "not_created" } });
       await db.collection("shipmentTasks").updateOne({ orderId }, { $set: { status: "manual" } });
-    }
-    else if (action === "approve-return") await createReturnManifest(db, orderId);
-    else if (action === "reject-return") {
-      await db.collection("orders").updateOne({ id: orderId, status: "return_requested" }, { $set: { status: "delivered", "shipment.state": "delivered" }, $push: { audit: { at: new Date().toISOString(), event: "return_rejected" } } } as never);
     }
     else if (action === "refund") {
       const order = await requestRefund(orderId);

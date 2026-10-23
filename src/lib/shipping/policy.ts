@@ -17,7 +17,6 @@ export type ShippingPolicy = {
   codFeePaise: number;
   bookingMode: "auto" | "manual";
   defaultWeightGrams: number;
-  returnWindowDays: number;
   webhookToken: string;
   mode: "off" | "mock" | "live";
   liveReadsEnabled: boolean;
@@ -77,7 +76,6 @@ export function policyFromEnv(env: Record<string, string | undefined>): Shipping
     codFeePaise: whole(env.SHIPPING_COD_FEE_PAISE, 0),
     bookingMode: delhiveryEnabled ? booking : "manual",
     defaultWeightGrams: whole(env.SHIPPING_DEFAULT_WEIGHT_GRAMS, 500),
-    returnWindowDays: whole(env.SHIPPING_RETURN_WINDOW_DAYS, 7),
     webhookToken: env.DELHIVERY_WEBHOOK_TOKEN?.trim() || "",
     mode,
     liveReadsEnabled,
@@ -85,13 +83,13 @@ export function policyFromEnv(env: Record<string, string | undefined>): Shipping
   };
 }
 
-export type ShippingOverrides = Partial<Pick<ShippingPolicy, "standardPaise" | "expressPaise" | "freeShippingPaise" | "codEnabled" | "codFeePaise" | "bookingMode" | "pickupLocation" | "standardEta" | "expressEta" | "returnWindowDays" | "delhiveryEnabled">>;
+export type ShippingOverrides = Partial<Pick<ShippingPolicy, "standardPaise" | "expressPaise" | "freeShippingPaise" | "codEnabled" | "codFeePaise" | "bookingMode" | "pickupLocation" | "standardEta" | "expressEta" | "delhiveryEnabled">>;
 
 export function applyOverrides(policy: ShippingPolicy, overrides: ShippingOverrides | null | undefined): ShippingPolicy {
   if (!overrides) return policy;
   const next = { ...policy };
   if (typeof overrides.delhiveryEnabled === "boolean") next.delhiveryEnabled = overrides.delhiveryEnabled;
-  for (const key of ["standardPaise", "expressPaise", "freeShippingPaise", "codFeePaise", "returnWindowDays"] as const) {
+  for (const key of ["standardPaise", "expressPaise", "freeShippingPaise", "codFeePaise"] as const) {
     const value = overrides[key];
     if (typeof value === "number" && Number.isInteger(value) && value >= 0) next[key] = value;
   }
@@ -131,7 +129,6 @@ export function publicPolicy(policy: ShippingPolicy) {
     codFeePaise: policy.codFeePaise,
     bookingMode: policy.bookingMode,
     defaultWeightGrams: policy.defaultWeightGrams,
-    returnWindowDays: policy.returnWindowDays,
     credentialsSet: Boolean(policy.token),
     webhookConfigured: Boolean(policy.webhookToken),
     gstConfigured: Boolean(policy.sellerGstTin && policy.hsnCode),

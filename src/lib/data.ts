@@ -913,7 +913,7 @@ export const sharedFaqs: Faq[] = [
   },
   {
     question: "Can I return a product?",
-    answer: "Unopened care, soap, and candles can be returned within 14 days. Apparel can be returned unworn, with tags, within 14 days. Opened care products are final, for hygiene.",
+    answer: "All products are final sale for hygiene and safety reasons. You can cancel an order before it is dispatched by visiting your order page.",
   },
   {
     question: "Are the scents strong?",

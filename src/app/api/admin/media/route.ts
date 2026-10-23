@@ -1,5 +1,5 @@
 import { clientIp, csrfHeaderMatches, jsonError, sameOrigin } from "@/lib/auth/http";
-import { bunnyReady, deleteManagedAsset, uploadProductImage } from "@/lib/media/bunny";
+import { bunnyReady, removeFromBunny, uploadBannerImage, uploadProductImage } from "@/lib/media/bunny";
 import { MediaError, mediaCorrelationId } from "@/lib/media/errors";
 import { assertMediaAdmin } from "@/lib/media/gate";
 import { MEDIA_MAX_BYTES } from "@/lib/media/image";
@@ -77,25 +77,8 @@ export async function POST(request: Request) {
     return jsonError("Use a JPEG, PNG, or WebP image.", 400, { correlationId });
   }
 
-  const productIdRaw = String(form.get("productId") || "").trim();
-  if (!productIdRaw) return jsonError("A product id is required before uploading images.", 400, { correlationId });
-  try {
-    assertSafeId(productIdRaw, "product id");
-  } catch {
-    return jsonError("Invalid product id.", 400, { correlationId });
-  }
-
   const roleRaw = String(form.get("role") || "gallery").trim();
-  const role = roleRaw === "main" || roleRaw === "variant" ? roleRaw : "gallery";
-  const variantId = String(form.get("variantId") || "").trim() || undefined;
-  if (role === "variant") {
-    if (!variantId) return jsonError("A variant id is required for variant images.", 400, { correlationId });
-    try {
-      assertSafeId(variantId, "variant id");
-    } catch {
-      return jsonError("Invalid variant id.", 400, { correlationId });
-    }
-  }
+  const isBanner = roleRaw === "banner";
 
   let bytes: Buffer;
   try {
@@ -105,6 +88,52 @@ export async function POST(request: Request) {
   }
   if (bytes.length > MEDIA_MAX_BYTES) {
     return jsonError("That image needs to be under 6 MB.", 400, { correlationId });
+  }
+
+  if (isBanner) {
+    const scopeRaw = String(form.get("scope") || "homepage").trim() || "homepage";
+    try {
+      if (scopeRaw !== "homepage") assertSafeId(scopeRaw, "campaign id");
+    } catch {
+      return jsonError("Invalid campaign id.", 400, { correlationId });
+    }
+    try {
+      const result = await uploadBannerImage({ bytes, scope: scopeRaw, correlationId });
+      return Response.json({
+        ok: true,
+        url: result.url,
+        assetId: result.assetId,
+        key: result.key,
+        contentType: result.contentType,
+        width: result.width,
+        height: result.height,
+        bytes: result.bytes,
+        scope: result.scope,
+        role: result.role,
+        correlationId,
+      });
+    } catch (error) {
+      return safeError(error, correlationId);
+    }
+  }
+
+  const productIdRaw = String(form.get("productId") || "").trim();
+  if (!productIdRaw) return jsonError("A product id is required before uploading images.", 400, { correlationId });
+  try {
+    assertSafeId(productIdRaw, "product id");
+  } catch {
+    return jsonError("Invalid product id.", 400, { correlationId });
+  }
+
+  const role = roleRaw === "main" || roleRaw === "variant" ? roleRaw : "gallery";
+  const variantId = String(form.get("variantId") || "").trim() || undefined;
+  if (role === "variant") {
+    if (!variantId) return jsonError("A variant id is required for variant images.", 400, { correlationId });
+    try {
+      assertSafeId(variantId, "variant id");
+    } catch {
+      return jsonError("Invalid variant id.", 400, { correlationId });
+    }
   }
 
   try {
@@ -166,7 +195,7 @@ export async function DELETE(request: Request) {
         return jsonError("That image is still attached to a product.", 409, { correlationId });
       }
     }
-    await deleteManagedAsset(url, correlationId);
+    await removeFromBunny(url, correlationId);
     return Response.json({ ok: true, correlationId });
   } catch (error) {
     return safeError(error, correlationId);
