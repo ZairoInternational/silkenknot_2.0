@@ -830,7 +830,7 @@ export function HeroManager() {
 
         {draft.image ? (
           <div className="relative h-40 w-full max-w-sm overflow-hidden rounded-lg border border-line bg-paper">
-            <Media src={draft.image} alt={draft.alt || "Hero preview"} className="object-cover" />
+            <Media src={draft.image} alt={draft.alt || "Hero preview"} className="object-cover" sizes="100vw" />
           </div>
         ) : null}
 
