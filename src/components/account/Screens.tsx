@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Check, CircleHelp, Heart, MapPin, MessageCircle, Package, Pencil, Plus, Search, Trash2, Truck, User } from "lucide-react";
-import { INDIAN_STATES } from "@/app/checkout/shipping/page";
+import { Building2, Check, CircleHelp, Heart, House, MapPin, MessageCircle, Package, Pencil, Plus, Search, Trash2, Truck, User } from "lucide-react";
 import { formatDate, formatPrice } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import type { Address, Order } from "@/lib/types";
@@ -227,12 +226,13 @@ function ProfileForm() {
                     required
                     minLength={2}
                     maxLength={80}
+                    autoComplete="name"
                     value={name}
                     onChange={(event) => setName(event.target.value)}
-                    className="mt-0.5 h-8 w-full bg-transparent text-sm font-medium text-[#2c2926] outline-none"
+                    className="mt-1 h-10 w-full rounded-lg border border-[#e3dbd1] bg-[#fffcf8] px-3 text-sm font-medium text-[#2c2926] outline-none ring-0 transition-[border-color,box-shadow] focus:border-[#CBAC7C] focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_rgba(203,172,124,0.18)] focus-visible:outline-none"
                   />
                 </label>
-                <button type="submit" className="h-8 rounded-full bg-[#c6a15e] px-3 text-xs text-white">Save</button>
+                <button type="submit" className="h-10 shrink-0 rounded-full bg-[#c6a15e] px-4 text-xs text-white hover:bg-[#b3924f]">Save</button>
               </form>
             ) : (
               <>
@@ -637,6 +637,26 @@ export function AddressesScreen() {
   );
 }
 
+const ADDRESS_LABELS = ["Home", "Office"] as const;
+type AddressLabel = (typeof ADDRESS_LABELS)[number];
+
+function normalizeAddressLabel(label: string): AddressLabel {
+  const value = label.trim().toLowerCase();
+  if (value === "office" || value === "work") return "Office";
+  return "Home";
+}
+
+function AddressLabelChip({ label }: { label: string }) {
+  const kind = normalizeAddressLabel(label);
+  const Icon = kind === "Office" ? Building2 : House;
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f6efe4] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-[#b08958]">
+      <Icon size={12} strokeWidth={1.8} aria-hidden />
+      {kind}
+    </span>
+  );
+}
+
 function emptyAddress(name: string): Address {
   return {
     id: `addr-${Date.now()}`,
@@ -645,7 +665,6 @@ function emptyAddress(name: string): Address {
     line1: "",
     line2: "",
     city: "",
-    state: "",
     postal: "",
     country: "India",
     phone: "",
@@ -701,11 +720,17 @@ function AddressBook() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
-                    <p className="font-medium text-[#2c2926]">{address.name}</p>
-                    {address.isDefault ? <span className="rounded-md bg-[#f6efe4] px-2 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-[#b08958]">Default</span> : null}
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <AddressLabelChip label={address.label} />
+                        {address.isDefault ? <span className="rounded-full bg-[#efe6d8] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-[#6f675d]">Default</span> : null}
+                      </div>
+                      <p className="mt-1.5 font-medium text-[#2c2926]">{address.name}</p>
+                    </div>
                   </div>
-                  <p className="mt-1 text-sm leading-6 text-[#a08a62]">{address.line1}{address.line2 ? `, ${address.line2}` : ""}</p>
-                  <p className="text-sm leading-6 text-[#a08a62]">{address.city}, {address.state} {address.postal}</p>
+                  <p className="mt-1 text-sm leading-6 text-[#a08a62]">{address.line1}</p>
+                  {address.line2 ? <p className="text-sm leading-6 text-[#a08a62]">{address.line2}</p> : null}
+                  <p className="text-sm leading-6 text-[#a08a62]">{address.city} {address.postal}</p>
                   <p className="text-sm text-[#a08a62]">{address.phone ? displayPhone(address.phone) : ""}</p>
                 </div>
               </div>
@@ -728,7 +753,11 @@ function AddressBook() {
                     {fromShipping ? "Deliver here" : "Set as default"}
                   </button>
                 ) : null}
-                <button type="button" className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#e7d7bc] px-4 text-sm text-[#b08958]" onClick={() => setEditing(address)}>
+                <button
+                  type="button"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#e7d7bc] px-4 text-sm text-[#b08958]"
+                  onClick={() => setEditing({ ...address, label: normalizeAddressLabel(address.label) })}
+                >
                   <Pencil size={14} /> Edit
                 </button>
                 <button type="button" className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#f0d2cb] px-4 text-sm text-[#c45c4a]" onClick={() => void store.deleteAddress(address.id)}>
@@ -744,44 +773,100 @@ function AddressBook() {
           className="mt-6 grid gap-4 rounded-[24px] border border-[#efe6d8] bg-white p-5 md:grid-cols-2"
           onSubmit={async (event) => {
             event.preventDefault();
-            await store.saveAddress({ ...editing, country: "India" });
+            await store.saveAddress({ ...editing, label: normalizeAddressLabel(editing.label), country: "India" });
             setEditing(null);
           }}
         >
           <p className="text-sm font-medium text-[#2c2926] md:col-span-2">{editing.line1 ? "Edit address" : "New address"}</p>
-          {([
-            ["label", "Label"],
-            ["name", "Name"],
-            ["phone", "Phone"],
-            ["line1", "Address"],
-            ["line2", "Apartment"],
-            ["city", "City"],
-            ["postal", "PIN code"],
-          ] as const).map(([key, label]) => (
+          <Field
+            label="Full name"
+            name="name"
+            autoComplete="name"
+            required
+            placeholder="Full name"
+            value={editing.name}
+            onChange={(event) => setEditing({ ...editing, name: event.target.value })}
+          />
+          <Field
+            label="Mobile"
+            name="phone"
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel-national"
+            required
+            maxLength={10}
+            placeholder="10-digit mobile"
+            value={editing.phone}
+            onChange={(event) => setEditing({ ...editing, phone: event.target.value.replace(/\D/g, "").slice(0, 10) })}
+          />
+          <div className="md:col-span-2">
             <Field
-              key={key}
-              label={label}
-              name={key}
-              required={key !== "line2"}
-              value={editing[key]}
-              onChange={(event) => setEditing({ ...editing, [key]: event.target.value })}
-            />
-          ))}
-          <label className="block text-sm md:col-span-2">
-            <span className="text-[11px] uppercase tracking-[0.14em] text-mute">State</span>
-            <select
+              label="House / Flat / Building"
+              name="line1"
+              autoComplete="address-line1"
               required
-              value={editing.state}
-              onChange={(event) => setEditing({ ...editing, state: event.target.value })}
-              className="mt-2 h-12 w-full rounded-lg border border-[#e3dbd1] bg-white px-3 text-sm"
-            >
-              <option value="">Select state</option>
-              {(editing.state && !INDIAN_STATES.includes(editing.state) ? [editing.state, ...INDIAN_STATES] : INDIAN_STATES).map((state) => (
-                <option key={state} value={state}>{state}</option>
-              ))}
-            </select>
-          </label>
-          <label className="flex items-center gap-2 text-sm text-[#2c2926] md:col-span-2">
+              placeholder="House no., flat, building"
+              value={editing.line1}
+              onChange={(event) => setEditing({ ...editing, line1: event.target.value })}
+            />
+          </div>
+          <div className="md:col-span-2">
+            <Field
+              label="Area / Street"
+              name="line2"
+              autoComplete="address-line2"
+              required
+              placeholder="Road, area, colony"
+              value={editing.line2}
+              onChange={(event) => setEditing({ ...editing, line2: event.target.value })}
+            />
+          </div>
+          <Field
+            label="City"
+            name="city"
+            autoComplete="address-level2"
+            required
+            placeholder="City"
+            value={editing.city}
+            onChange={(event) => setEditing({ ...editing, city: event.target.value })}
+          />
+          <Field
+            label="Pincode"
+            name="postal"
+            inputMode="numeric"
+            autoComplete="postal-code"
+            required
+            maxLength={6}
+            placeholder="6-digit PIN"
+            value={editing.postal}
+            onChange={(event) => setEditing({ ...editing, postal: event.target.value.replace(/\D/g, "").slice(0, 6) })}
+          />
+          <div className="md:col-span-2" role="group" aria-label="Save as">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-mute">Save as</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {ADDRESS_LABELS.map((option) => {
+                const active = normalizeAddressLabel(editing.label) === option;
+                const Icon = option === "Office" ? Building2 : House;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setEditing({ ...editing, label: option })}
+                    className={`inline-flex h-11 items-center gap-2 rounded-full border px-4 text-sm transition ${
+                      active
+                        ? "border-[#CBAC7C] bg-[#CBAC7C] text-white"
+                        : "border-[#e3dbd1] bg-white text-[#6f675d] hover:border-[#CBAC7C]"
+                    }`}
+                  >
+                    <Icon size={16} strokeWidth={1.7} aria-hidden />
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <label className="flex min-h-11 items-center gap-2.5 text-sm text-[#2c2926] md:col-span-2">
             <input type="checkbox" checked={editing.isDefault} onChange={(event) => setEditing({ ...editing, isDefault: event.target.checked })} className="size-4 accent-[#CBAC7C]" />
             Default address
           </label>

@@ -97,6 +97,6 @@ export function applyLaneEstimates(options: ShippingOption[], lane: { standard: 
   });
 }
 
-export function payablePaise(netPaise: number, chargePaise: number, codFeePaise: number) {
-  return netPaise + chargePaise + codFeePaise;
+export function payablePaise(netPaise: number, chargePaise: number, codFeePaise: number, platformFeePaise = 0) {
+  return netPaise + chargePaise + codFeePaise + platformFeePaise;
 }

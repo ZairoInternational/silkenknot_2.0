@@ -14,6 +14,7 @@ export type Quote = {
   discountPaise: number;
   shippingPaise: number;
   codFeePaise: number;
+  platformFeePaise: number;
   amountPaise: number;
   couponCode?: string;
   delivery: "standard" | "express";
@@ -23,6 +24,7 @@ export type ShippingCharge = {
   method: "standard" | "express";
   chargePaise: number;
   codFeePaise?: number;
+  platformFeePaise?: number;
 };
 
 export class QuoteError extends Error {
@@ -32,7 +34,40 @@ export class QuoteError extends Error {
   }
 }
 
+export type DroppedCoupon = {
+  code: string;
+  message: string;
+};
+
 type RequestLine = { productId?: unknown; id?: unknown; variantLabel?: unknown; variant?: unknown; quantity?: unknown; qty?: unknown };
+
+function couponDropMessage(code: string) {
+  return `${code} no longer applies to the items in your bag, so it was removed.`;
+}
+
+/**
+ * Prices the bag for shipping. If a coupon is present but no longer eligible
+ * (e.g. its product was removed), drops it and continues instead of failing.
+ */
+export function quoteCartDroppingStaleCoupon(
+  products: Product[],
+  coupons: Coupon[],
+  items: RequestLine[],
+  couponCode: string,
+  shipping?: ShippingCharge,
+): { quote: Quote; droppedCoupon: DroppedCoupon | null } {
+  const requested = couponCode.trim();
+  try {
+    return { quote: quoteCart(products, coupons, items, requested, shipping), droppedCoupon: null };
+  } catch (error) {
+    if (!(error instanceof QuoteError) || !requested) throw error;
+    const quote = quoteCart(products, coupons, items, "", shipping);
+    return {
+      quote,
+      droppedCoupon: { code: requested.toUpperCase(), message: couponDropMessage(requested.toUpperCase()) },
+    };
+  }
+}
 
 export function quoteCart(products: Product[], coupons: Coupon[], items: RequestLine[], couponCode: string, shipping?: ShippingCharge): Quote {
   if (!Array.isArray(items) || items.length < 1 || items.length > MAX_LINES) {
@@ -87,8 +122,14 @@ export function quoteCart(products: Product[], coupons: Coupon[], items: Request
   const net = Math.max(0, subtotalPaise - discountPaise);
   const shippingPaise = shipping ? shipping.chargePaise : net >= FREE_SHIPPING_PAISE ? 0 : STANDARD_SHIPPING_PAISE;
   const codFeePaise = shipping?.codFeePaise && Number.isInteger(shipping.codFeePaise) ? shipping.codFeePaise : 0;
+  const platformFeePaise = shipping?.platformFeePaise && Number.isInteger(shipping.platformFeePaise) && shipping.platformFeePaise > 0
+    ? shipping.platformFeePaise
+    : 0;
   if (shipping && (!Number.isInteger(shipping.chargePaise) || shipping.chargePaise < 0)) {
     throw new QuoteError("Shipping charge is invalid.");
+  }
+  if (shipping?.platformFeePaise != null && (!Number.isInteger(shipping.platformFeePaise) || shipping.platformFeePaise < 0)) {
+    throw new QuoteError("Platform fee is invalid.");
   }
   return {
     lines,
@@ -96,7 +137,8 @@ export function quoteCart(products: Product[], coupons: Coupon[], items: Request
     discountPaise,
     shippingPaise,
     codFeePaise,
-    amountPaise: net + shippingPaise + codFeePaise,
+    platformFeePaise,
+    amountPaise: net + shippingPaise + codFeePaise + platformFeePaise,
     couponCode: discountPaise > 0 ? coupon?.code : undefined,
     delivery: shipping?.method || "standard",
   };

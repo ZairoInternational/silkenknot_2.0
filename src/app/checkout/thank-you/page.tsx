@@ -35,7 +35,6 @@ function draftFrom(order: Order, userId: string): CheckoutDraft {
       address1: order.address.line1,
       address2: order.address.line2,
       city: order.address.city,
-      state: order.address.state,
       postalCode: order.address.postal,
       country: order.address.country,
     },

@@ -205,11 +205,21 @@ function ProductDetail({ product }: { product: Product }) {
         ) : null}
         <section>
           <h2 className="font-serif text-4xl">Shipping</h2>
-          <p className="mt-4 leading-7 text-mute">Standard delivery within India is free on orders over ₹999, otherwise ₹79. Express delivery is ₹149 and usually arrives in 2–4 days. Candles and jars are packed to travel.</p>
+          <p className="mt-4 leading-7 text-mute">
+            Standard delivery within India is free on eligible orders over ₹999; otherwise the price for your PIN is shown at checkout. A faster option appears only when available. Candles and jars are packed to travel.{" "}
+            <a href="/shipping" className="underline underline-offset-4">
+              Shipping policy
+            </a>
+          </p>
         </section>
         <section>
           <h2 className="font-serif text-4xl">Returns</h2>
-          <p className="mt-4 leading-7 text-mute">All products are final sale for hygiene and safety reasons. You can cancel an order before it is dispatched.</p>
+          <p className="mt-4 leading-7 text-mute">
+            All products are final sale for hygiene and safety reasons. You can cancel an order before it is dispatched.{" "}
+            <a href="/returns" className="underline underline-offset-4">
+              Cancellation & refunds
+            </a>
+          </p>
         </section>
         <section id="reviews">
           <h2 className="font-serif text-4xl">Reviews</h2>

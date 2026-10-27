@@ -15,45 +15,6 @@ import type { Address, User } from "@/lib/types";
 
 type SavedChoice = ShippingAddress & { id: string; label: string };
 
-export const INDIAN_STATES = [
-  "Andhra Pradesh",
-  "Arunachal Pradesh",
-  "Assam",
-  "Bihar",
-  "Chhattisgarh",
-  "Goa",
-  "Gujarat",
-  "Haryana",
-  "Himachal Pradesh",
-  "Jharkhand",
-  "Karnataka",
-  "Kerala",
-  "Madhya Pradesh",
-  "Maharashtra",
-  "Manipur",
-  "Meghalaya",
-  "Mizoram",
-  "Nagaland",
-  "Odisha",
-  "Punjab",
-  "Rajasthan",
-  "Sikkim",
-  "Tamil Nadu",
-  "Telangana",
-  "Tripura",
-  "Uttar Pradesh",
-  "Uttarakhand",
-  "West Bengal",
-  "Andaman and Nicobar Islands",
-  "Chandigarh",
-  "Dadra and Nagar Haveli and Daman and Diu",
-  "Delhi",
-  "Jammu and Kashmir",
-  "Ladakh",
-  "Lakshadweep",
-  "Puducherry",
-];
-
 function toChoice(item: Address, user: User): SavedChoice {
   return {
     id: item.id,
@@ -64,7 +25,6 @@ function toChoice(item: Address, user: User): SavedChoice {
     address1: item.line1,
     address2: item.line2 || "",
     city: item.city || "",
-    state: item.state || "",
     postalCode: item.postal || "",
     country: item.country || "India",
   };
@@ -76,7 +36,6 @@ function addressReadyForDelivery(value: ShippingAddress) {
     && value.phone.trim()
     && value.address1.trim()
     && value.city.trim()
-    && value.state.trim()
     && /^\d{6}$/.test(value.postalCode.trim()),
   );
 }
@@ -123,6 +82,12 @@ export default function ShippingPage() {
   const [subtotalPaise, setSubtotalPaise] = useState(0);
   const [discountPaise, setDiscountPaise] = useState(0);
   const [freeShippingPaise, setFreeShippingPaise] = useState(0);
+  const [platformFeePaise, setPlatformFeePaise] = useState(0);
+  const [platformFeeListPaise, setPlatformFeeListPaise] = useState(0);
+  const [platformFeeWaiveAbovePaise, setPlatformFeeWaiveAbovePaise] = useState(0);
+  const [platformFeeWaiveFirstOrder, setPlatformFeeWaiveFirstOrder] = useState(false);
+  const [platformFeeFirstOrderEnabled, setPlatformFeeFirstOrderEnabled] = useState(false);
+  const [couponNotice, setCouponNotice] = useState("");
   const [selected, setSelected] = useState<"standard" | "express" | "">("");
   const [checking, setChecking] = useState(false);
   const [contact, setContact] = useState<CheckoutContact | null>(null);
@@ -151,7 +116,7 @@ export default function ShippingPage() {
       setOptions([]);
       setQuoteId("");
       setSelected("");
-      setStatus(hasAddress ? "This address needs a name, phone, street, city, state, and 6-digit PIN." : "Add an address to check delivery.");
+      setStatus(hasAddress ? "This address needs a name, phone, street, city, and 6-digit PIN." : "Add an address to check delivery.");
       return;
     }
     const controller = new AbortController();
@@ -178,8 +143,19 @@ export default function ShippingPage() {
           setOptions([]);
           setQuoteId("");
           setSelected("");
-          setStatus(body.code === "temporary" ? "Delivery could not be checked. Try again." : unavailablePinMessage(pin, "address"));
+          setCouponNotice("");
+          if (body.code === "temporary") setStatus("Delivery could not be checked. Try again.");
+          else if (typeof body.error === "string" && /offer|coupon/i.test(body.error)) setStatus(body.error);
+          else setStatus(unavailablePinMessage(pin, "address"));
           return;
+        }
+        if (body.couponRemoved) {
+          store.clearCoupon();
+          setCouponNotice(typeof body.couponNotice === "string" && body.couponNotice
+            ? body.couponNotice
+            : "That offer no longer applies to the items in your bag, so it was removed.");
+        } else {
+          setCouponNotice("");
         }
         const next = (body.options || []) as ShippingOption[];
         setOptions(next);
@@ -190,6 +166,11 @@ export default function ShippingPage() {
         setSubtotalPaise(body.subtotalPaise || 0);
         setDiscountPaise(body.discountPaise || 0);
         setFreeShippingPaise(body.freeShippingPaise || 0);
+        setPlatformFeePaise(body.platformFeePaise || 0);
+        setPlatformFeeListPaise(body.platformFeeListPaise || 0);
+        setPlatformFeeWaiveAbovePaise(body.platformFeeWaiveAbovePaise || 0);
+        setPlatformFeeWaiveFirstOrder(Boolean(body.platformFeeWaiveFirstOrder));
+        setPlatformFeeFirstOrderEnabled(Boolean(body.platformFeeFirstOrderEnabled));
         setStatus(next.length ? "Delivery is available." : unavailablePinMessage(pin, "address"));
         setSelected((current) => (next.some((option) => option.id === current) ? current : next[0]?.id || ""));
       } catch (failure) {
@@ -197,13 +178,14 @@ export default function ShippingPage() {
         setOptions([]);
         setQuoteId("");
         setSelected("");
+        setCouponNotice("");
         setStatus("Delivery could not be checked. Try again.");
       } finally {
         if (!controller.signal.aborted) setChecking(false);
       }
     })();
     return () => controller.abort();
-  }, [pin, store.couponCode, cartKey, addressReady, hasAddress]);
+  }, [pin, store.couponCode, store.clearCoupon, cartKey, addressReady, hasAddress]);
 
   useEffect(() => {
     const option = options.find((item) => item.id === selected);
@@ -223,10 +205,15 @@ export default function ShippingPage() {
       codEstimateRupees: option.codEstimateRupees,
       shippingDiscountPaise: option.shippingDiscountPaise,
       freeShippingPaise,
+      platformFeeListPaise,
+      platformFeePaise,
+      platformFeeWaiveAbovePaise,
+      platformFeeWaiveFirstOrder,
+      platformFeeFirstOrderEnabled,
       codFeePaise: 0,
       subtotalPaise,
       discountPaise,
-      amountPaise: subtotalPaise - discountPaise + option.chargePaise,
+      amountPaise: subtotalPaise - discountPaise + option.chargePaise + platformFeePaise,
       expiresAt,
       codEligible,
       availableCodFeePaise,
@@ -235,7 +222,7 @@ export default function ShippingPage() {
     };
     sessionStorage.setItem(SHIPPING_SELECTION_KEY, JSON.stringify(selection));
     window.dispatchEvent(new Event("silkknot-shipping"));
-  }, [options, selected, quoteId, expiresAt, codEligible, availableCodFeePaise, subtotalPaise, discountPaise, freeShippingPaise]);
+  }, [options, selected, quoteId, expiresAt, codEligible, availableCodFeePaise, subtotalPaise, discountPaise, freeShippingPaise, platformFeePaise, platformFeeListPaise, platformFeeWaiveAbovePaise, platformFeeWaiveFirstOrder, platformFeeFirstOrderEnabled]);
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -245,7 +232,7 @@ export default function ShippingPage() {
       return;
     }
     if (!chosen || !addressReadyForDelivery(chosen) || !contact) {
-      setError(chosen ? "This address is missing a phone, city, state, or PIN." : "Add a delivery address before continuing.");
+      setError(chosen ? "This address is missing a phone, city, or PIN." : "Add a delivery address before continuing.");
       return;
     }
     if (!option || !quoteId) {
@@ -263,10 +250,15 @@ export default function ShippingPage() {
       codEstimateRupees: option.codEstimateRupees,
       shippingDiscountPaise: option.shippingDiscountPaise,
       freeShippingPaise,
+      platformFeeListPaise,
+      platformFeePaise,
+      platformFeeWaiveAbovePaise,
+      platformFeeWaiveFirstOrder,
+      platformFeeFirstOrderEnabled,
       codFeePaise: 0,
       subtotalPaise,
       discountPaise,
-      amountPaise: subtotalPaise - discountPaise + option.chargePaise,
+      amountPaise: subtotalPaise - discountPaise + option.chargePaise + platformFeePaise,
       expiresAt,
       codEligible,
       availableCodFeePaise,
@@ -298,7 +290,7 @@ export default function ShippingPage() {
                     <p>
                       {chosen.address1}{chosen.address2 ? `, ${chosen.address2}` : ""}
                       <br />
-                      {chosen.city}, {chosen.state} {chosen.postalCode}
+                      {chosen.city} {chosen.postalCode}
                       <br />
                       {chosen.country}
                     </p>
@@ -316,6 +308,7 @@ export default function ShippingPage() {
               ) : (
                 <p className={!checking && addressReady && !options.length ? "pinNotice" : "shipHint"}>{status}</p>
               )}
+              {couponNotice ? <p className="couponNotice" role="status">{couponNotice}</p> : null}
               <PinLookup />
               <div className={`paymentOptions${checking && options.length ? " isRefreshing" : ""}`} aria-busy={checking}>
                 {checking && !options.length ? (

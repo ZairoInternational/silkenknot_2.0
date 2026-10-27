@@ -3,7 +3,8 @@ import test from "node:test";
 import { readPaymentConfig } from "./config";
 import { reserveFilter } from "./inventory";
 import { percentOfPaise, rupeesToPaise } from "./money";
-import { quoteCart } from "./quote";
+import { resolvePlatformFee } from "./platformFee";
+import { quoteCart, quoteCartDroppingStaleCoupon } from "./quote";
 import { checkoutSignatureValid, hmacSha256Hex, webhookSignatureValid } from "./signature";
 import { fulfillmentTransition, paymentTransition } from "./states";
 import type { Coupon, Product } from "../types";
@@ -43,8 +44,36 @@ test("quote ignores client prices and adds standard shipping", () => {
   const quote = quoteCart([product], [], [{ productId: "p1", variantLabel: "Bar", quantity: 1 }], "");
   assert.equal(quote.subtotalPaise, 50000);
   assert.equal(quote.shippingPaise, 7900);
+  assert.equal(quote.platformFeePaise, 0);
   assert.equal(quote.amountPaise, 57900);
   assert.equal(quote.lines[0].price, 500);
+});
+
+test("quote can include a platform fee in the payable total", () => {
+  const product = {
+    id: "p1",
+    slug: "soap",
+    name: "Soap",
+    price: 500,
+    categoryId: "bath-soap",
+    images: ["/soap.jpg"],
+    active: true,
+    variants: [{ id: "v", label: "Bar", price: 500, stock: 4 }],
+  } as unknown as Product;
+  const quote = quoteCart([product], [], [{ productId: "p1", variantLabel: "Bar", quantity: 1 }], "", {
+    method: "standard",
+    chargePaise: 7900,
+    platformFeePaise: 3000,
+  });
+  assert.equal(quote.platformFeePaise, 3000);
+  assert.equal(quote.amountPaise, 60900);
+});
+
+test("platform fee waives on first order or high bag value", () => {
+  const policy = { enabled: true, feePaise: 3000, waiveAbovePaise: 100000, waiveFirstOrder: true };
+  assert.equal(resolvePlatformFee(policy, { netPaise: 50000, isFirstOrder: true }).chargePaise, 0);
+  assert.equal(resolvePlatformFee(policy, { netPaise: 100000, isFirstOrder: false }).chargePaise, 0);
+  assert.equal(resolvePlatformFee(policy, { netPaise: 50000, isFirstOrder: false }).chargePaise, 3000);
 });
 
 test("quote rejects a coupon that does not apply", () => {
@@ -60,6 +89,25 @@ test("quote rejects a coupon that does not apply", () => {
   } as unknown as Product;
   const coupon = { id: "c", code: "VEIL", type: "fixed", value: 100, scope: "product", productId: "other", active: true, label: "Veil" } as Coupon;
   assert.throws(() => quoteCart([product], [coupon], [{ productId: "p1", variantLabel: "Bar", quantity: 1 }], "VEIL"));
+});
+
+test("shipping quote drops a stale product coupon instead of failing", () => {
+  const product = {
+    id: "p1",
+    slug: "soap",
+    name: "Soap",
+    price: 500,
+    categoryId: "bath-soap",
+    images: [],
+    active: true,
+    variants: [{ id: "v", label: "Bar", price: 500, stock: 4 }],
+  } as unknown as Product;
+  const coupon = { id: "c", code: "VEIL", type: "fixed", value: 100, scope: "product", productId: "other", active: true, label: "Veil" } as Coupon;
+  const result = quoteCartDroppingStaleCoupon([product], [coupon], [{ productId: "p1", variantLabel: "Bar", quantity: 1 }], "VEIL");
+  assert.equal(result.quote.discountPaise, 0);
+  assert.equal(result.quote.couponCode, undefined);
+  assert.equal(result.droppedCoupon?.code, "VEIL");
+  assert.match(result.droppedCoupon?.message || "", /no longer applies/);
 });
 
 test("stock reservation requires the quantity to still be available", () => {

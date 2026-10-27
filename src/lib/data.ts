@@ -724,7 +724,6 @@ const miraAddress = {
   line1: "14 Carmichael Road",
   line2: "Apartment 3",
   city: "Mumbai",
-  state: "Maharashtra",
   postal: "400026",
   country: "India",
   phone: "9876543210",
@@ -756,7 +755,6 @@ export const seedUsers: User[] = [
         line1: "48 Infantry Road",
         line2: "",
         city: "Bengaluru",
-        state: "Karnataka",
         postal: "560001",
         country: "India",
         phone: "9820011122",
@@ -847,7 +845,6 @@ export const seedOrders: Order[] = [
       line1: "9 Aurangzeb Road",
       line2: "",
       city: "Delhi",
-      state: "Delhi",
       postal: "110011",
       country: "India",
       phone: "9810090909",
@@ -905,7 +902,7 @@ export const journal: JournalEntry[] = [
 export const sharedFaqs: Faq[] = [
   {
     question: "When do I get free shipping?",
-    answer: "Orders of ₹999 and above have free standard delivery within India. Any faster option, and its price, is shown at checkout.",
+    answer: `Orders of ₹999 and above have free standard delivery within India (when eligible at checkout). Any faster option, and its price, is shown for your PIN.`,
   },
   {
     question: "How long does delivery take?",

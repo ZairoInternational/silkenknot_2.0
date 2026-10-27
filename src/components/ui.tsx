@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion as useFramerReduced } from "framer-motion";
 import { Heart } from "lucide-react";
+import { useBrandSettings } from "@/lib/brand/client";
 import { discountPercent, formatPrice } from "@/lib/format";
 import { useStore } from "@/lib/store";
 
@@ -106,11 +107,11 @@ export function Reveal({
 }
 
 export function Mark({ className = "h-6 w-6" }: { className?: string }) {
+  const brand = useBrandSettings();
   return (
-    <svg viewBox="0 0 32 32" aria-hidden className={className}>
-      <circle cx="13" cy="16" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.25" />
-      <circle cx="19" cy="16" r="6.5" fill="none" stroke="currentColor" strokeWidth="1.25" />
-    </svg>
+    // Brand mark is configured in Studio → Brand; keep a plain img so any CDN/local URL works.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={brand.iconUrl} alt="" aria-hidden className={`object-contain ${className}`} />
   );
 }
 
@@ -214,18 +215,24 @@ export function Quantity({
 
 export function Field({
   label,
+  className,
   ...props
 }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   const id = props.id || props.name;
   return (
     <div>
-      <label htmlFor={id} className="eyebrow text-mute">
+      <label htmlFor={id} className="block text-[11px] uppercase tracking-[0.14em] text-mute">
         {label}
       </label>
       <input
         id={id}
         {...props}
-        className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none transition-colors focus:border-ink"
+        className={[
+          "mt-2 h-12 w-full rounded-xl border border-[#e3dbd1] bg-white px-3.5 text-base text-[#2c2926] outline-none ring-0 transition-[border-color,box-shadow] placeholder:text-[#9a948b] focus:border-[#CBAC7C] focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_rgba(203,172,124,0.18)] focus-visible:outline-none md:text-sm",
+          className,
+        ]
+          .filter(Boolean)
+          .join(" ")}
       />
     </div>
   );

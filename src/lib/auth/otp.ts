@@ -1,9 +1,9 @@
 import { createHmac, randomInt, randomUUID, timingSafeEqual, createHash } from "crypto";
 import type { Db } from "mongodb";
 import { authSecret, devOtpSinkEnabled, otpConfig } from "@/lib/auth/config";
-import { sendEmailOtp, sendSmsOtp } from "@/lib/auth/deliver";
+import { sendEmailOtp, sendWhatsAppOtp } from "@/lib/auth/deliver";
 
-export type OtpChannel = "email" | "sms";
+export type OtpChannel = "email" | "whatsapp";
 export type OtpPurpose = "login" | "link-email" | "link-phone";
 
 type Challenge = {
@@ -74,7 +74,7 @@ export async function requestOtp(
   const minutes = Math.max(1, Math.round(config.ttlSeconds / 60));
   const delivery = input.channel === "email"
     ? await sendEmailOtp(input.destination, code, minutes, input.purpose === "login" ? "login" : "verify")
-    : await sendSmsOtp(input.destination, code, minutes);
+    : await sendWhatsAppOtp(input.destination, code);
   if (!delivery.ok) {
     const message = delivery.status === "unconfigured"
       ? "Code delivery is not configured on this server."

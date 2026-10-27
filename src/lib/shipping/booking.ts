@@ -93,7 +93,7 @@ export async function bookOrder(db: Db, orderId: string, adminRetry: boolean): P
     { $set: { "shipment.state": "pending", "shipment.bookingRequestedAt": new Date().toISOString(), "shipment.provider": "delhivery" }, $inc: { "shipment.attempts": 1 } },
   );
   if (claimed.modifiedCount !== 1) return "skipped";
-  const address = order.address as { name?: string; line1?: string; line2?: string; city?: string; state?: string; postal?: string; phone?: string };
+  const address = order.address as { name?: string; line1?: string; line2?: string; city?: string; postal?: string; phone?: string };
   const items = (order.items as { name?: string }[]) || [];
   try {
     const result = await createManifest(policy, {
@@ -101,7 +101,7 @@ export async function bookOrder(db: Db, orderId: string, adminRetry: boolean): P
       name: String(address.name || order.customerName || ""),
       address: [address.line1, address.line2].filter(Boolean).join(", "),
       city: String(address.city || ""),
-      state: String(address.state || ""),
+      state: "",
       pin: String(address.postal || ""),
       phone: String(address.phone || order.phone || ""),
       paymentMode: order.payment === "cod" ? "COD" : "Pre-paid",

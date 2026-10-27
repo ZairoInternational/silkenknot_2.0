@@ -64,7 +64,6 @@ export function parseAddress(input: unknown): ShippingAddress {
     address1: text(row.address1, 4, 160),
     address2: typeof row.address2 === "string" ? row.address2.trim().slice(0, 160) : "",
     city: text(row.city, 2, 60),
-    state: text(row.state, 2, 60),
     postalCode: text(row.postalCode, 6, 6),
     country: "India",
   };
@@ -108,7 +107,6 @@ function toAddress(address: ShippingAddress): Address {
     line1: address.address1,
     line2: address.address2 || "",
     city: address.city,
-    state: address.state,
     postal: address.postalCode,
     country: address.country,
     phone: address.phone,
@@ -363,6 +361,7 @@ export async function createCheckout(input: {
       method: optionId,
       chargePaise: shippingChoice.selected.chargePaise,
       codFeePaise: shippingChoice.codFeePaise,
+      platformFeePaise: shippingChoice.platformFeePaise,
     });
   } catch (error) {
     if (error instanceof QuoteError) throw new CheckoutError("invalid", error.message);
@@ -403,6 +402,7 @@ export async function createCheckout(input: {
     discount: paiseToRupees(quote.discountPaise),
     shipping: paiseToRupees(quote.shippingPaise),
     codFee: paiseToRupees(quote.codFeePaise),
+    platformFee: paiseToRupees(quote.platformFeePaise),
     total: paiseToRupees(quote.amountPaise),
     shippingLabel: shippingChoice.selected.label,
     shippingQuoteId: input.shippingQuoteId,

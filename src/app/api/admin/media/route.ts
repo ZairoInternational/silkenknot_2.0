@@ -1,5 +1,5 @@
 import { clientIp, csrfHeaderMatches, jsonError, sameOrigin } from "@/lib/auth/http";
-import { bunnyReady, removeFromBunny, uploadBannerImage, uploadProductImage } from "@/lib/media/bunny";
+import { bunnyReady, removeFromBunny, uploadBannerImage, uploadBrandImage, uploadProductImage } from "@/lib/media/bunny";
 import { MediaError, mediaCorrelationId } from "@/lib/media/errors";
 import { assertMediaAdmin } from "@/lib/media/gate";
 import { MEDIA_MAX_BYTES } from "@/lib/media/image";
@@ -79,6 +79,7 @@ export async function POST(request: Request) {
 
   const roleRaw = String(form.get("role") || "gallery").trim();
   const isBanner = roleRaw === "banner";
+  const isBrand = roleRaw === "brand";
 
   let bytes: Buffer;
   try {
@@ -88,6 +89,26 @@ export async function POST(request: Request) {
   }
   if (bytes.length > MEDIA_MAX_BYTES) {
     return jsonError("That image needs to be under 6 MB.", 400, { correlationId });
+  }
+
+  if (isBrand) {
+    try {
+      const result = await uploadBrandImage({ bytes, correlationId });
+      return Response.json({
+        ok: true,
+        url: result.url,
+        assetId: result.assetId,
+        key: result.key,
+        contentType: result.contentType,
+        width: result.width,
+        height: result.height,
+        bytes: result.bytes,
+        role: result.role,
+        correlationId,
+      });
+    } catch (error) {
+      return safeError(error, correlationId);
+    }
   }
 
   if (isBanner) {

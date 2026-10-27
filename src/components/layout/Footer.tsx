@@ -4,15 +4,11 @@ import {
   Bath,
   BookOpen,
   Droplets,
-  FileText,
   Flame,
   HelpCircle,
   Leaf,
   Mail,
-  Newspaper,
-  Shield,
   Sparkles,
-  Truck,
   type LucideIcon,
 } from "lucide-react";
 import { Mark } from "@/components/ui";
@@ -22,6 +18,9 @@ type FooterLink = {
   href: string;
   icon?: LucideIcon;
 };
+
+/** Update when the brand Instagram handle is ready. */
+const INSTAGRAM_HREF = "https://www.instagram.com/silkenknot_/";
 
 const columns: { title: string; links: FooterLink[] }[] = [
   {
@@ -38,34 +37,19 @@ const columns: { title: string; links: FooterLink[] }[] = [
   {
     title: "Help",
     links: [
-      { label: "Contact", href: "/contact", icon: Mail },
-      { label: "Shipping", href: "/shipping", icon: Truck },
+      { label: "Contact & grievance", href: "/contact", icon: Mail },
       { label: "FAQ", href: "/faq", icon: HelpCircle },
-    ],
-  },
-  {
-    title: "About",
-    links: [
       { label: "Our Story", href: "/about", icon: BookOpen },
-      { label: "Ingredients", href: "/ingredients", icon: Leaf },
-      { label: "Journal", href: "/journal", icon: Newspaper },
-    ],
-  },
-  {
-    title: "Social",
-    // Lucide has no brand logos for Instagram / Facebook / Pinterest.
-    links: [
-      { label: "Instagram", href: "https://www.instagram.com" },
-      { label: "Facebook", href: "https://www.facebook.com" },
-      { label: "Pinterest", href: "https://www.pinterest.com" },
     ],
   },
 ];
 
 const legalLinks: FooterLink[] = [
-  { label: "Privacy", href: "/privacy", icon: Shield },
-  { label: "Terms", href: "/terms", icon: FileText },
-  { label: "Shipping", href: "/shipping", icon: Truck },
+  { label: "Terms", href: "/terms" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "Shipping", href: "/shipping" },
+  { label: "Returns", href: "/returns" },
+  { label: "Payments", href: "/payments" },
 ];
 
 function FooterNavLink({ label, href, icon: Icon }: FooterLink) {
@@ -85,10 +69,10 @@ function FooterNavLink({ label, href, icon: Icon }: FooterLink) {
 export function Footer() {
   return (
     <footer className="bg-ink text-paper">
-      <div className="mx-auto grid max-w-[1440px] grid-cols-2 gap-x-6 gap-y-8 px-5 py-12 md:grid-cols-[1.3fr_repeat(4,1fr)] md:gap-12 md:px-10 md:py-24">
+      <div className="mx-auto grid max-w-[1440px] grid-cols-2 gap-x-6 gap-y-8 px-5 py-10 md:grid-cols-[1.4fr_1fr_1fr] md:gap-12 md:px-10 md:py-14">
         <div className="col-span-2 md:col-span-1">
           <p className="inline-flex items-center gap-2 font-serif text-3xl">
-            <Mark className="h-5 w-5" />
+            <Mark className="h-8 w-15" />
             Silken Knot
           </p>
           <p className="mt-4 max-w-xs text-sm leading-6 text-paper/70">
@@ -98,7 +82,7 @@ export function Footer() {
         {columns.map((column) => (
           <nav key={column.title} aria-label={column.title}>
             <p className="eyebrow text-paper/50">{column.title}</p>
-            <ul className="mt-3 space-y-2 text-sm md:mt-5 md:space-y-3">
+            <ul className="mt-3 space-y-2 text-sm md:mt-4 md:space-y-2.5">
               {column.links.map((link) => (
                 <li key={link.label}>
                   <FooterNavLink {...link} />
@@ -108,13 +92,29 @@ export function Footer() {
           </nav>
         ))}
       </div>
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-4 border-t border-white/10 px-5 py-6 text-[11px] uppercase tracking-[0.16em] text-paper/55 md:flex-row md:items-center md:justify-between md:px-10">
+      <div className="mx-auto flex max-w-[1440px] flex-col items-center gap-4 border-t border-white/10 px-5 py-5 text-[11px] uppercase tracking-[0.16em] text-paper/55 md:flex-row md:justify-between md:px-10">
         <p>© {new Date().getFullYear()} Silken Knot</p>
-        <div className="flex flex-wrap gap-5">
+        <Link
+          href={INSTAGRAM_HREF}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Silken Knot on Instagram"
+          className="inline-flex items-center justify-center transition-opacity hover:opacity-70"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/silknknot/instagram_icon.webp"
+            alt="Instagram icon"
+            width={24}
+            height={24}
+            className=" object-contain"
+          />
+        </Link>
+        <nav className="flex flex-wrap items-center justify-center gap-5" aria-label="Policies">
           {legalLinks.map((link) => (
             <FooterNavLink key={link.label} {...link} />
           ))}
-        </div>
+        </nav>
       </div>
     </footer>
   );

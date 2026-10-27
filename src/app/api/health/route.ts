@@ -191,19 +191,22 @@ async function checkSmtp(): Promise<Check> {
 }
 
 /**
- * 5. SMS OTP (MSG91) — phone login
+ * 5. WhatsApp OTP (MSG91) — phone login
  */
-function checkSms(): Check {
+function checkWhatsApp(): Check {
   const key = process.env.MSG91_AUTH_KEY?.trim();
-  const template = process.env.MSG91_TEMPLATE_ID?.trim();
-  if (!key || !template) {
+  const integrated = process.env.MSG91_WHATSAPP_INTEGRATED_NUMBER?.trim();
+  const name = process.env.MSG91_WHATSAPP_TEMPLATE_NAME?.trim();
+  const namespace = process.env.MSG91_WHATSAPP_TEMPLATE_NAMESPACE?.trim();
+  const language = process.env.MSG91_WHATSAPP_TEMPLATE_LANGUAGE?.trim();
+  if (!key || !integrated || !name || !namespace || !language) {
     return warn(
-      "sms_otp",
-      "MSG91_AUTH_KEY or MSG91_TEMPLATE_ID not set — phone OTP will fall back to dev-sink (not usable in production).",
-      ["Phone login /api/auth/otp"],
+      "whatsapp_otp",
+      "MSG91 WhatsApp env incomplete — phone OTP will fall back to dev-sink (not usable in production).",
+      ["WhatsApp login /api/auth/otp"],
     );
   }
-  return pass("sms_otp", "MSG91 keys set");
+  return pass("whatsapp_otp", "MSG91 WhatsApp keys set");
 }
 
 /**
@@ -352,7 +355,7 @@ export async function GET(request: Request) {
     mongo,
     sessionStore,
     smtp,
-    checkSms(),
+    checkWhatsApp(),
     checkRazorpay(),
     delhivery,
     checkBunny(),

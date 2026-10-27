@@ -59,30 +59,91 @@ export function IngredientsPage() {
 
 export function ShippingPage() {
   return (
-    <Editorial eyebrow="Help" title="Shipping" lede="We deliver within India.">
-      <p>Delivery is free on orders of ₹999 and above. Below that, the delivery price for your PIN is shown at checkout.</p>
-      <p>Where a faster option is available, you can choose it at checkout. The arrival time is shown there for your PIN.</p>
-      <p>Candles and glass are packed to travel.</p>
+    <Editorial
+      eyebrow="Help"
+      title="Shipping"
+      lede="We deliver across India. You’ll see the delivery charge and timing for your area before you pay."
+    >
+      <p>
+        Delivery is free on eligible orders of ₹999 and above. If your order is below that—or you choose a faster option—the delivery charge for your area is shown at checkout before you confirm.
+      </p>
+      <p>
+        When a faster option is available where you live, you can pick it at checkout. The expected arrival time for your area is shown there too.
+      </p>
+      <p>Candles and glass are packed carefully for the journey. We don’t ship outside India yet.</p>
+      <p>
+        After you order, follow progress in{" "}
+        <Link href="/account/orders" className="underline underline-offset-4">
+          your orders
+        </Link>
+        . If something arrives damaged or incomplete, see{" "}
+        <Link href="/returns" className="underline underline-offset-4">
+          Cancellation, returns & refunds
+        </Link>
+        .
+      </p>
     </Editorial>
   );
 }
 
 export function PrivacyPage() {
   return (
-    <Editorial eyebrow="Studio" title="Privacy" lede="This preview keeps your account in your browser.">
-      <p>Silken Knot's preview store keeps your bag on this device. An account, when you sign in, is stored for that login.</p>
-      <p>Payment details are entered in a secure payment window. Silken Knot does not store your full card number, CVV, or UPI PIN. We keep the name, contact, address, and payment reference needed to deliver the order.</p>
-      <p>That information is used to fulfil the order and send delivery updates. It is not sold.</p>
+    <Editorial
+      eyebrow="Studio"
+      title="Privacy"
+      lede="What we ask for, why we ask for it, and how we look after it."
+    >
+      <p>
+        When you sign in with a one-time code on email or WhatsApp, you open an account with us. We keep your name, email and/or mobile, saved addresses, bag and wishlist while you’re signed in, and your order history so we can deliver and help you later.
+      </p>
+      <p>
+        Card and UPI details are entered in a secure payment window. We don’t keep your full card number, CVV, or UPI PIN. We only keep what’s needed to confirm your order and handle refunds if they apply.
+      </p>
+      <p>
+        We use your details to send your order, share delivery updates, reply when you write to us, and keep your account safe. We don’t sell your personal information. The site uses cookies so you can stay signed in and complete checkout securely.
+      </p>
+      <p>
+        Questions about your privacy? Write to us on{" "}
+        <Link href="/contact" className="underline underline-offset-4">
+          Contact & grievance
+        </Link>
+        .
+      </p>
     </Editorial>
   );
 }
 
 export function TermsPage() {
   return (
-    <Editorial eyebrow="Studio" title="Terms" lede="A calm agreement for a calm shop.">
-      <p>Products are described as they are made. Colours on a screen are close, not identical. Apparel sizing is listed on each piece.</p>
-      <p>An order is an offer to buy. We accept it when payment is verified and the confirmation appears. If we cannot fulfil a line, we refund that line.</p>
-      <p>Payment is taken in a secure payment window after you place the order. Silken Knot does not store your full card number or CVV. Do not share a PIN, password, or one-time code with anyone claiming to be support.</p>
+    <Editorial eyebrow="Studio" title="Terms" lede="A simple agreement for shopping with Silken Knot.">
+      <p>
+        We describe products as honestly as we can. Colours on a screen may differ a little from what arrives. Sizes for clothing are listed on each piece. Ingredient and how-to notes are for everyday use—they’re not medical advice.
+      </p>
+      <p>
+        When you place an order, you’re offering to buy. We accept when you see confirmation after a successful online payment, or when a cash-on-delivery order is confirmed. If we can’t send something you ordered, we’ll refund that item. For cancellations and refunds, read{" "}
+        <Link href="/returns" className="underline underline-offset-4">
+          Cancellation, returns & refunds
+        </Link>
+        . For how pricing and payment work, read{" "}
+        <Link href="/payments" className="underline underline-offset-4">
+          Payment & pricing
+        </Link>
+        .
+      </p>
+      <p>
+        Online payment happens in a secure window after you place the order. We don’t store your full card number or CVV. Never share a PIN, password, or one-time code with anyone claiming to be our support team.
+      </p>
+      <p>
+        By creating an account or placing an order you also agree to our{" "}
+        <Link href="/privacy" className="underline underline-offset-4">
+          Privacy Policy
+        </Link>{" "}
+        and{" "}
+        <Link href="/shipping" className="underline underline-offset-4">
+          Shipping
+        </Link>{" "}
+        policy.
+      </p>
     </Editorial>
   );
 }

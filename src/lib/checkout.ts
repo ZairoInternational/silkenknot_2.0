@@ -7,7 +7,6 @@ export type ShippingAddress = {
   address1: string;
   address2?: string;
   city: string;
-  state: string;
   postalCode: string;
   country: string;
 };
@@ -48,7 +47,6 @@ export function shippingToAccount(address: ShippingAddress, id = "checkout"): Ad
     line1: address.address1,
     line2: address.address2 || "",
     city: address.city,
-    state: address.state,
     postal: address.postalCode,
     country: address.country || "India",
     phone: address.phone,
@@ -104,6 +102,11 @@ export type ShippingSelection = {
   codEstimateRupees?: number | null;
   shippingDiscountPaise: number;
   freeShippingPaise?: number;
+  platformFeeListPaise?: number;
+  platformFeePaise?: number;
+  platformFeeWaiveAbovePaise?: number;
+  platformFeeWaiveFirstOrder?: boolean;
+  platformFeeFirstOrderEnabled?: boolean;
   subtotalPaise: number;
   discountPaise: number;
   amountPaise: number;
@@ -146,15 +149,23 @@ export function applyBagDiscount(selection: ShippingSelection, discountPaise: nu
   const list = prepaidQuoted === 0 && selection.shippingDiscountPaise > 0 ? selection.shippingDiscountPaise : prepaidQuoted;
   const free = payment !== "cod" && selection.optionId === "standard" && threshold > 0 && net >= threshold;
   const prepaidCharge = free ? 0 : list;
+  const feeList = selection.platformFeeListPaise ?? selection.platformFeePaise ?? 0;
+  let platformFeePaise = feeList;
+  if (feeList > 0) {
+    if (selection.platformFeeWaiveFirstOrder) platformFeePaise = 0;
+    else if ((selection.platformFeeWaiveAbovePaise ?? 0) > 0 && net >= (selection.platformFeeWaiveAbovePaise ?? 0)) platformFeePaise = 0;
+  }
   return shippingForPayment({
     ...selection,
     subtotalPaise: subtotal,
     discountPaise: discount,
     prepaidChargePaise: prepaidCharge,
     shippingDiscountPaise: free ? list : 0,
+    platformFeeListPaise: feeList,
+    platformFeePaise,
     label: selection.optionId === "express" ? selection.label : free ? "Free shipping" : "Standard delivery",
     chargePaise: prepaidCharge,
-    amountPaise: net + prepaidCharge,
+    amountPaise: net + prepaidCharge + platformFeePaise,
   }, payment);
 }
 
@@ -162,11 +173,13 @@ export function shippingForPayment(selection: ShippingSelection, payment: "razor
   const prepaid = selection.prepaidChargePaise ?? selection.chargePaise;
   const useCod = payment === "cod" && selection.codChargePaise != null;
   const chargePaise = useCod ? selection.codChargePaise! : prepaid;
+  const platformFeePaise = selection.platformFeePaise ?? 0;
   return {
     ...selection,
     label: useCod && selection.label === "Free shipping" ? "Standard delivery" : selection.label,
     chargePaise,
-    amountPaise: selection.subtotalPaise - selection.discountPaise + chargePaise,
+    platformFeePaise,
+    amountPaise: selection.subtotalPaise - selection.discountPaise + chargePaise + platformFeePaise,
   };
 }
 

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -17,6 +16,7 @@ import {
   User,
   X,
 } from "lucide-react";
+import { useBrandSettings } from "@/lib/brand/client";
 import { itemCount } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import { Media, ease, usePrefersReducedMotion } from "@/components/ui";
@@ -24,6 +24,7 @@ import { LogoutConfirm } from "@/components/account/LogoutConfirm";
 import { AccountDrawer } from "@/components/layout/AccountDrawer";
 import { SearchOverlay } from "@/components/layout/SearchOverlay";
 import { useHeroNav } from "@/lib/hero-nav";
+import { DEFAULT_ANNOUNCEMENTS, type AnnouncementIcon, type AnnouncementNote } from "@/lib/announcements/content";
 import type { LucideIcon } from "lucide-react";
 
 function EscalatorIcon({ icon: Icon }: { icon: LucideIcon }) {
@@ -50,13 +51,23 @@ const links = [
   { href: "/about", label: "About" },
 ];
 
-const notes = [
-  { text: "New seasonal scents are here", href: "/shop?category=aromatherapy", icon: Sparkles },
-  { text: "Free shipping on orders over ₹999", href: "/shipping", icon: Truck },
-  { text: "Save 10% with code RITUAL10", href: "/shop", icon: Gift },
-  { text: "Body butters for everyday skin", href: "/shop?category=body-care", icon: Leaf },
-  { text: "Candles for the last hour of the day", href: "/shop?category=aromatherapy", icon: Flame },
-];
+const announcementIcons: Record<AnnouncementIcon, LucideIcon> = {
+  sparkles: Sparkles,
+  truck: Truck,
+  gift: Gift,
+  leaf: Leaf,
+  flame: Flame,
+};
+
+function toHeaderNotes(notes: AnnouncementNote[]) {
+  return notes.map((note) => ({
+    text: note.text,
+    href: note.href,
+    icon: announcementIcons[note.icon] || Sparkles,
+  }));
+}
+
+const defaultNotes = toHeaderNotes(DEFAULT_ANNOUNCEMENTS.notes.filter((note) => note.active));
 
 const searchHints = [
   "Search for body butter",
@@ -67,18 +78,19 @@ const searchHints = [
 ];
 
 function Logo({ className = "" }: { className?: string }) {
+  const brand = useBrandSettings();
   return (
     <Link
       href="/"
       aria-label="Silken Knot home"
       className={`inline-flex items-center ${className}`}
     >
-      <Image
-        src="/silknknot/logo.png"
-        alt="SilkenKnot"
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={brand.iconUrl}
+        alt={brand.iconAlt || "Silken Knot"}
         width={160}
         height={160}
-        priority
         className="h-11 w-auto object-contain md:h-14"
       />
     </Link>
@@ -93,11 +105,37 @@ export function SiteHeader() {
   const announceRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const reduced = usePrefersReducedMotion();
+  const [notes, setNotes] = useState(defaultNotes);
   const [note, setNote] = useState(0);
   const [hint, setHint] = useState(0);
   const noteDirection = useRef(1);
   const [announceOpen, setAnnounceOpen] = useState(true);
   const [mega, setMega] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/announcements")
+      .then((response) => response.json())
+      .then((body) => {
+        if (cancelled || !Array.isArray(body.notes)) return;
+        const next = toHeaderNotes(body.notes as AnnouncementNote[]);
+        if (!next.length) {
+          setAnnounceOpen(false);
+          document.documentElement.dataset.announce = "off";
+          document.documentElement.style.setProperty("--announce-h", "0px");
+          setNotes([]);
+          return;
+        }
+        setNotes(next);
+        setNote(0);
+      })
+      .catch(() => {
+        /* keep defaults */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [narrow, setNarrow] = useState(false);
   const [bar, setBar] = useState({
     hidden: false,
@@ -124,15 +162,16 @@ export function SiteHeader() {
   }, []);
 
   const showNote = (step: number) => {
+    if (!notes.length) return;
     noteDirection.current = step;
     setNote((index) => (index + step + notes.length) % notes.length);
   };
 
   useEffect(() => {
-    if (!announceOpen) return;
+    if (!announceOpen || notes.length < 2) return;
     const timer = window.setInterval(() => showNote(1), 4200);
     return () => window.clearInterval(timer);
-  }, [announceOpen]);
+  }, [announceOpen, notes.length]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setHint((index) => (index + 1) % searchHints.length), 2600);
@@ -203,13 +242,13 @@ export function SiteHeader() {
     home || !onHero
       ? "bg-black/10 text-ink hover:bg-black/18"
       : "bg-white/15 text-white hover:bg-white/25";
-  const currentNote = notes[note];
-  const NoteIcon = currentNote.icon;
+  const currentNote = notes[note] || notes[0];
+  const NoteIcon = currentNote?.icon || Sparkles;
 
   return (
     <>
       <AnimatePresence initial={false}>
-        {announceOpen ? (
+        {announceOpen && currentNote ? (
           <motion.div
             ref={announceRef}
             className="announcement relative z-55 overflow-hidden bg-black text-white"

@@ -31,8 +31,8 @@ export function OtpAuth({
 }) {
   const store = useStore();
   const router = useRouter();
-  const locked = purpose === "link-email" ? "email" : purpose === "link-phone" ? "phone" : null;
-  const [channel, setChannel] = useState<"phone" | "email">(locked || "phone");
+  const locked = purpose === "link-email" ? "email" : purpose === "link-phone" ? "whatsapp" : null;
+  const [channel, setChannel] = useState<"whatsapp" | "email">(locked || "whatsapp");
   const [screen, setScreen] = useState<"login" | "otp" | "success">("login");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -64,9 +64,9 @@ export function OtpAuth({
 
   async function requestCode(event?: React.FormEvent) {
     event?.preventDefault();
-    const normalized = activeChannel === "phone" ? normalizePhone(phone, "IN") : normalizeEmail(email);
+    const normalized = activeChannel === "whatsapp" ? normalizePhone(phone, "IN") : normalizeEmail(email);
     if (!normalized) {
-      setError(activeChannel === "phone" ? "Enter a valid 10-digit Indian mobile number." : "Enter a valid email address.");
+      setError(activeChannel === "whatsapp" ? "Enter a valid 10-digit Indian mobile number." : "Enter a valid email address.");
       return;
     }
     if (purpose === "login" && !termsAccepted) {
@@ -76,7 +76,7 @@ export function OtpAuth({
     setBusy(true);
     setError("");
     const result = await store.requestOtp({
-      channel: activeChannel === "phone" ? "sms" : "email",
+      channel: activeChannel === "whatsapp" ? "whatsapp" : "email",
       destination: normalized,
       country: "IN",
       purpose,
@@ -151,7 +151,7 @@ export function OtpAuth({
     router.push(safeNext(path));
   }
 
-  const heading = purpose === "link-email" ? "Verify your email" : purpose === "link-phone" ? "Verify your number" : "Welcome back";
+  const heading = purpose === "link-email" ? "Verify your email" : purpose === "link-phone" ? "Verify your WhatsApp number" : "Welcome back";
 
   return (
     <div className={`sk-auth-shell${variant === "compact" ? " is-compact" : ""}${variant === "inline" ? " is-inline" : ""}`}>
@@ -189,7 +189,7 @@ export function OtpAuth({
           <div className="sk-auth-content">
             {variant === "inline" ? (
               <div className="sk-auth-inline-bar">
-                <span>{purpose === "link-phone" ? "Phone" : "Email"}</span>
+                <span>{purpose === "link-phone" ? "WhatsApp" : "Email"}</span>
                 <button type="button" aria-label="Close" onClick={() => onDone?.()}>
                   <X size={14} />
                 </button>
@@ -198,19 +198,19 @@ export function OtpAuth({
             {screen === "login" ? (
               <>
                 <h1>{heading}</h1>
-                <p className="sk-auth-subtitle">{purpose === "login" ? "We’ll send a code to sign you in." : "We’ll send a code to verify this contact."}</p>
+                <p className="sk-auth-subtitle">{purpose === "login" ? "We’ll send a WhatsApp or email code to sign you in." : activeChannel === "whatsapp" ? "We’ll send a WhatsApp code to verify this number." : "We’ll send a code to verify this email."}</p>
                 {locked ? null : (
                   <div className="sk-auth-tabs" role="tablist" aria-label="Choose a verification method">
-                    <button type="button" role="tab" aria-selected={activeChannel === "phone"} className={activeChannel === "phone" ? "active" : ""} onClick={() => { setChannel("phone"); setError(""); }}>Phone</button>
+                    <button type="button" role="tab" aria-selected={activeChannel === "whatsapp"} className={activeChannel === "whatsapp" ? "active" : ""} onClick={() => { setChannel("whatsapp"); setError(""); }}>WhatsApp</button>
                     <button type="button" role="tab" aria-selected={activeChannel === "email"} className={activeChannel === "email" ? "active" : ""} onClick={() => { setChannel("email"); setError(""); }}>Email</button>
                   </div>
                 )}
                 <form onSubmit={requestCode}>
-                  {activeChannel === "phone" ? (
+                  {activeChannel === "whatsapp" ? (
                     <div className="sk-auth-phone-field">
                       <span className="sk-auth-country" aria-hidden>+91</span>
-                      <label className="sk-sr-only" htmlFor="auth-phone">Indian mobile number</label>
-                      <input id="auth-phone" type="tel" autoComplete="tel-national" inputMode="numeric" required maxLength={10} value={phone} onChange={(event) => setPhone(event.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="10-digit mobile number" />
+                      <label className="sk-sr-only" htmlFor="auth-phone">Indian mobile number for WhatsApp</label>
+                      <input id="auth-phone" type="tel" autoComplete="tel-national" inputMode="numeric" required maxLength={10} value={phone} onChange={(event) => setPhone(event.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="10-digit WhatsApp number" />
                     </div>
                   ) : (
                     <label className="sk-auth-email-field">
@@ -234,8 +234,8 @@ export function OtpAuth({
                 <button className="sk-auth-back" type="button" onClick={() => { setScreen("login"); setError(""); }}>
                   <ArrowLeft size={17} /> Back
                 </button>
-                <h1>{activeChannel === "phone" ? "Verify your number" : "Verify your email"}</h1>
-                <p className="sk-auth-subtitle">We’ve sent a 6-digit code to<br /><strong>{sentTo}</strong></p>
+                <h1>{activeChannel === "whatsapp" ? "Verify your WhatsApp" : "Verify your email"}</h1>
+                <p className="sk-auth-subtitle">{activeChannel === "whatsapp" ? "We’ve sent a 6-digit code on WhatsApp to" : "We’ve sent a 6-digit code to"}<br /><strong>{sentTo}</strong></p>
                 <form onSubmit={verify}>
                   <div className="sk-otp-inputs" role="group" aria-label="Six-digit one-time password">
                     {code.map((digit, index) => (

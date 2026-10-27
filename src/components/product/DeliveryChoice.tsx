@@ -499,7 +499,7 @@ export function DeliveryChoice() {
                             <span className="text-[10px] uppercase tracking-[0.16em] text-[#8a7350]">{address.label}{address.isDefault ? " · Default" : ""}</span>
                             <span className="mt-1 block text-sm font-medium">{address.name}</span>
                             <span className="mt-1 block text-sm leading-6 text-[#6f675d]">{address.line1}{address.line2 ? `, ${address.line2}` : ""}</span>
-                            <span className="block text-sm text-[#6f675d]">{address.city}, {address.state} {address.postal}</span>
+                            <span className="block text-sm text-[#6f675d]">{address.city} {address.postal}</span>
                           </span>
                         </button>
                       </li>

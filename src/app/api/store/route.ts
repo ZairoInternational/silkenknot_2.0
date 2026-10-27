@@ -105,7 +105,7 @@ export async function POST(request: Request) {
     const orders = db.collection<Order>("orders");
 
     if (action === "lookup" || action === "register" || action === "login" || action === "reset-password") {
-      return fail("Sign in with a one-time code sent to your email or mobile.", 410);
+      return fail("Sign in with a one-time code sent to your WhatsApp or email.", 410);
     }
 
     if (action === "admin-login") {
@@ -220,11 +220,29 @@ export async function POST(request: Request) {
       if (action === "delete-address") {
         addresses = addresses.filter((item) => item.id !== body.id);
       } else {
-        const address = body.address as Address;
-        const others = addresses.filter((item) => item.id !== address.id);
+        const raw = (body.address || {}) as Record<string, unknown>;
+        const address: Address = {
+          id: String(raw.id || ""),
+          label: String(raw.label || "Home"),
+          name: String(raw.name || ""),
+          line1: String(raw.line1 || ""),
+          line2: String(raw.line2 || ""),
+          city: String(raw.city || ""),
+          postal: String(raw.postal || ""),
+          country: String(raw.country || "India"),
+          phone: String(raw.phone || ""),
+          isDefault: Boolean(raw.isDefault),
+        };
+        // Drop legacy `state` from older saved addresses.
+        const others = addresses.map((item) => {
+          const { state: _legacy, ...rest } = item as Address & { state?: string };
+          void _legacy;
+          return rest;
+        });
+        const without = others.filter((item) => item.id !== address.id);
         addresses = address.isDefault
-          ? [...others.map((item) => ({ ...item, isDefault: false })), address]
-          : [...others, address];
+          ? [...without.map((item) => ({ ...item, isDefault: false })), address]
+          : [...without, address];
       }
       if (addresses[0] && !addresses.some((item) => item.isDefault)) addresses[0] = { ...addresses[0], isDefault: true };
       await users.updateOne({ id: session.id }, { $set: { addresses } });

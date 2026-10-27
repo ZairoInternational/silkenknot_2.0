@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { getBrandSettings } from "@/lib/brand/server";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -10,14 +11,21 @@ const outfit = Outfit({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "Silken Knot — Body care, bath & wellness",
-    template: "%s · Silken Knot",
-  },
-  description:
-    "Body care, bath essentials, aromatherapy, and quiet apparel. Everyday rituals, made better.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrandSettings();
+  return {
+    title: {
+      default: "Silken Knot — Body care, bath & wellness",
+      template: "%s · Silken Knot",
+    },
+    description:
+      "Body care, bath essentials, aromatherapy, and quiet apparel. Everyday rituals, made better.",
+    icons: {
+      icon: [{ url: brand.iconUrl }],
+      apple: [{ url: brand.iconUrl }],
+    },
+  };
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -64,14 +64,17 @@ export default function ReviewPage() {
       const raw = sessionStorage.getItem(ADDRESS_STORAGE_KEY);
       if (raw) setAddress(JSON.parse(raw));
       else setAddress(null);
-      const saved = sessionStorage.getItem(PAYMENT_STORAGE_KEY) === "cod" ? "cod" : "razorpay";
-      setMethod(saved);
       const shipping = sessionStorage.getItem(SHIPPING_SELECTION_KEY);
       if (!shipping) {
         router.replace("/checkout/shipping");
         return;
       }
-      setSelection(shippingForPayment(JSON.parse(shipping) as ShippingSelection, saved));
+      const parsed = JSON.parse(shipping) as ShippingSelection;
+      const wantCod = sessionStorage.getItem(PAYMENT_STORAGE_KEY) === "cod";
+      const saved = wantCod && parsed.codEligible ? "cod" : "razorpay";
+      if (wantCod && !parsed.codEligible) sessionStorage.setItem(PAYMENT_STORAGE_KEY, "razorpay");
+      setMethod(saved);
+      setSelection(shippingForPayment(parsed, saved));
     } catch {
       setAddress(null);
     }
@@ -82,6 +85,7 @@ export default function ReviewPage() {
   }, []);
 
   function choosePay(next: "razorpay" | "cod") {
+    if (next === "cod" && !selection?.codEligible) return;
     setMethod(next);
     if (!selection) return;
     const shown = shippingForPayment(selection, next);
@@ -115,7 +119,6 @@ export default function ReviewPage() {
         address1: order.address.line1,
         address2: order.address.line2,
         city: order.address.city,
-        state: order.address.state,
         postalCode: order.address.postal,
         country: order.address.country,
       },
@@ -140,7 +143,13 @@ export default function ReviewPage() {
       return;
     }
     if (!accepted) {
-      setError("Please agree to the Terms, Privacy Policy, and Shipping policy.");
+      setError("Please agree to the Terms, Privacy, Shipping, Returns, and Payment policies.");
+      return;
+    }
+    if (method === "cod" && !selection.codEligible) {
+      setError("Cash on delivery is currently unavailable for this order. Please pay online.");
+      setMethod("razorpay");
+      sessionStorage.setItem(PAYMENT_STORAGE_KEY, "razorpay");
       return;
     }
     sessionStorage.setItem(TERMS_STORAGE_KEY, "true");
@@ -209,7 +218,7 @@ export default function ReviewPage() {
           description: "Your Silken Knot order",
           order_id: data.razorpayOrderId,
           prefill: { name: address.fullName, email: address.email, contact: address.phone },
-          notes: { address: `${address.address1}, ${address.city}, ${address.state} ${address.postalCode}` },
+          notes: { address: `${address.address1}, ${address.city} ${address.postalCode}` },
           theme: { color: "#CBAC7C" },
           handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
             settled.current = true;
@@ -289,7 +298,7 @@ export default function ReviewPage() {
               <p>
                 {address.fullName}<br />
                 {address.address1}{address.address2 ? `, ${address.address2}` : ""}<br />
-                {address.city}, {address.state} {address.postalCode}<br />
+                {address.city} {address.postalCode}<br />
                 {address.country}<br />
                 {address.email} · {address.phone}
               </p>
@@ -304,18 +313,41 @@ export default function ReviewPage() {
             <p>
               {method === "cod" ? "You pay the courier when the order arrives." : "You pay when you place the order."}
             </p>
-            {selection?.codEligible ? (
-              <div className="paymentOptions">
-                <button type="button" className={`paymentOption ${method === "razorpay" ? "selected" : ""}`} onClick={() => choosePay("razorpay")}>
-                  <span className="radioDot" />
-                  <span className="paymentCopy"><strong>Pay now</strong><small>Taken when you place the order</small></span>
-                </button>
-                <button type="button" className={`paymentOption ${method === "cod" ? "selected" : ""}`} onClick={() => choosePay("cod")}>
-                  <span className="radioDot" />
-                  <span className="paymentCopy"><strong>Pay on delivery</strong><small>Pay the courier when the order arrives</small></span>
-                </button>
-              </div>
-            ) : null}
+            <div className="paymentOptions" role="radiogroup" aria-label="Payment method">
+              <button
+                type="button"
+                role="radio"
+                aria-checked={method === "razorpay"}
+                className={`paymentOption ${method === "razorpay" ? "selected" : ""}`}
+                onClick={() => choosePay("razorpay")}
+              >
+                <span className="radioDot" aria-hidden />
+                <span className="paymentCopy">
+                  <strong>Pay now</strong>
+                  <small>UPI, cards, and wallets · taken when you place the order</small>
+                </span>
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={method === "cod"}
+                aria-disabled={!selection?.codEligible}
+                disabled={!selection?.codEligible}
+                className={`paymentOption ${method === "cod" ? "selected" : ""}${selection?.codEligible ? "" : " isUnavailable"}`}
+                onClick={() => choosePay("cod")}
+              >
+                <span className="radioDot" aria-hidden />
+                <span className="paymentCopy">
+                  <strong>Cash on delivery</strong>
+                  <small>
+                    {selection?.codEligible
+                      ? "Pay the courier when the order arrives"
+                      : "Currently unavailable for this order"}
+                  </small>
+                </span>
+                {!selection?.codEligible ? <span className="paymentUnavailable">Unavailable</span> : null}
+              </button>
+            </div>
           </div>
           {selection ? (
             <div className="reviewBlock">
@@ -327,7 +359,7 @@ export default function ReviewPage() {
             <label className="checkLine termsCheck">
               <input type="checkbox" checked={accepted} onChange={(event) => { setAccepted(event.target.checked); setError(""); }} />
               <span>
-                I agree to the <a href="/terms" target="_blank">Terms</a>, <a href="/privacy" target="_blank">Privacy Policy</a>, and <a href="/shipping" target="_blank">Shipping</a> policy.
+                I agree to the <a href="/terms" target="_blank">Terms</a>, <a href="/privacy" target="_blank">Privacy Policy</a>, <a href="/shipping" target="_blank">Shipping</a>, <a href="/returns" target="_blank">Returns</a>, and <a href="/payments" target="_blank">Payment</a> policies.
               </span>
             </label>
           </div>
@@ -338,7 +370,7 @@ export default function ReviewPage() {
               {busy ? "Preparing checkout…" : method === "cod" ? "Place order" : "Pay now"} <LockKeyhole size={16} />
             </button>
           </div>
-          <p className="formFine">Do not refresh while payment is being processed. You’ll see confirmation after the server verifies payment.</p>
+          <p className="formFine">Do not refresh while payment is being processed. You’ll see confirmation after we verify your payment.</p>
         </section>
         <OrderSummary />
       </div>

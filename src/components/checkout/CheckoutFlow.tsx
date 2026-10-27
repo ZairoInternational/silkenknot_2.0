@@ -30,7 +30,6 @@ export function CheckoutFlow() {
       line1: "",
       line2: "",
       city: "",
-      state: "",
       postal: "",
       country: "India",
       phone: user?.phone ?? "",
@@ -68,7 +67,7 @@ export function CheckoutFlow() {
       setError("Add the name and email for this order.");
       return;
     }
-    if (step === 1 && (!address.line1 || !address.city || !address.state || address.postal.length < 4 || !address.phone)) {
+    if (step === 1 && (!address.line1 || !address.city || address.postal.length < 4 || !address.phone)) {
       setError("Complete the address so the studio knows where to send it.");
       return;
     }
@@ -117,7 +116,6 @@ export function CheckoutFlow() {
             <Field label="Address" name="line1" required value={address.line1} onChange={(event) => setAddress({ ...address, line1: event.target.value, name: customer.name, phone: customer.phone })} />
             <Field label="Apartment" name="line2" value={address.line2} onChange={(event) => setAddress({ ...address, line2: event.target.value })} />
             <Field label="City" name="city" required value={address.city} onChange={(event) => setAddress({ ...address, city: event.target.value })} />
-            <Field label="State" name="state" required value={address.state} onChange={(event) => setAddress({ ...address, state: event.target.value })} />
             <Field label="Postal code" name="postal" required value={address.postal} onChange={(event) => setAddress({ ...address, postal: event.target.value })} />
             <Field label="Country" name="country" required value={address.country} onChange={(event) => setAddress({ ...address, country: event.target.value })} />
             {user ? (
@@ -169,7 +167,7 @@ export function CheckoutFlow() {
         {step === 4 ? (
           <div className="mt-8 space-y-4 text-sm leading-6">
             <p>{customer.name} · {customer.email} · {customer.phone}</p>
-            <p>{address.line1}, {address.city}, {address.state} {address.postal}</p>
+            <p>{address.line1}, {address.city} {address.postal}</p>
             <p className="uppercase tracking-[0.14em]">{delivery} · {payment}</p>
             <form
               className="flex max-w-sm gap-3 border-b border-line"

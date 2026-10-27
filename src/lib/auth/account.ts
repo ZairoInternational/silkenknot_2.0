@@ -36,7 +36,7 @@ export async function resolveVerifiedLogin(db: Db, channel: OtpChannel, destinat
   try {
     await users.insertOne(created);
   } catch {
-    if (channel === "sms") {
+    if (channel === "whatsapp") {
       const owners = await users.find({ phone: destination, role: "customer" }).toArray();
       if (owners.length === 1) {
         const stamp = new Date().toISOString();

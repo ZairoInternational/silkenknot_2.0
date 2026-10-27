@@ -5,7 +5,7 @@
 
 const SAFE_ID = /^[a-zA-Z0-9_-]{1,64}$/;
 
-export type AssetRole = "main" | "gallery" | "variant" | "category" | "banner";
+export type AssetRole = "main" | "gallery" | "variant" | "category" | "banner" | "brand";
 
 export function assertSafeId(value: string, label: string) {
   if (!SAFE_ID.test(value)) {
@@ -45,5 +45,10 @@ export function buildBannerAssetKey(scope: "homepage" | string, assetId: string)
   if (scope === "homepage") return `banners/homepage/${assetId}.webp`;
   assertSafeId(scope, "campaign id");
   return `banners/campaigns/${scope}/${assetId}.webp`;
+}
+
+export function buildBrandAssetKey(assetId: string) {
+  assertSafeId(assetId, "asset id");
+  return `brands/logo/${assetId}.webp`;
 }
 

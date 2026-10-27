@@ -18,11 +18,11 @@ export async function POST(request: Request) {
   if (!databaseConfigured()) return jsonError("Add MONGODB_URI to .env.local, then restart the app.", 503);
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;
   if (!body) return jsonError("Request could not be read.");
-  const channel = body.channel === "sms" ? "sms" : body.channel === "email" ? "email" : null;
-  if (!channel) return jsonError("Choose email or mobile.");
+  const channel = body.channel === "whatsapp" ? "whatsapp" : body.channel === "email" ? "email" : null;
+  if (!channel) return jsonError("Choose email or WhatsApp.");
   const purpose = purposeOf(body.purpose);
   if (purpose === "link-email" && channel !== "email") return jsonError("Use email to verify an email address.");
-  if (purpose === "link-phone" && channel !== "sms") return jsonError("Use a mobile number to verify a mobile number.");
+  if (purpose === "link-phone" && channel !== "whatsapp") return jsonError("Use WhatsApp to verify a mobile number.");
   const destination = channel === "email"
     ? normalizeEmail(String(body.destination || ""))
     : normalizePhone(String(body.destination || ""), String(body.country || "IN"));

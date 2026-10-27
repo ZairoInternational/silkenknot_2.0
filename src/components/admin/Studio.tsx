@@ -8,10 +8,13 @@ import { useStore } from "@/lib/store";
 import type { Category, Coupon, Order, OrderStatus, Product, Variant } from "@/lib/types";
 import type { HeroOffer } from "@/lib/hero/content";
 import { DEFAULT_HERO_OFFER } from "@/lib/hero/content";
+import type { BrandSettings } from "@/lib/brand/content";
+import { DEFAULT_BRAND } from "@/lib/brand/content";
+import { primeBrandCache } from "@/lib/brand/client";
 function linesToList(value: string) {
   return value.split("\n").map((item) => item.trimEnd());
 }
-import { Media } from "@/components/ui";
+import { Mark, Media } from "@/components/ui";
 import { csrfHeaders } from "@/lib/auth/browser";
 
 const links = [
@@ -20,9 +23,12 @@ const links = [
   ["Categories", "/admin/categories"],
   ["Orders", "/admin/orders"],
   ["Shipping", "/admin/shipping"],
+  ["Fees", "/admin/fees"],
   ["Customers", "/admin/customers"],
   ["Offers", "/admin/offers"],
   ["Hero", "/admin/hero"],
+  ["Brand", "/admin/brand"],
+  ["Announcements", "/admin/announcements"],
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
@@ -44,8 +50,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-cream text-ink">
       <aside className="fixed inset-y-0 left-0 hidden w-60 border-r border-line bg-paper p-6 md:block">
-        <Link href="/admin" className="font-serif text-3xl">Silken Knot</Link>
-        <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-mute">Studio</p>
+        <Link href="/admin" className="inline-flex items-center gap-2 font-serif text-3xl">
+          <Mark className="h-6 w-9" />
+          Silken Knot
+        </Link>
+        
         <nav className="mt-10 space-y-2" aria-label="Studio">
           {links.map(([label, href]) => (
             <Link key={href} href={href} className={`block py-2 text-sm ${pathname === href ? "text-ink" : "text-mute"}`}>
@@ -838,6 +847,128 @@ export function HeroManager() {
         {message ? <p role="status" className="text-sm text-mute">{message}</p> : null}
         <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
           {saving ? "Saving…" : "Save hero offer"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+export function BrandManager() {
+  const [draft, setDraft] = useState<BrandSettings>(DEFAULT_BRAND);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/admin/brand", { headers: csrfHeaders() });
+        const data = (await response.json()) as { ok?: boolean; brand?: BrandSettings; error?: string };
+        if (!response.ok || !data.brand) throw new Error(data.error || "Could not load the brand icon.");
+        if (cancelled) return;
+        setDraft(data.brand);
+      } catch (failure) {
+        if (!cancelled) setError(failure instanceof Error ? failure.message : "Could not load the brand icon.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const patch = (next: Partial<BrandSettings>) => setDraft((current) => ({ ...current, ...next }));
+
+  const onUpload = async (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file || uploading) return;
+    setUploading(true);
+    setError("");
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("role", "brand");
+      const response = await fetch("/api/admin/media", { method: "POST", headers: csrfHeaders(false), body });
+      const payload = (await response.json()) as { url?: string; message?: string };
+      if (!response.ok || !payload.url) throw new Error(payload.message || "Could not upload that image.");
+      patch({ iconUrl: payload.url });
+      setMessage("Icon uploaded. Save to publish it everywhere.");
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : "Could not upload that image.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  if (loading) return <p className="text-mute">Loading brand…</p>;
+
+  return (
+    <div className="max-w-2xl">
+      <h1 className="font-serif text-5xl">Brand</h1>
+      <p className="mt-3 max-w-xl text-sm text-mute">
+        Set the Silken Knot icon used across the storefront — header, footer, checkout, and sign-in.
+      </p>
+
+      <form
+        className="mt-8 space-y-4"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          setSaving(true);
+          setError("");
+          setMessage("");
+          try {
+            const response = await fetch("/api/admin/brand", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json", ...csrfHeaders() },
+              body: JSON.stringify({ brand: draft }),
+            });
+            const data = (await response.json()) as { ok?: boolean; brand?: BrandSettings; message?: string; error?: string };
+            if (!response.ok || !data.brand) throw new Error(data.error || "Could not save.");
+            setDraft(data.brand);
+            primeBrandCache(data.brand);
+            setMessage(data.message || "Saved.");
+          } catch (failure) {
+            setError(failure instanceof Error ? failure.message : "Could not save.");
+          } finally {
+            setSaving(false);
+          }
+        }}
+      >
+        <AdminField label="Icon URL" value={draft.iconUrl} onChange={(iconUrl) => patch({ iconUrl })} />
+        <AdminField label="Icon alt text" value={draft.iconAlt} onChange={(iconAlt) => patch({ iconAlt })} />
+        <label className="block text-sm">
+          Upload brand icon
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={uploading}
+            className="mt-2 block w-full text-sm"
+            onChange={(event) => void onUpload(event.target.files)}
+          />
+          <span className="mt-1 block text-xs text-mute">{uploading ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB. Prefer a square mark with a transparent background."}</span>
+        </label>
+
+        {draft.iconUrl ? (
+          <div className="flex items-end gap-6">
+            <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={draft.iconUrl} alt={draft.iconAlt || "Brand icon preview"} className="max-h-full max-w-full object-contain" />
+            </div>
+            <div className="relative flex h-24 w-40 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper p-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={draft.iconUrl} alt={draft.iconAlt || "Brand logo preview"} className="max-h-full max-w-full object-contain" />
+            </div>
+          </div>
+        ) : null}
+
+        {error ? <p role="status" className="text-sm text-red-700">{error}</p> : null}
+        {message ? <p role="status" className="text-sm text-mute">{message}</p> : null}
+        <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
+          {saving ? "Saving…" : "Save brand icon"}
         </button>
       </form>
     </div>

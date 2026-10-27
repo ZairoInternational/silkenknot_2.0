@@ -75,11 +75,15 @@ export function MobileAccountBar() {
 
   useEffect(() => {
     const root = document.documentElement;
+    const barActive = accountBarPath(pathname) && store.ready;
     root.style.setProperty("--mobile-nav-shift", shown ? "0px" : "3.75rem");
+    // Used by SupportChat: hide launcher while the mobile nav is on screen.
+    root.dataset.mobileNav = barActive && shown ? "show" : "hide";
     return () => {
       root.style.removeProperty("--mobile-nav-shift");
+      delete root.dataset.mobileNav;
     };
-  }, [shown]);
+  }, [shown, pathname, store.ready]);
 
   if (!accountBarPath(pathname) || !store.ready) return null;
 

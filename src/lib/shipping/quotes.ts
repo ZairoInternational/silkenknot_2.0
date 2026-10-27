@@ -1,7 +1,8 @@
 import { createHash, randomBytes } from "node:crypto";
 import type { Db } from "mongodb";
 import type { Coupon, Product } from "@/lib/types";
-import { quoteCart, QuoteError } from "@/lib/payments/quote";
+import { hasPriorStoreOrder, loadPlatformFeePolicy, resolvePlatformFee } from "@/lib/payments/platformFee";
+import { quoteCart, quoteCartDroppingStaleCoupon, QuoteError } from "@/lib/payments/quote";
 import { checkServiceability, DelhiveryError, freightCharges, invoiceCharge, laneEstimates } from "./delhivery";
 import { applyLaneEstimates, applyQuotedCharge, buildShippingOptions, payablePaise, quotedChargePaise, type Serviceability, type ShippingOption } from "./options";
 import { assertDelhiveryConfigured, ShippingPolicyError, type ShippingPolicy } from "./policy";
@@ -54,12 +55,16 @@ export async function prepareShippingQuote(db: Db, input: { userId: string; item
   const products = (await db.collection("products").find({ active: { $ne: false } }).toArray()) as unknown as Product[];
   const coupons = (await db.collection("coupons").find({ active: true }).toArray()) as unknown as Coupon[];
   let priced;
+  let droppedCoupon = null as { code: string; message: string } | null;
   try {
-    priced = quoteCart(products, coupons, Array.isArray(input.items) ? input.items : [], input.couponCode);
+    const result = quoteCartDroppingStaleCoupon(products, coupons, Array.isArray(input.items) ? input.items : [], input.couponCode);
+    priced = result.quote;
+    droppedCoupon = result.droppedCoupon;
   } catch (error) {
     if (error instanceof QuoteError) throw new ShippingQuoteError("invalid", error.message);
     throw error;
   }
+  const effectiveCoupon = priced.couponCode || "";
   const netPaise = priced.subtotalPaise - priced.discountPaise;
   const parcel = parcelWeight(Array.isArray(input.items) ? input.items as { productId?: string; quantity?: number }[] : [], products, policy.defaultWeightGrams);
   let serviceability: Serviceability;
@@ -91,7 +96,7 @@ export async function prepareShippingQuote(db: Db, input: { userId: string; item
     id: `shp_${randomBytes(12).toString("hex")}`,
     userId: input.userId,
     postal: input.postal,
-    fingerprint: fingerprint(input.items, input.couponCode, input.postal),
+    fingerprint: fingerprint(input.items, effectiveCoupon, input.postal),
     serviceability,
     options: built.options,
     codEligible: built.codEligible,
@@ -104,6 +109,9 @@ export async function prepareShippingQuote(db: Db, input: { userId: string; item
     expiresAt: new Date(now.getTime() + QUOTE_MS).toISOString(),
   };
   await db.collection<StoredShippingQuote>("shippingQuotes").insertOne(quote);
+  const feePolicy = await loadPlatformFeePolicy(db);
+  const isFirstOrder = !(await hasPriorStoreOrder(db, input.userId));
+  const platformFee = resolvePlatformFee(feePolicy, { netPaise, isFirstOrder });
   return {
     quoteId: quote.id,
     expiresAt: quote.expiresAt,
@@ -113,7 +121,16 @@ export async function prepareShippingQuote(db: Db, input: { userId: string; item
     codFeePaise: 0,
     subtotalPaise: quote.subtotalPaise,
     discountPaise: quote.discountPaise,
+    couponCode: effectiveCoupon || null,
+    couponRemoved: Boolean(droppedCoupon),
+    couponNotice: droppedCoupon?.message || null,
     freeShippingPaise: policy.freeShippingPaise,
+    platformFeePaise: platformFee.chargePaise,
+    platformFeeListPaise: platformFee.listPaise,
+    platformFeeWaiveAbovePaise: feePolicy.waiveAbovePaise,
+    platformFeeWaiveFirstOrder: platformFee.reason === "first_order",
+    platformFeeFirstOrderEnabled: feePolicy.waiveFirstOrder,
+    platformFeeWaiveReason: platformFee.reason,
     currency: "INR" as const,
   };
 }
@@ -171,17 +188,36 @@ export async function revalidateShipping(db: Db, input: {
   if (input.payment === "cod" && !codEligible) throw new ShippingQuoteError("unavailable", "Cash on delivery is not available for this order.");
   const storedCharge = input.payment === "cod" ? selected.codChargePaise : selected.chargePaise;
   const codFeePaise = 0;
+  const feePolicy = await loadPlatformFeePolicy(db);
+  const isFirstOrder = !(await hasPriorStoreOrder(db, input.userId));
+  const platformFee = resolvePlatformFee(feePolicy, { netPaise, isFirstOrder });
+  const platformFeePaise = platformFee.chargePaise;
   if (fresh.chargePaise !== storedCharge) {
-    const amountPaise = payablePaise(netPaise, fresh.chargePaise, codFeePaise);
+    const amountPaise = payablePaise(netPaise, fresh.chargePaise, codFeePaise, platformFeePaise);
     throw new ShippingQuoteError("price_changed", "The shipping price changed. Review the new total before paying.", {
       amountPaise,
       shippingPaise: fresh.chargePaise,
       codFeePaise,
+      platformFeePaise,
     });
   }
-  const amountPaise = payablePaise(netPaise, fresh.chargePaise, codFeePaise);
+  const amountPaise = payablePaise(netPaise, fresh.chargePaise, codFeePaise, platformFeePaise);
   if (amountPaise !== input.expectedAmountPaise) {
-    throw new ShippingQuoteError("price_changed", "The payable total changed. Review it before paying.", { amountPaise, shippingPaise: fresh.chargePaise, codFeePaise });
+    throw new ShippingQuoteError("price_changed", "The payable total changed. Review it before paying.", {
+      amountPaise,
+      shippingPaise: fresh.chargePaise,
+      codFeePaise,
+      platformFeePaise,
+    });
   }
-  return { policy, selected: { ...selected, chargePaise: fresh.chargePaise }, codFeePaise, amountPaise, netPaise, parcel };
+  return {
+    policy,
+    selected: { ...selected, chargePaise: fresh.chargePaise },
+    codFeePaise,
+    platformFeePaise,
+    platformFeeListPaise: platformFee.listPaise,
+    amountPaise,
+    netPaise,
+    parcel,
+  };
 }

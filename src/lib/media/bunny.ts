@@ -1,7 +1,7 @@
 import { randomBytes } from "crypto";
 import { MediaError, mediaCorrelationId } from "@/lib/media/errors";
 import { processProductImage } from "@/lib/media/image";
-import { assertSafeId, buildBannerAssetKey, buildProductAssetKey } from "@/lib/media/paths";
+import { assertSafeId, buildBannerAssetKey, buildBrandAssetKey, buildProductAssetKey } from "@/lib/media/paths";
 
 export type BunnyConfig = {
   zone: string;
@@ -213,6 +213,30 @@ export async function uploadBannerImage(input: UploadBannerImageInput) {
     bytes: processed.bytes,
     scope,
     role: "banner" as const,
+  };
+}
+
+export type UploadBrandImageInput = {
+  bytes: Buffer;
+  correlationId?: string;
+};
+
+export async function uploadBrandImage(input: UploadBrandImageInput) {
+  const correlationId = input.correlationId || mediaCorrelationId();
+  const config = requireBunnyConfig(correlationId);
+  const processed = await processProductImage(input.bytes, correlationId);
+  const assetId = randomBytes(12).toString("hex");
+  const key = buildBrandAssetKey(assetId);
+  await putObject(config, key, processed.buffer, processed.contentType, correlationId);
+  return {
+    url: publicCdnUrl(config, key),
+    key,
+    assetId,
+    contentType: processed.contentType,
+    width: processed.width,
+    height: processed.height,
+    bytes: processed.bytes,
+    role: "brand" as const,
   };
 }
 

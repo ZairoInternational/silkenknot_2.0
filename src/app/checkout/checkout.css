@@ -65,6 +65,16 @@
 .silk-checkout .shipPrice { margin-left: auto; font-size: 14px; font-weight: 600; color: #2c2926; white-space: nowrap; }
 .silk-checkout .shipPrice.free { color: #8a7350; }
 .silk-checkout .shipHint { margin: 10px 0 0; font-size: 13px; color: #6f675d; }
+.silk-checkout .couponNotice {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #eadfce;
+  border-radius: 10px;
+  background: #fbf9f6;
+  color: #6f5638;
+  font-size: 13px;
+  line-height: 1.45;
+}
 .silk-checkout .field input:focus,
 .silk-checkout .field select:focus,
 .silk-checkout input:focus-visible,
@@ -129,10 +139,57 @@
 .silk-checkout .summaryProduct { display: flex; flex-direction: column; gap: 5px; min-width: 0; flex: 1; }
 .silk-checkout .summaryProduct strong { font-size: 13px; font-weight: 600; }
 .silk-checkout .summaryProduct small { font-size: 12px; color: var(--muted); }
+.silk-checkout .billSummary { margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+.silk-checkout .billTitle { margin: 0 0 10px; font-size: 15px; font-weight: 600; color: var(--ink); }
 .silk-checkout .summaryLine,
 .silk-checkout .summaryTotal { display: flex; justify-content: space-between; align-items: center; font-size: 13px; padding: 8px 0; color: #65675d; gap: 10px; }
-.silk-checkout .summaryTotal { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 16px; color: var(--ink); }
+.silk-checkout .billLabel { border-bottom: 1px dotted #cfc7bb; }
+.silk-checkout .billHint { color: #9a958c; font-weight: 400; border-bottom: 0; }
+.silk-checkout .billDelivery { flex-wrap: wrap; }
+.silk-checkout .billDelivery.hasHint { padding-bottom: 2px; }
+.silk-checkout .billFreeHint { flex: 1 0 100%; margin: 0; padding-left: 0; font-size: 11px; line-height: 1.4; color: #8a7350; }
+.silk-checkout .billAmountBlock { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.silk-checkout .billAmountNote { max-width: 12.5rem; font-size: 11px; line-height: 1.35; font-weight: 500; color: #1f7a4d; }
+.silk-checkout .billPending { color: #9a958c; font-size: 12px; font-weight: 400; }
+.silk-checkout .billRule { height: 0; margin: 6px 0 2px; border: 0; border-top: 1px solid var(--line); }
+.silk-checkout .billRuleDashed { border-top-style: dashed; border-top-color: #e0d8cc; }
+.silk-checkout .billDiscounts { margin: 2px 0 0; }
+.silk-checkout .billDiscountToggle {
+  width: 100%;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  font-weight: 600;
+  padding: 8px 0;
+}
+.silk-checkout .billDiscountToggleLabel { display: inline-flex; align-items: center; gap: 4px; }
+.silk-checkout .billDiscountToggleLabel svg { color: #8a7350; transition: transform 0.18s ease; }
+.silk-checkout .billDiscountToggleLabel svg.isOpen { transform: rotate(180deg); }
+.silk-checkout .billDiscountPanel { padding: 0 0 2px 12px; }
+.silk-checkout .billDiscountRow { padding: 5px 0; font-size: 12px; }
+.silk-checkout .billSave { color: #1f7a4d; }
+.silk-checkout .billMinus { color: #1f7a4d; font-weight: 600; }
+.silk-checkout .summaryTotal { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 16px; color: var(--ink); font-weight: 600; }
 .silk-checkout .summaryTotal strong { font-size: 19px; font-weight: 600; }
+.silk-checkout .billSaved {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #eef6f0;
+  color: #1f7a4d;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+.silk-checkout .billSaved strong { font-weight: 700; }
+.silk-checkout .billSaved svg { flex-shrink: 0; }
 .silk-checkout .summaryFoot { text-align: center; color: #89897d; font-size: 13px; margin: 18px 0 0; }
 .silk-checkout .checkoutFooter { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 28px 0 5px; margin-top: 26px; border-top: 1px solid var(--line); font-size: 12px; color: #88887e; }
 .silk-checkout .checkoutFooter div { display: flex; gap: 18px; }
@@ -149,6 +206,31 @@
 @keyframes shipPulse { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 .silk-checkout .paymentOption { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 16px 14px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); }
 .silk-checkout .paymentOption.selected { border-color: #cbac7c; background: #fbf9f6; box-shadow: 0 0 0 1px #cbac7c; }
+.silk-checkout .paymentOption.isUnavailable,
+.silk-checkout .paymentOption:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  background: #f7f5f1;
+  color: #8a8a82;
+  box-shadow: none;
+}
+.silk-checkout .paymentOption.isUnavailable .radioDot,
+.silk-checkout .paymentOption:disabled .radioDot {
+  border-color: #cfcfc6;
+  background: #ebe8e1;
+}
+.silk-checkout .paymentUnavailable {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #ece8e1;
+  color: #6f6f66;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
 .silk-checkout .radioDot { width: 15px; height: 15px; border: 1px solid #bdbdaf; border-radius: 50%; flex-shrink: 0; }
 .silk-checkout .selected .radioDot { border: 5px solid var(--olive); }
 .silk-checkout .paymentIcon { display: grid; place-items: center; color: #8a7350; }

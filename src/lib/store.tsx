@@ -135,7 +135,7 @@ type StoreValue = {
   clearCoupon: () => void;
   toggleWishlist: (productId: string) => Result;
   isWished: (productId: string) => boolean;
-  requestOtp: (input: { channel: "email" | "sms"; destination: string; country?: string; purpose?: "login" | "link-email" | "link-phone" }) => Promise<Result & { challengeId?: string; resendAt?: string; devCode?: string }>;
+  requestOtp: (input: { channel: "email" | "whatsapp"; destination: string; country?: string; purpose?: "login" | "link-email" | "link-phone" }) => Promise<Result & { challengeId?: string; resendAt?: string; devCode?: string }>;
   verifyOtp: (input: { challengeId: string; code: string; purpose?: "login" | "link-email" | "link-phone" }) => Promise<Result>;
   logout: () => Promise<void>;
   updateProfile: (input: { name: string }) => Promise<Result>;
@@ -428,7 +428,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   }, [patch]);
 
-  const requestOtp = useCallback(async (input: { channel: "email" | "sms"; destination: string; country?: string; purpose?: "login" | "link-email" | "link-phone" }) => {
+  const requestOtp = useCallback(async (input: { channel: "email" | "whatsapp"; destination: string; country?: string; purpose?: "login" | "link-email" | "link-phone" }) => {
     const response = await fetch("/api/auth/otp", {
       method: "POST",
       headers: csrfHeaders(),

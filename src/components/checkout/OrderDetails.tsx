@@ -331,7 +331,6 @@ export function OrderDetails({ id }: { id: string }) {
             address1: loaded.address.line1,
             address2: loaded.address.line2,
             city: loaded.address.city,
-            state: loaded.address.state,
             postalCode: loaded.address.postal,
             country: loaded.address.country,
           },
@@ -653,7 +652,7 @@ export function OrderDetails({ id }: { id: string }) {
                           : ""}
                       </p>
                       <p>
-                        {order.address.city}, {order.address.state}
+                        {order.address.city}
                         {order.address.postalCode
                           ? ` - ${order.address.postalCode}`
                           : ""}

@@ -109,7 +109,6 @@ export type Address = {
   line1: string;
   line2: string;
   city: string;
-  state: string;
   postal: string;
   country: string;
   phone: string;
@@ -234,6 +233,7 @@ export type Order = {
   reserveExpiresAt?: string;
   consistency?: "transaction" | "compensating";
   codFee?: number;
+  platformFee?: number;
   shippingLabel?: string;
   shippingQuoteId?: string;
   shipment?: ShipmentRecord;

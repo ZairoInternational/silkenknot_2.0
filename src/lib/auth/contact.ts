@@ -15,7 +15,7 @@ export function normalizePhone(value: string, country: string) {
   return parsed.number;
 }
 
-export function maskDestination(channel: "email" | "sms", destination: string) {
+export function maskDestination(channel: "email" | "whatsapp", destination: string) {
   if (channel === "email") {
     const [name, domain] = destination.split("@");
     const visible = name.slice(0, 1);
