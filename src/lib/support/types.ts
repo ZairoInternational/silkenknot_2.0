@@ -30,6 +30,8 @@ export type SupportActionId =
   | "login"
   | "contact_support"
   | "read_shipping"
+  | "read_returns"
+  | "read_payments"
   | "read_faq"
   | "read_terms"
   | "browse_shop"
