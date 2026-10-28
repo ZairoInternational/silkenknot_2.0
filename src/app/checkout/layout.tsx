@@ -1,7 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckoutAuth } from "@/components/checkout/CheckoutAuth";
 import { Mark } from "@/components/ui";
+import { noIndexRobots } from "@/lib/seo/metadata";
 import "./checkout.css";
+
+export const metadata: Metadata = {
+  title: "Checkout",
+  robots: noIndexRobots(),
+};
 
 export default function CheckoutLayout({ children }: { children: React.ReactNode }) {
   return (

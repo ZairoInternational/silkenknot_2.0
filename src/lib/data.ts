@@ -295,7 +295,7 @@ export const seedProducts: Product[] = [
       { label: "200 ml", price: 999, compare: 1280, stock: 24 },
       { label: "400 ml", price: 1490, stock: 9 },
     ]),
-    rating: 4.8,
+    rating: 4,
     reviewCount: 128,
     featured: true,
     bestseller: true,
@@ -324,7 +324,7 @@ export const seedProducts: Product[] = [
       { label: "100 ml", price: 890, stock: 14 },
       { label: "200 ml", price: 1140, stock: 16 },
     ]),
-    rating: 4.7,
+    rating: 4,
     reviewCount: 46,
     newArrival: true,
     createdAt: "2026-08-12T00:00:00.000Z",
@@ -765,9 +765,11 @@ export const seedUsers: User[] = [
   {
     id: "user-admin",
     name: "Silken Knot Studio",
+    // Overridden on first empty-DB seed by ADMIN_SEED_EMAIL / ADMIN_SEED_PASSWORD / ADMIN_SEED_PHONE.
+    // Never shown in the studio login UI. Change via /admin/account or forgot-password after deploy.
     email: "admin@silkknot.com",
     password: "studio123",
-    phone: "02240001111",
+    phone: "9876543210",
     role: "admin",
     addresses: [],
   },

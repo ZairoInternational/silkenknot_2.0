@@ -3,8 +3,12 @@ import { Outfit } from "next/font/google";
 import { AnalyticsConsentBanner } from "@/components/analytics/AnalyticsConsentBanner";
 import { GoogleTagManager } from "@/components/analytics/GoogleTagManager";
 import { Providers } from "@/components/providers";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { parseGtmId } from "@/lib/analytics/config";
 import { getBrandSettings } from "@/lib/brand/server";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/jsonLd";
+import { buildRootMetadata, DEFAULT_DESCRIPTION, SITE_NAME } from "@/lib/seo/metadata";
+import { absoluteAssetUrl, absoluteUrl } from "@/lib/seo/site";
 import "./globals.css";
 
 const gtmId = parseGtmId(process.env.NEXT_PUBLIC_GTM_ID);
@@ -18,23 +22,28 @@ const outfit = Outfit({
 
 export async function generateMetadata(): Promise<Metadata> {
   const brand = await getBrandSettings();
-  return {
-    title: {
-      default: "Silken Knot — Body care, bath & wellness",
-      template: "%s · Silken Knot",
-    },
-    description:
-      "Body care, bath essentials, aromatherapy, and quiet apparel. Everyday rituals, made better.",
-    icons: {
-      icon: [{ url: brand.iconUrl }],
-      apple: [{ url: brand.iconUrl }],
-    },
-  };
+  return buildRootMetadata({ iconUrl: brand.iconUrl });
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const brand = await getBrandSettings();
+  const origin = absoluteUrl("/");
+  const logoUrl = absoluteAssetUrl(brand.iconUrl);
+  const org = organizationJsonLd({
+    name: SITE_NAME,
+    url: origin,
+    logoUrl,
+    description: DEFAULT_DESCRIPTION,
+    sameAs: ["https://www.instagram.com/silkenknot_/"],
+  });
+  const site = websiteJsonLd({
+    name: SITE_NAME,
+    url: origin,
+    searchUrlTemplate: `${absoluteUrl("/shop")}?q={search_term_string}`,
+  });
+
   return (
-    <html lang="en" className={`${outfit.variable} h-full antialiased`}>
+    <html lang="en-IN" className={`${outfit.variable} h-full antialiased`}>
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
@@ -46,6 +55,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-full bg-paper font-sans text-ink">
+        <JsonLd data={org} />
+        <JsonLd data={site} />
         {gtmId ? (
           <noscript>
             <iframe

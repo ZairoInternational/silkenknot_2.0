@@ -1,7 +1,7 @@
 import { randomBytes } from "crypto";
 import { MediaError, mediaCorrelationId } from "@/lib/media/errors";
 import { processProductImage } from "@/lib/media/image";
-import { assertSafeId, buildBannerAssetKey, buildBrandAssetKey, buildProductAssetKey } from "@/lib/media/paths";
+import { assertSafeId, buildBannerAssetKey, buildBrandAssetKey, buildCategoryAssetKey, buildProductAssetKey } from "@/lib/media/paths";
 
 export type BunnyConfig = {
   zone: string;
@@ -237,6 +237,33 @@ export async function uploadBrandImage(input: UploadBrandImageInput) {
     height: processed.height,
     bytes: processed.bytes,
     role: "brand" as const,
+  };
+}
+
+export type UploadCategoryImageInput = {
+  bytes: Buffer;
+  categoryId: string;
+  correlationId?: string;
+};
+
+export async function uploadCategoryImage(input: UploadCategoryImageInput) {
+  const correlationId = input.correlationId || mediaCorrelationId();
+  const config = requireBunnyConfig(correlationId);
+  assertSafeId(input.categoryId, "category id");
+  const processed = await processProductImage(input.bytes, correlationId);
+  const assetId = randomBytes(12).toString("hex");
+  const key = buildCategoryAssetKey(input.categoryId, assetId);
+  await putObject(config, key, processed.buffer, processed.contentType, correlationId);
+  return {
+    url: publicCdnUrl(config, key),
+    key,
+    assetId,
+    contentType: processed.contentType,
+    width: processed.width,
+    height: processed.height,
+    bytes: processed.bytes,
+    categoryId: input.categoryId,
+    role: "category" as const,
   };
 }
 

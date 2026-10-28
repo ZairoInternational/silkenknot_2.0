@@ -18,8 +18,10 @@ import {
   X,
 } from "lucide-react";
 import { BottomSheet, Media, WishlistButton } from "@/components/ui";
+import { CardGoldRating, CardMobileAdd, ListingCardMedia } from "@/components/product/ListingCardMedia";
 import { seedCategories } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
+import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import {
   SearchAbortError,
@@ -65,6 +67,7 @@ function normalizeSort(value: string | null) {
 
 export function ShopCatalog() {
   const store = useStore();
+  const siteMedia = useSiteMedia();
   const params = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -330,7 +333,7 @@ export function ShopCatalog() {
       {/* Hero banner */}
       <section className="grid md:min-h-[440px] md:grid-cols-[0.9fr_1.1fr]">
         <div className="relative order-first min-h-[240px] md:order-last md:min-h-full">
-          <Media src="/silknknot/collection-body-care.jpg" alt="Silken Knot body care" sizes="(min-width: 768px) 55vw, 100vw" className="object-cover" />
+          <Media src={siteMedia.shopHero} alt="Silken Knot body care" sizes="(min-width: 768px) 55vw, 100vw" className="object-cover" />
         </div>
         <div className="flex flex-col justify-center px-6 py-8 md:px-12 md:py-16 lg:px-16">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#8a7350] md:text-sm">Shop our collections</p>
@@ -658,7 +661,7 @@ export function ShopCatalog() {
       {/* ── Collection editorial banner ──────────────────────────────────── */}
       <section className="grid bg-[#efeae3] md:grid-cols-2">
         <div className="relative min-h-[220px] md:min-h-[320px]">
-          <Media src="/silknknot/collection-lifestyle-wide.jpg" alt="" sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
+          <Media src={siteMedia.shopEditorial} alt="" sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
         </div>
         <div className="flex flex-col justify-center px-6 py-10 md:px-14">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#8a7350] md:text-sm">A little more mindful</p>
@@ -679,18 +682,13 @@ export function ShopCatalog() {
 
 function ProductCardSkeleton() {
   return (
-    <article className="flex h-full min-w-0 flex-col" aria-hidden="true">
-      <div className="overflow-hidden rounded-lg bg-[#eee8de]">
-        <div className="aspect-square animate-pulse bg-[#e0d8cc]" />
+    <article className="min-w-0" aria-hidden="true">
+      <div className="overflow-hidden rounded-2xl bg-[#eee8de]">
+        <div className="aspect-[2/3] animate-pulse bg-[#e0d8cc] md:aspect-[4/5]" />
       </div>
-      <div className="flex flex-1 flex-col gap-2 pt-3">
-        <div className="h-5 w-4/5 animate-pulse rounded bg-[#e6e0d6]" />
-        <div className="h-4 w-3/5 animate-pulse rounded bg-[#e6e0d6]" />
-        <div className="h-4 w-2/5 animate-pulse rounded bg-[#e6e0d6]" />
-        <div className="h-5 w-1/3 animate-pulse rounded bg-[#e6e0d6]" />
-        <div className="mt-auto pt-3">
-          <div className="h-11 w-full animate-pulse rounded-full bg-[#e6e0d6]" />
-        </div>
+      <div className="space-y-2 pt-3">
+        <div className="h-4 w-4/5 animate-pulse rounded bg-[#e6e0d6]" />
+        <div className="h-4 w-1/3 animate-pulse rounded bg-[#e6e0d6]" />
       </div>
     </article>
   );
@@ -705,11 +703,16 @@ function ProductCard({ product }: { product: SearchProduct }) {
   const inCart = store.cart.some((item) => item.productId === product.id);
   const variant = product.variants[0];
   const badge = product.bestseller ? "Bestseller" : product.newArrival ? "New" : null;
-  const full = Math.round(product.rating);
 
-  const add = () => {
+  const add = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     if (!variant) {
       store.notify("This product has no available size.");
+      return;
+    }
+    if (inCart) {
+      store.openCart();
       return;
     }
     const result = store.addToCart(product.id, variant.label, 1);
@@ -717,44 +720,34 @@ function ProductCard({ product }: { product: SearchProduct }) {
   };
 
   return (
-    <article className="flex h-full min-w-0 flex-col">
-      <div className="relative overflow-hidden rounded-lg bg-[#eee8de]">
-        <Link href={`/products/${product.slug}`} className="relative block aspect-square">
-          <Media src={product.images[0]} alt={product.name} sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, 46vw" className="object-cover" />
+    <article className="group min-w-0">
+      <ListingCardMedia
+        href={`/products/${product.slug}`}
+        name={product.name}
+        images={product.images}
+        sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, 46vw"
+        inCart={inCart}
+        onAdd={add}
+        wishlist={<WishlistButton productId={product.id} name={product.name} />}
+        badge={
+          badge ? (
+            <span className="max-w-[70%] truncate rounded-full bg-white/90 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-[#2c2926] backdrop-blur-sm">
+              {badge}
+            </span>
+          ) : null
+        }
+      />
+      <div className="pt-3">
+        <Link
+          href={`/products/${product.slug}`}
+          title={product.name}
+          className="block truncate text-[15px] font-medium leading-snug text-[#2c2926] md:text-base"
+        >
+          {product.name}
         </Link>
-        {badge ? (
-          <span className="absolute left-2 top-2 max-w-[70%] truncate rounded-full border border-[#e3dbd1] bg-white px-2.5 py-1 text-xs text-[#2c2926] md:left-3 md:top-3">
-            {badge}
-          </span>
-        ) : null}
-      </div>
-      <div className="flex flex-1 flex-col pt-3">
-        <div className="flex items-start gap-1">
-          <Link href={`/products/${product.slug}`} title={product.name} className="line-clamp-2 h-[2.75em] min-w-0 flex-1 overflow-hidden text-base font-medium leading-snug md:text-lg">
-            {product.name}
-          </Link>
-          <WishlistButton productId={product.id} name={product.name} className="-mr-2 -mt-1" />
-        </div>
-        <p title={product.scent} className="mt-1 truncate text-sm capitalize text-[#4e4943] md:text-base">
-          {product.scent}
-        </p>
-        <p className="mt-2 truncate text-sm text-[#8a7350] md:text-base">
-          {"★".repeat(full)}
-          <span className="text-[#cfc4b6]">{"★".repeat(Math.max(0, 5 - full))}</span>
-          <span className="ml-2 text-[#4e4943]">({product.reviewCount})</span>
-        </p>
-        <p className="mt-2 truncate text-base font-medium md:text-lg">{formatPrice(product.price)}</p>
-        <div className="mt-auto pt-3">
-          {inCart ? (
-            <button type="button" onClick={store.openCart} className="h-11 w-full rounded-full border border-[#CBAC7C] bg-white text-sm text-[#2c2926] md:text-base">
-              Go to cart
-            </button>
-          ) : (
-            <button type="button" onClick={add} className="h-11 w-full rounded-full bg-[#CBAC7C] text-sm text-white hover:bg-[#B39668] md:text-base">
-              Add to cart
-            </button>
-          )}
-        </div>
+        <CardGoldRating rating={product.rating} count={product.reviewCount} />
+        <p className="mt-1.5 truncate text-sm font-medium text-[#2c2926] md:text-[15px]">{formatPrice(product.price)}</p>
+        <CardMobileAdd inCart={inCart} onAdd={add} />
       </div>
     </article>
   );

@@ -4,7 +4,7 @@ import { authSecret, devOtpSinkEnabled, otpConfig } from "@/lib/auth/config";
 import { sendEmailOtp, sendWhatsAppOtp } from "@/lib/auth/deliver";
 
 export type OtpChannel = "email" | "whatsapp";
-export type OtpPurpose = "login" | "link-email" | "link-phone";
+export type OtpPurpose = "login" | "link-email" | "link-phone" | "admin-mfa" | "admin-reset";
 
 type Challenge = {
   id: string;
@@ -72,8 +72,9 @@ export async function requestOtp(
   const id = randomUUID();
   const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
   const minutes = Math.max(1, Math.round(config.ttlSeconds / 60));
+  const emailPurpose = input.purpose === "login" ? "login" : "verify";
   const delivery = input.channel === "email"
-    ? await sendEmailOtp(input.destination, code, minutes, input.purpose === "login" ? "login" : "verify")
+    ? await sendEmailOtp(input.destination, code, minutes, emailPurpose)
     : await sendWhatsAppOtp(input.destination, code);
   if (!delivery.ok) {
     const message = delivery.status === "unconfigured"

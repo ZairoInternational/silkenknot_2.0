@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useBrandSettings } from "@/lib/brand/client";
 import { itemCount } from "@/lib/format";
+import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import { Media, ease, usePrefersReducedMotion } from "@/components/ui";
 import { LogoutConfirm } from "@/components/account/LogoutConfirm";
@@ -487,15 +488,16 @@ export function SiteHeader() {
 
 function MegaMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const store = useStore();
+  const media = useSiteMedia();
   const previews: Record<string, string> = {
-    "body-care": "/silknknot/collection-body-care.jpg",
-    "bath-soap": "/silknknot/collection-bath-soap.jpg",
-    aromatherapy: "/silknknot/collection-aromatherapy.jpg",
-    lifestyle: "/silknknot/collection-lifestyle.jpg",
+    "body-care": media.collectionBodyCare,
+    "bath-soap": media.collectionBathSoap,
+    aromatherapy: media.collectionAromatherapy,
+    lifestyle: media.collectionLifestyle,
   };
   const [activeId, setActiveId] = useState(store.categories[0]?.id ?? "body-care");
   const active = store.categories.find((category) => category.id === activeId) ?? store.categories[0];
-  const image = previews[activeId] ?? active?.image ?? "/silknknot/collection-body-care.jpg";
+  const image = previews[activeId] ?? active?.image ?? media.collectionBodyCare;
 
   return (
     <AnimatePresence>

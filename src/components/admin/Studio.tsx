@@ -6,30 +6,106 @@ import { usePathname, useRouter } from "next/navigation";
 import { formatDate, formatPrice, slugify } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import type { Category, Coupon, Order, OrderStatus, Product, Variant } from "@/lib/types";
-import type { HeroOffer } from "@/lib/hero/content";
-import { DEFAULT_HERO_OFFER } from "@/lib/hero/content";
+import type { HeroEvergreenSlide, HeroOffer } from "@/lib/hero/content";
+import { DEFAULT_HERO_CONTENT, DEFAULT_HERO_OFFER } from "@/lib/hero/content";
 import type { BrandSettings } from "@/lib/brand/content";
 import { DEFAULT_BRAND } from "@/lib/brand/content";
 import { primeBrandCache } from "@/lib/brand/client";
+import type { SiteMediaReview, SiteMediaSettings, SiteMediaStripItem } from "@/lib/site-media/content";
+import { DEFAULT_SITE_MEDIA, SITE_MEDIA_SLOTS } from "@/lib/site-media/content";
+import { primeSiteMediaCache } from "@/lib/site-media/client";
 function linesToList(value: string) {
   return value.split("\n").map((item) => item.trimEnd());
 }
 import { Mark, Media } from "@/components/ui";
 import { csrfHeaders } from "@/lib/auth/browser";
 
-const links = [
-  ["Overview", "/admin"],
-  ["Products", "/admin/products"],
-  ["Categories", "/admin/categories"],
-  ["Orders", "/admin/orders"],
-  ["Shipping", "/admin/shipping"],
-  ["Fees", "/admin/fees"],
-  ["Customers", "/admin/customers"],
-  ["Offers", "/admin/offers"],
-  ["Hero", "/admin/hero"],
-  ["Brand", "/admin/brand"],
-  ["Announcements", "/admin/announcements"],
+type NavItem = { label: string; href: string; hint: string };
+type NavGroup = { title: string; items: NavItem[] };
+
+const navGroups: NavGroup[] = [
+  {
+    title: "Daily work",
+    items: [
+      { label: "Overview", href: "/admin", hint: "Numbers and common tasks" },
+      { label: "Orders", href: "/admin/orders", hint: "Pack, ship, and track" },
+      { label: "Products", href: "/admin/products", hint: "Catalog, prices, stock, photos" },
+      { label: "Customers", href: "/admin/customers", hint: "Accounts and order history" },
+    ],
+  },
+  {
+    title: "Catalog",
+    items: [
+      { label: "Categories", href: "/admin/categories", hint: "Shop groups and search thumbs" },
+      { label: "Discount codes", href: "/admin/offers", hint: "Coupon codes at checkout" },
+    ],
+  },
+  {
+    title: "Website",
+    items: [
+      { label: "Homepage hero", href: "/admin/hero", hint: "Sale slide and product slides" },
+      { label: "Website photos", href: "/admin/site-media", hint: "Banners, strip, login, checkout" },
+      { label: "Logo", href: "/admin/brand", hint: "Mark in header and checkout" },
+      { label: "Top banner", href: "/admin/announcements", hint: "Rotating bar at the top" },
+    ],
+  },
+  {
+    title: "Settings",
+    items: [
+      { label: "Account", href: "/admin/account", hint: "Studio password" },
+      { label: "Shipping", href: "/admin/shipping", hint: "Rates, Delhivery, COD" },
+      { label: "Payment fees", href: "/admin/fees", hint: "Checkout platform fee" },
+    ],
+  },
 ];
+
+function navItemActive(pathname: string, href: string) {
+  if (href === "/admin") return pathname === "/admin";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export function AdminPageHeader({
+  title,
+  purpose,
+  action,
+}: {
+  title: string;
+  purpose: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="max-w-2xl">
+        <h1 className="font-serif text-4xl md:text-5xl">{title}</h1>
+        <p className="mt-3 text-sm leading-6 text-mute">{purpose}</p>
+      </div>
+      {action ? <div className="shrink-0">{action}</div> : null}
+    </div>
+  );
+}
+
+function AdminNavLink({ item, pathname }: { item: NavItem; pathname: string }) {
+  const active = navItemActive(pathname, item.href);
+  return (
+    <Link
+      href={item.href}
+      className={`block rounded-lg px-2 py-2 ${active ? "bg-cream text-ink" : "text-mute hover:text-ink"}`}
+    >
+      <span className={`block text-sm ${active ? "font-medium" : ""}`}>{item.label}</span>
+      <span className="mt-0.5 block text-[11px] leading-snug text-mute">{item.hint}</span>
+    </Link>
+  );
+}
+
+async function uploadAdminImage(file: File, fields: Record<string, string>) {
+  const body = new FormData();
+  body.append("file", file);
+  for (const [key, value] of Object.entries(fields)) body.append(key, value);
+  const response = await fetch("/api/admin/media", { method: "POST", headers: csrfHeaders(false), body });
+  const payload = (await response.json()) as { url?: string; message?: string };
+  if (!response.ok || !payload.url) throw new Error(payload.message || "Could not upload that image.");
+  return payload.url;
+}
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const store = useStore();
@@ -43,37 +119,61 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     if (store.adminAuthed && login) router.replace("/admin");
   }, [store.ready, store.adminAuthed, login, router]);
 
-  if (!store.ready) return <p className="p-10 text-mute">Opening the studio…</p>;
+  if (!store.ready) return <p className="p-10 text-mute">Opening admin…</p>;
   if (login) return <div className="min-h-screen bg-cream">{children}</div>;
   if (!store.adminAuthed) return null;
 
   return (
     <div className="min-h-screen bg-cream text-ink">
-      <aside className="fixed inset-y-0 left-0 hidden w-60 border-r border-line bg-paper p-6 md:block">
-        <Link href="/admin" className="inline-flex items-center gap-2 font-serif text-3xl">
-          <Mark className="h-6 w-9" />
+      <aside className="fixed inset-y-0 left-0 hidden w-64 overflow-y-auto border-r border-line bg-paper p-5 md:block">
+        <Link href="/admin" className="inline-flex items-center gap-2 font-serif text-2xl">
+          <Mark className="h-5 w-8" />
           Silken Knot
         </Link>
-        
-        <nav className="mt-10 space-y-2" aria-label="Studio">
-          {links.map(([label, href]) => (
-            <Link key={href} href={href} className={`block py-2 text-sm ${pathname === href ? "text-ink" : "text-mute"}`}>
-              {label}
-            </Link>
+        <p className="mt-1 text-[11px] uppercase tracking-[0.16em] text-mute">Admin</p>
+
+        <nav className="mt-8 space-y-6" aria-label="Admin">
+          {navGroups.map((group) => (
+            <div key={group.title}>
+              <p className="px-2 text-[10px] font-medium uppercase tracking-[0.16em] text-mute">{group.title}</p>
+              <div className="mt-2 space-y-0.5">
+                {group.items.map((item) => (
+                  <AdminNavLink key={item.href} item={item} pathname={pathname} />
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
       </aside>
-      <div className="md:pl-60">
-        <header className="flex h-16 items-center justify-between border-b border-line px-4 md:px-8">
-          <nav className="flex gap-4 overflow-x-auto text-sm md:hidden">
-            {links.map(([label, href]) => (
-              <Link key={href} href={href}>{label}</Link>
+      <div className="md:pl-64">
+        <header className="border-b border-line px-4 md:px-8">
+          <div className="flex h-14 items-center justify-between gap-4">
+            <p className="hidden text-sm text-mute md:block">Manage the Silken Knot store</p>
+            <div className="ml-auto flex items-center gap-4 text-[11px] uppercase tracking-[0.16em]">
+              <Link href="/">View store</Link>
+              <button type="button" onClick={() => void store.logoutAdmin()}>
+                Log out
+              </button>
+            </div>
+          </div>
+          <nav className="flex gap-6 overflow-x-auto pb-3 md:hidden" aria-label="Admin mobile">
+            {navGroups.map((group) => (
+              <div key={group.title} className="shrink-0">
+                <p className="text-[10px] uppercase tracking-[0.14em] text-mute">{group.title}</p>
+                <div className="mt-1 flex gap-3 text-sm">
+                  {group.items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={navItemActive(pathname, item.href) ? "font-medium text-ink" : "text-mute"}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             ))}
           </nav>
-          <div className="ml-auto flex items-center gap-4 text-[11px] uppercase tracking-[0.16em]">
-            <Link href="/">View store</Link>
-            <button type="button" onClick={() => void store.logoutAdmin()}>Log out</button>
-          </div>
         </header>
         <div className="px-4 py-8 md:px-8">{children}</div>
       </div>
@@ -81,38 +181,384 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+type LoginStep = "credentials" | "channel" | "code" | "forgot" | "forgot-code";
+
 export function AdminLogin() {
   const store = useStore();
   const router = useRouter();
+  const [step, setStep] = useState<LoginStep>("credentials");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [ticketId, setTicketId] = useState("");
+  const [ticketToken, setTicketToken] = useState("");
+  const [channels, setChannels] = useState<{ channel: "email" | "whatsapp"; masked: string }[]>([]);
+  const [channel, setChannel] = useState<"email" | "whatsapp" | null>(null);
+  const [challengeId, setChallengeId] = useState("");
+  const [masked, setMasked] = useState("");
+  const [code, setCode] = useState("");
+  const [devCode, setDevCode] = useState("");
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function startMfa(nextChannel: "email" | "whatsapp", nextTicketId = ticketId, nextTicketToken = ticketToken) {
+    const sent = await store.sendAdminMfa({ ticketId: nextTicketId, ticketToken: nextTicketToken, channel: nextChannel });
+    if (!sent.ok || !sent.challengeId) {
+      setError(sent.message || "We couldn’t send a code.");
+      return false;
+    }
+    setChannel(nextChannel);
+    setChallengeId(sent.challengeId);
+    setMasked(sent.masked || "");
+    setDevCode(sent.devCode || "");
+    setCode("");
+    setStep("code");
+    return true;
+  }
+
   return (
-    <form
-      className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5"
-      onSubmit={async (event) => {
-        event.preventDefault();
-        const result = await store.loginAdmin(email, password);
-        if (!result.ok) setError(result.message);
-        else router.push("/admin");
-      }}
-    >
+    <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5">
       <p className="eyebrow text-mute">Studio</p>
-      <h1 className="mt-3 font-serif text-6xl">Log in</h1>
-      <label className="mt-10 text-sm">
-        Email
-        <input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none" />
-      </label>
-      <label className="mt-6 text-sm">
-        Password
-        <input type="password" required value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none" />
-      </label>
-      {error ? <p role="alert" className="mt-4 text-sm">{error}</p> : null}
-      <button type="submit" className="mt-8 h-12 bg-ink text-[11px] uppercase tracking-[0.2em] text-paper">Enter studio</button>
-      <p className="mt-6 text-sm text-mute">admin@silkknot.com / studio123</p>
-    </form>
+      <h1 className="mt-3 font-serif text-6xl">
+        {step === "forgot" || step === "forgot-code" ? "Reset access" : step === "code" || step === "channel" ? "Verify" : "Log in"}
+      </h1>
+      <p className="mt-3 text-sm text-mute">
+        {step === "credentials"
+          ? "Sign in, then confirm with a one-time code sent to your email or phone."
+          : step === "channel"
+            ? "Choose where to receive your verification code."
+            : step === "code"
+              ? `Enter the code sent to ${masked || "your contact"}.`
+              : step === "forgot"
+                ? "We’ll email a code if that studio account exists. Credentials are never shown here."
+                : `Enter the code${masked ? ` sent to ${masked}` : ""} and choose a new password.`}
+      </p>
+
+      {step === "credentials" ? (
+        <form
+          className="mt-10"
+          autoComplete="off"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setBusy(true);
+            setError("");
+            setMessage("");
+            const result = await store.loginAdmin(email, password);
+            setBusy(false);
+            if (!result.ok) {
+              setError(result.message || "Those studio details are not recognised.");
+              return;
+            }
+            setPassword("");
+            setTicketId(result.ticketId || "");
+            setTicketToken(result.ticketToken || "");
+            setChannels(result.channels || []);
+            if ((result.channels || []).length === 1) {
+              setBusy(true);
+              const ok = await startMfa(result.channels![0].channel, result.ticketId, result.ticketToken);
+              setBusy(false);
+              if (!ok) setStep("channel");
+              return;
+            }
+            setStep("channel");
+          }}
+        >
+          <label className="text-sm">
+            Email
+            <input
+              type="email"
+              name="studio-email"
+              required
+              autoComplete="username"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none"
+            />
+          </label>
+          <label className="mt-6 block text-sm">
+            Password
+            <input
+              type="password"
+              name="studio-password"
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none"
+            />
+          </label>
+          {error ? <p role="alert" className="mt-4 text-sm">{error}</p> : null}
+          <button type="submit" disabled={busy} className="mt-8 h-12 w-full bg-ink text-[11px] uppercase tracking-[0.2em] text-paper disabled:opacity-60">
+            Continue
+          </button>
+          <button
+            type="button"
+            className="mt-4 text-sm text-mute underline"
+            onClick={() => {
+              setError("");
+              setMessage("");
+              setStep("forgot");
+            }}
+          >
+            Forgot password
+          </button>
+        </form>
+      ) : null}
+
+      {step === "channel" ? (
+        <div className="mt-10 space-y-3">
+          {channels.map((item) => (
+            <button
+              key={item.channel}
+              type="button"
+              disabled={busy}
+              className="flex h-14 w-full items-center justify-between border border-line px-4 text-left text-sm disabled:opacity-60"
+              onClick={async () => {
+                setBusy(true);
+                setError("");
+                await startMfa(item.channel);
+                setBusy(false);
+              }}
+            >
+              <span>{item.channel === "email" ? "Email" : "WhatsApp"}</span>
+              <span className="text-mute">{item.masked}</span>
+            </button>
+          ))}
+          {error ? <p role="alert" className="text-sm">{error}</p> : null}
+          <button type="button" className="pt-2 text-sm text-mute underline" onClick={() => setStep("credentials")}>
+            Back
+          </button>
+        </div>
+      ) : null}
+
+      {step === "code" ? (
+        <form
+          className="mt-10"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setBusy(true);
+            setError("");
+            const result = await store.verifyAdminMfa({ ticketId, ticketToken, challengeId, code });
+            setBusy(false);
+            if (!result.ok) {
+              setError(result.message);
+              return;
+            }
+            router.push("/admin");
+          }}
+        >
+          <label className="text-sm">
+            6-digit code
+            <input
+              inputMode="numeric"
+              pattern="\d{6}"
+              maxLength={6}
+              required
+              autoComplete="one-time-code"
+              value={code}
+              onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+              className="mt-2 h-12 w-full border-b border-line bg-transparent tracking-[0.3em] outline-none"
+            />
+          </label>
+          {devCode ? <p className="mt-3 text-xs text-mute">Dev code: {devCode}</p> : null}
+          {error ? <p role="alert" className="mt-4 text-sm">{error}</p> : null}
+          <button type="submit" disabled={busy || code.length !== 6} className="mt-8 h-12 w-full bg-ink text-[11px] uppercase tracking-[0.2em] text-paper disabled:opacity-60">
+            Verify and enter
+          </button>
+          <div className="mt-4 flex flex-wrap gap-4 text-sm text-mute">
+            <button
+              type="button"
+              disabled={busy || !channel}
+              className="underline disabled:opacity-50"
+              onClick={async () => {
+                if (!channel) return;
+                setBusy(true);
+                setError("");
+                await startMfa(channel);
+                setBusy(false);
+              }}
+            >
+              Resend code
+            </button>
+            {channels.length > 1 ? (
+              <button type="button" className="underline" onClick={() => setStep("channel")}>
+                Use another channel
+              </button>
+            ) : null}
+            <button type="button" className="underline" onClick={() => setStep("credentials")}>
+              Back
+            </button>
+          </div>
+        </form>
+      ) : null}
+
+      {step === "forgot" ? (
+        <form
+          className="mt-10"
+          autoComplete="off"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setBusy(true);
+            setError("");
+            setMessage("");
+            const result = await store.requestAdminPasswordReset(email);
+            setBusy(false);
+            if (!result.ok) {
+              setError(result.message);
+              return;
+            }
+            setMessage(result.message || "");
+            if (result.ticketId && result.ticketToken && result.challengeId) {
+              setTicketId(result.ticketId);
+              setTicketToken(result.ticketToken);
+              setChallengeId(result.challengeId);
+              setMasked(result.masked || "");
+              setDevCode(result.devCode || "");
+              setStep("forgot-code");
+              return;
+            }
+            setMessage(result.message || "If that studio account exists, a verification code is on its way.");
+          }}
+        >
+          <label className="text-sm">
+            Studio email
+            <input
+              type="email"
+              required
+              autoComplete="username"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none"
+            />
+          </label>
+          {error ? <p role="alert" className="mt-4 text-sm">{error}</p> : null}
+          {message ? <p className="mt-4 text-sm text-mute">{message}</p> : null}
+          <button type="submit" disabled={busy} className="mt-8 h-12 w-full bg-ink text-[11px] uppercase tracking-[0.2em] text-paper disabled:opacity-60">
+            Send code
+          </button>
+          <button type="button" className="mt-4 text-sm text-mute underline" onClick={() => setStep("credentials")}>
+            Back to sign in
+          </button>
+        </form>
+      ) : null}
+
+      {step === "forgot-code" ? (
+        <form
+          className="mt-10"
+          autoComplete="off"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            if (newPassword !== confirmPassword) {
+              setError("Those passwords do not match.");
+              return;
+            }
+            setBusy(true);
+            setError("");
+            const result = await store.confirmAdminPasswordReset({
+              ticketId,
+              ticketToken,
+              challengeId,
+              code,
+              password: newPassword,
+            });
+            setBusy(false);
+            if (!result.ok) {
+              setError(result.message);
+              return;
+            }
+            setPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+            setCode("");
+            setMessage(result.message || "Password updated. Sign in with your new password.");
+            setStep("credentials");
+          }}
+        >
+          <label className="text-sm">
+            6-digit code
+            <input
+              inputMode="numeric"
+              pattern="\d{6}"
+              maxLength={6}
+              required
+              autoComplete="one-time-code"
+              value={code}
+              onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+              className="mt-2 h-12 w-full border-b border-line bg-transparent tracking-[0.3em] outline-none"
+            />
+          </label>
+          <label className="mt-6 block text-sm">
+            New password
+            <input
+              type="password"
+              required
+              minLength={10}
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none"
+            />
+          </label>
+          <label className="mt-6 block text-sm">
+            Confirm password
+            <input
+              type="password"
+              required
+              minLength={10}
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none"
+            />
+          </label>
+          {devCode ? <p className="mt-3 text-xs text-mute">Dev code: {devCode}</p> : null}
+          {error ? <p role="alert" className="mt-4 text-sm">{error}</p> : null}
+          <button type="submit" disabled={busy || code.length !== 6} className="mt-8 h-12 w-full bg-ink text-[11px] uppercase tracking-[0.2em] text-paper disabled:opacity-60">
+            Update password
+          </button>
+          <div className="mt-4 flex flex-wrap gap-4 text-sm text-mute">
+            <button
+              type="button"
+              disabled={busy}
+              className="underline disabled:opacity-50"
+              onClick={async () => {
+                setBusy(true);
+                setError("");
+                const resent = await store.resendAdminPasswordReset({ ticketId, ticketToken });
+                setBusy(false);
+                if (!resent.ok || !resent.challengeId) {
+                  setError(resent.message || "Could not resend the code.");
+                  return;
+                }
+                setChallengeId(resent.challengeId);
+                setMasked(resent.masked || masked);
+                setDevCode(resent.devCode || "");
+              }}
+            >
+              Resend code
+            </button>
+            <button type="button" className="underline" onClick={() => setStep("credentials")}>
+              Back to sign in
+            </button>
+          </div>
+        </form>
+      ) : null}
+
+      {step === "credentials" && message ? <p className="mt-4 text-sm text-mute">{message}</p> : null}
+    </div>
   );
 }
+
+const commonTasks = [
+  { href: "/admin/orders", title: "Fulfill orders", hint: "See new orders, update status, and ship." },
+  { href: "/admin/products", title: "Add or edit products", hint: "Names, prices, stock, and product photos." },
+  { href: "/admin/hero", title: "Change homepage hero", hint: "Sale campaign slide and product slides." },
+  { href: "/admin/site-media", title: "Replace website photos", hint: "Collection tiles, shop banners, login, checkout." },
+  { href: "/admin/offers", title: "Create a discount code", hint: "Coupons customers enter at checkout." },
+  { href: "/admin/shipping", title: "Update shipping", hint: "Delivery rates, free shipping, and Delhivery." },
+];
 
 export function Dashboard() {
   const store = useStore();
@@ -126,7 +572,10 @@ export function Dashboard() {
   ];
   return (
     <div>
-      <h1 className="font-serif text-5xl">Overview</h1>
+      <AdminPageHeader
+        title="Overview"
+        purpose="Start here. Check the numbers below, then use a common task when you know what you need to change."
+      />
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(([value, label]) => (
           <div key={label} className="bg-paper p-6">
@@ -135,9 +584,30 @@ export function Dashboard() {
           </div>
         ))}
       </div>
+
+      <h2 className="mt-12 font-serif text-3xl">Common tasks</h2>
+      <p className="mt-2 text-sm text-mute">Pick the job you need — each link opens the right admin page.</p>
+      <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {commonTasks.map((task) => (
+          <li key={task.href}>
+            <Link href={task.href} className="block h-full bg-paper p-5 transition-colors hover:bg-white">
+              <p className="font-medium">{task.title}</p>
+              <p className="mt-2 text-sm text-mute">{task.hint}</p>
+            </Link>
+          </li>
+        ))}
+      </ul>
+
       <h2 className="mt-12 font-serif text-3xl">Needs attention</h2>
       <ul className="mt-4 space-y-2 text-sm">
-        {low.map((product) => <li key={product.id}>{product.name} is low in stock.</li>)}
+        {low.map((product) => (
+          <li key={product.id}>
+            <Link href={`/admin/products/${product.id}`} className="underline-offset-2 hover:underline">
+              {product.name}
+            </Link>{" "}
+            is low in stock.
+          </li>
+        ))}
         {low.length === 0 ? <li className="text-mute">Stock looks comfortable.</li> : null}
       </ul>
     </div>
@@ -148,10 +618,15 @@ export function ProductIndex() {
   const store = useStore();
   return (
     <div>
-      <div className="flex items-end justify-between">
-        <h1 className="font-serif text-5xl">Products</h1>
-        <Link href="/admin/products/new" className="bg-ink px-4 py-3 text-[11px] uppercase tracking-[0.16em] text-paper">Add product</Link>
-      </div>
+      <AdminPageHeader
+        title="Products"
+        purpose="Use this to add or edit items customers buy — name, price, stock, and product photos. Changes show on the shop after you save."
+        action={
+          <Link href="/admin/products/new" className="inline-flex h-11 items-center bg-ink px-4 text-[11px] uppercase tracking-[0.16em] text-paper">
+            Add product
+          </Link>
+        }
+      />
       <ul className="mt-8 divide-y divide-line">
         {store.products.map((product) => (
           <li key={product.id} className="flex flex-wrap items-center justify-between gap-3 py-4">
@@ -299,10 +774,11 @@ function ProductForm({ initial }: { initial?: Product }) {
         router.push("/admin/products");
       }}
     >
-      <div className="flex items-end justify-between">
-        <h1 className="font-serif text-5xl">{initial ? "Edit product" : "New product"}</h1>
-      </div>
-      <section className="space-y-5 bg-paper p-6">
+      <AdminPageHeader
+        title={initial ? "Edit product" : "New product"}
+        purpose="Fill in the details customers see on the product page. Upload photos here — these are the product gallery, not the homepage marketing images."
+      />
+      <section className="mt-8 space-y-5 bg-paper p-6">
         <p className="eyebrow text-mute">Product information</p>
         <AdminField label="Product name" value={product.name} onChange={(value) => set("name", value)} />
         <label className="block text-sm">
@@ -523,15 +999,47 @@ export function CategoryManager() {
   const store = useStore();
   const [draft, setDraft] = useState<Category>({ id: "", name: "", description: "", image: "", imageAlt: "", order: store.categories.length });
   const [error, setError] = useState("");
+  const [uploading, setUploading] = useState<"image" | "imageAlt" | null>(null);
+
+  const onUpload = async (files: FileList | null, field: "image" | "imageAlt") => {
+    const file = files?.[0];
+    if (!file || uploading) return;
+    const categoryId = slugify(draft.id || draft.name);
+    if (!categoryId) {
+      setError("Set a name or slug before uploading images.");
+      return;
+    }
+    setUploading(field);
+    setError("");
+    try {
+      const url = await uploadAdminImage(file, { role: "category", categoryId });
+      setDraft((current) => ({ ...current, id: categoryId, [field]: url }));
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : "Could not upload that image.");
+    } finally {
+      setUploading(null);
+    }
+  };
+
   return (
     <div>
-      <h1 className="font-serif text-5xl">Categories</h1>
+      <AdminPageHeader
+        title="Categories"
+        purpose="Shop groups like Body Care or Candles. Images here are used in search and as a fallback in the header menu. Homepage collection tiles and the circular category strip are under Website photos."
+      />
       <ul className="mt-8 space-y-4">
         {store.categories.map((category, index) => (
           <li key={category.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-line py-4">
-            <div>
-              <p className="font-serif text-2xl">{category.name}</p>
-              <p className="text-sm text-mute">{category.description}</p>
+            <div className="flex items-center gap-4">
+              {category.image ? (
+                <span className="relative block size-14 overflow-hidden rounded-lg bg-paper">
+                  <Media src={category.image} alt="" sizes="56px" className="object-cover" />
+                </span>
+              ) : null}
+              <div>
+                <p className="font-serif text-2xl">{category.name}</p>
+                <p className="text-sm text-mute">{category.description}</p>
+              </div>
             </div>
             <div className="flex gap-3 text-[11px] uppercase tracking-[0.16em]">
               <button type="button" onClick={() => store.moveCategory(category.id, -1)} disabled={index === 0}>Up</button>
@@ -556,7 +1064,22 @@ export function CategoryManager() {
         <AdminField label="Slug" value={draft.id} onChange={(id) => setDraft({ ...draft, id })} />
         <AdminField label="Description" value={draft.description} onChange={(description) => setDraft({ ...draft, description })} />
         <AdminField label="Image URL" value={draft.image} onChange={(image) => setDraft({ ...draft, image })} />
+        <label className="block text-sm">
+          Upload primary image
+          <input type="file" accept="image/jpeg,image/png,image/webp" disabled={Boolean(uploading)} className="mt-2 block w-full text-sm" onChange={(event) => void onUpload(event.target.files, "image")} />
+          <span className="mt-1 block text-xs text-mute">{uploading === "image" ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
+        </label>
+        {draft.image ? (
+          <div className="relative h-28 w-full max-w-xs overflow-hidden rounded-lg border border-line bg-paper">
+            <Media src={draft.image} alt="" className="object-cover" sizes="320px" />
+          </div>
+        ) : null}
         <AdminField label="Second image URL" value={draft.imageAlt} onChange={(imageAlt) => setDraft({ ...draft, imageAlt })} />
+        <label className="block text-sm">
+          Upload second image
+          <input type="file" accept="image/jpeg,image/png,image/webp" disabled={Boolean(uploading)} className="mt-2 block w-full text-sm" onChange={(event) => void onUpload(event.target.files, "imageAlt")} />
+          <span className="mt-1 block text-xs text-mute">{uploading === "imageAlt" ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
+        </label>
         {error ? <p role="status" className="text-sm">{error}</p> : null}
         <button type="submit" className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper">Save category</button>
       </form>
@@ -579,15 +1102,18 @@ export function OrderIndex() {
   });
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="font-serif text-5xl">Orders</h1>
+      <AdminPageHeader
+        title="Orders"
+        purpose="Use this when a customer has placed an order. Open an order to update status, payment, or shipping."
+      />
+      <div className="mt-6 flex flex-wrap items-end gap-4">
         <label className="text-sm">
           Status
           <select value={status} onChange={(event) => setStatus(event.target.value)} className="ml-3 h-10 border-b border-line bg-transparent">
             {["all", "pending_payment", "confirmed", "shipped", "delivered", "cancelled"].map((item) => <option key={item}>{item}</option>)}
           </select>
         </label>
-      <label className="text-sm">
+        <label className="text-sm">
           Payment
           <select value={payment} onChange={(event) => setPayment(event.target.value)} className="ml-3 h-10 border-b border-line bg-transparent">
             {["all", "pending", "captured", "failed", "refund_pending", "refunded"].map((item) => <option key={item}>{item}</option>)}
@@ -622,8 +1148,10 @@ export function OrderDetail({ id }: { id: string }) {
   if (!order) return <p>Order not found.</p>;
   return (
     <div className="max-w-3xl">
-      <h1 className="font-serif text-5xl">{order.number}</h1>
-      <p className="mt-2 text-mute">{order.customerName} · {order.email} · {order.phone}</p>
+      <AdminPageHeader
+        title={order.number}
+        purpose={`${order.customerName} · ${order.email} · ${order.phone}. Update status below, or book shipping when ready.`}
+      />
       {order.paymentState ? <p className="mt-2 text-sm">Payment {order.paymentState} · Fulfilment {order.fulfillmentState || "unfulfilled"}</p> : null}
       <p className="mt-2">{order.address.line1}, {order.address.city} {order.address.postal}</p>
       <label className="mt-6 block text-sm">
@@ -657,7 +1185,10 @@ export function CustomerIndex() {
   const customers = store.users.filter((user) => user.role === "customer");
   return (
     <div>
-      <h1 className="font-serif text-5xl">Customers</h1>
+      <AdminPageHeader
+        title="Customers"
+        purpose="People who have signed in or placed orders. Open a customer to see addresses and their order history."
+      />
       <ul className="mt-8 divide-y divide-line">
         {customers.map((customer) => (
           <li key={customer.id} className="flex items-center justify-between py-4">
@@ -679,8 +1210,10 @@ export function CustomerDetail({ id }: { id: string }) {
   const orders = store.orders.filter((order) => order.userId === customer.id || order.email === customer.email);
   return (
     <div>
-      <h1 className="font-serif text-5xl">{customer.name}</h1>
-      <p className="mt-2 text-mute">{customer.email} · {customer.phone || "No phone"}</p>
+      <AdminPageHeader
+        title={customer.name}
+        purpose={`${customer.email} · ${customer.phone || "No phone"}`}
+      />
       <h2 className="mt-10 font-serif text-3xl">Addresses</h2>
       <ul className="mt-3 space-y-2 text-sm">
         {customer.addresses.map((address) => <li key={address.id}>{address.line1}, {address.city} {address.postal}</li>)}
@@ -697,10 +1230,12 @@ export function CustomerDetail({ id }: { id: string }) {
 
 export function HeroManager() {
   const [draft, setDraft] = useState<HeroOffer>(DEFAULT_HERO_OFFER);
+  const [evergreen, setEvergreen] = useState<HeroEvergreenSlide[]>(DEFAULT_HERO_CONTENT.evergreen);
   const [chipsText, setChipsText] = useState(DEFAULT_HERO_OFFER.chips.join(", "));
+  const [evergreenChips, setEvergreenChips] = useState(DEFAULT_HERO_CONTENT.evergreen.map((slide) => slide.chips.join(", ")));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -709,13 +1244,21 @@ export function HeroManager() {
     (async () => {
       try {
         const response = await fetch("/api/admin/hero", { headers: csrfHeaders() });
-        const data = (await response.json()) as { ok?: boolean; offer?: HeroOffer; error?: string };
-        if (!response.ok || !data.offer) throw new Error(data.error || "Could not load the hero offer.");
+        const data = (await response.json()) as {
+          ok?: boolean;
+          offer?: HeroOffer;
+          evergreen?: HeroEvergreenSlide[];
+          error?: string;
+        };
+        if (!response.ok || !data.offer) throw new Error(data.error || "Could not load the hero.");
         if (cancelled) return;
         setDraft(data.offer);
         setChipsText(data.offer.chips.join(", "));
+        const slides = data.evergreen?.length ? data.evergreen : DEFAULT_HERO_CONTENT.evergreen;
+        setEvergreen(slides);
+        setEvergreenChips(slides.map((slide) => slide.chips.join(", ")));
       } catch (failure) {
-        if (!cancelled) setError(failure instanceof Error ? failure.message : "Could not load the hero offer.");
+        if (!cancelled) setError(failure instanceof Error ? failure.message : "Could not load the hero.");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -726,26 +1269,25 @@ export function HeroManager() {
   }, []);
 
   const patch = (next: Partial<HeroOffer>) => setDraft((current) => ({ ...current, ...next }));
+  const patchSlide = (index: number, next: Partial<HeroEvergreenSlide>) => {
+    setEvergreen((current) => current.map((slide, itemIndex) => (itemIndex === index ? { ...slide, ...next } : slide)));
+  };
 
-  const onUpload = async (files: FileList | null) => {
+  const onUpload = async (files: FileList | null, target: "offer" | number) => {
     const file = files?.[0];
     if (!file || uploading) return;
-    setUploading(true);
+    setUploading(target === "offer" ? "offer" : `slide-${target}`);
     setError("");
     try {
-      const body = new FormData();
-      body.append("file", file);
-      body.append("role", "banner");
-      body.append("scope", "homepage");
-      const response = await fetch("/api/admin/media", { method: "POST", headers: csrfHeaders(false), body });
-      const payload = (await response.json()) as { url?: string; message?: string };
-      if (!response.ok || !payload.url) throw new Error(payload.message || "Could not upload that image.");
-      patch({ image: payload.url });
+      const scope = target === "offer" ? "homepage" : `hero-${evergreen[target]?.id || target}`;
+      const url = await uploadAdminImage(file, { role: "banner", scope });
+      if (target === "offer") patch({ image: url });
+      else patchSlide(target, { image: url });
       setMessage("Image uploaded.");
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : "Could not upload that image.");
     } finally {
-      setUploading(false);
+      setUploading(null);
     }
   };
 
@@ -753,13 +1295,13 @@ export function HeroManager() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="font-serif text-5xl">Hero</h1>
-      <p className="mt-3 max-w-xl text-sm text-mute">
-        Configure the homepage campaign slide (sale / festival). Turn it off to hide the offer without touching code. Product slides stay as they are.
-      </p>
+      <AdminPageHeader
+        title="Homepage hero"
+        purpose="These are the first slides on the homepage. The campaign slide is for a sale or festival (you can turn it off). The product slides stay on all the time. Upload photos here — no redeploy needed."
+      />
 
       <form
-        className="mt-8 space-y-4"
+        className="mt-8 space-y-10"
         onSubmit={async (event) => {
           event.preventDefault();
           setSaving(true);
@@ -770,16 +1312,32 @@ export function HeroManager() {
             .map((chip) => chip.trim())
             .filter(Boolean);
           const offer: HeroOffer = { ...draft, chips };
+          const slides = evergreen.map((slide, index) => ({
+            ...slide,
+            chips: evergreenChips[index]
+              .split(",")
+              .map((chip) => chip.trim())
+              .filter(Boolean),
+          }));
           try {
             const response = await fetch("/api/admin/hero", {
               method: "PUT",
               headers: { "Content-Type": "application/json", ...csrfHeaders() },
-              body: JSON.stringify({ offer }),
+              body: JSON.stringify({ content: { offer, evergreen: slides } }),
             });
-            const data = (await response.json()) as { ok?: boolean; offer?: HeroOffer; message?: string; error?: string };
+            const data = (await response.json()) as {
+              ok?: boolean;
+              offer?: HeroOffer;
+              evergreen?: HeroEvergreenSlide[];
+              message?: string;
+              error?: string;
+            };
             if (!response.ok || !data.offer) throw new Error(data.error || "Could not save.");
             setDraft(data.offer);
             setChipsText(data.offer.chips.join(", "));
+            const nextSlides = data.evergreen?.length ? data.evergreen : slides;
+            setEvergreen(nextSlides);
+            setEvergreenChips(nextSlides.map((slide) => slide.chips.join(", ")));
             setMessage(data.message || "Saved.");
           } catch (failure) {
             setError(failure instanceof Error ? failure.message : "Could not save.");
@@ -788,65 +1346,385 @@ export function HeroManager() {
           }
         }}
       >
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={draft.enabled} onChange={(event) => patch({ enabled: event.target.checked })} />
-          Show campaign slide on the homepage
-        </label>
-
-        <AdminField label="Pill label" value={draft.pill} onChange={(pill) => patch({ pill })} />
-        <AdminField label="Title line 1" value={draft.titleLine1} onChange={(titleLine1) => patch({ titleLine1 })} />
-        <AdminField label="Title line 2 (accent)" value={draft.titleLine2} onChange={(titleLine2) => patch({ titleLine2 })} />
-        <label className="block text-sm">
-          Supporting note
-          <textarea
-            value={draft.note}
-            onChange={(event) => patch({ note: event.target.value })}
-            rows={3}
-            className="mt-2 w-full border-b border-line bg-transparent outline-none"
-          />
-        </label>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <AdminField label="Primary CTA" value={draft.cta} onChange={(cta) => patch({ cta })} />
-          <AdminField label="Primary link" value={draft.href} onChange={(href) => patch({ href })} />
-          <AdminField label="Secondary CTA" value={draft.secondaryCta} onChange={(secondaryCta) => patch({ secondaryCta })} />
-          <AdminField label="Secondary link" value={draft.secondaryHref} onChange={(secondaryHref) => patch({ secondaryHref })} />
-        </div>
-
-        <AdminField label="Coupon code" value={draft.couponCode} onChange={(couponCode) => patch({ couponCode })} />
-        <AdminField label="Seal label (rotating ring)" value={draft.sealLabel} onChange={(sealLabel) => patch({ sealLabel })} />
-        <AdminField label="Seal percent" value={draft.sealPercent} onChange={(sealPercent) => patch({ sealPercent })} />
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <AdminField label="Card tag" value={draft.cardTag} onChange={(cardTag) => patch({ cardTag })} />
-          <AdminField label="Card name" value={draft.cardName} onChange={(cardName) => patch({ cardName })} />
-        </div>
-        <AdminField label="Chips (comma-separated)" value={chipsText} onChange={setChipsText} />
-
-        <AdminField label="Image URL" value={draft.image} onChange={(image) => patch({ image })} />
-        <AdminField label="Image alt text" value={draft.alt} onChange={(alt) => patch({ alt })} />
-        <label className="block text-sm">
-          Upload hero image
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            disabled={uploading}
-            className="mt-2 block w-full text-sm"
-            onChange={(event) => void onUpload(event.target.files)}
-          />
-          <span className="mt-1 block text-xs text-mute">{uploading ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
-        </label>
-
-        {draft.image ? (
-          <div className="relative h-40 w-full max-w-sm overflow-hidden rounded-lg border border-line bg-paper">
-            <Media src={draft.image} alt={draft.alt || "Hero preview"} className="object-cover" sizes="100vw" />
+        <section className="space-y-4 border-b border-line pb-10">
+          <div>
+            <h2 className="font-serif text-3xl">Campaign slide</h2>
+            <p className="mt-2 text-sm text-mute">Optional sale or festival slide. Turn it off to hide it without deleting the copy.</p>
           </div>
-        ) : null}
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={draft.enabled} onChange={(event) => patch({ enabled: event.target.checked })} />
+            Show campaign slide on the homepage
+          </label>
+
+          <AdminField label="Pill label" value={draft.pill} onChange={(pill) => patch({ pill })} />
+          <AdminField label="Title line 1" value={draft.titleLine1} onChange={(titleLine1) => patch({ titleLine1 })} />
+          <AdminField label="Title line 2 (accent)" value={draft.titleLine2} onChange={(titleLine2) => patch({ titleLine2 })} />
+          <label className="block text-sm">
+            Supporting note
+            <textarea
+              value={draft.note}
+              onChange={(event) => patch({ note: event.target.value })}
+              rows={3}
+              className="mt-2 w-full border-b border-line bg-transparent outline-none"
+            />
+          </label>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <AdminField label="Primary CTA" value={draft.cta} onChange={(cta) => patch({ cta })} />
+            <AdminField label="Primary link" value={draft.href} onChange={(href) => patch({ href })} />
+            <AdminField label="Secondary CTA" value={draft.secondaryCta} onChange={(secondaryCta) => patch({ secondaryCta })} />
+            <AdminField label="Secondary link" value={draft.secondaryHref} onChange={(secondaryHref) => patch({ secondaryHref })} />
+          </div>
+
+          <AdminField label="Coupon code" value={draft.couponCode} onChange={(couponCode) => patch({ couponCode })} />
+          <AdminField label="Seal label (rotating ring)" value={draft.sealLabel} onChange={(sealLabel) => patch({ sealLabel })} />
+          <AdminField label="Seal percent" value={draft.sealPercent} onChange={(sealPercent) => patch({ sealPercent })} />
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <AdminField label="Card tag" value={draft.cardTag} onChange={(cardTag) => patch({ cardTag })} />
+            <AdminField label="Card name" value={draft.cardName} onChange={(cardName) => patch({ cardName })} />
+          </div>
+          <AdminField label="Chips (comma-separated)" value={chipsText} onChange={setChipsText} />
+
+          <AdminField label="Image URL" value={draft.image} onChange={(image) => patch({ image })} />
+          <AdminField label="Image alt text" value={draft.alt} onChange={(alt) => patch({ alt })} />
+          <label className="block text-sm">
+            Upload campaign image
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              disabled={Boolean(uploading)}
+              className="mt-2 block w-full text-sm"
+              onChange={(event) => void onUpload(event.target.files, "offer")}
+            />
+            <span className="mt-1 block text-xs text-mute">{uploading === "offer" ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
+          </label>
+
+          {draft.image ? (
+            <div className="relative h-40 w-full max-w-sm overflow-hidden rounded-lg border border-line bg-paper">
+              <Media src={draft.image} alt={draft.alt || "Hero preview"} className="object-cover" sizes="100vw" />
+            </div>
+          ) : null}
+        </section>
+
+        <section className="space-y-8">
+          <div>
+            <h2 className="font-serif text-3xl">Product slides</h2>
+            <p className="mt-2 text-sm text-mute">Always-on slides (body butter, scrub, salts). They rotate with the campaign slide when that slide is enabled.</p>
+          </div>
+          {evergreen.map((slide, index) => (
+            <div key={slide.id} className="space-y-4 rounded-2xl border border-line p-5">
+              <p className="text-[11px] uppercase tracking-[0.16em] text-mute">Slide {index + 1} · {slide.label}</p>
+              <AdminField label="Pill" value={slide.pill} onChange={(pill) => patchSlide(index, { pill })} />
+              <AdminField label="Title line 1" value={slide.titleLine1} onChange={(titleLine1) => patchSlide(index, { titleLine1 })} />
+              <AdminField label="Title line 2" value={slide.titleLine2} onChange={(titleLine2) => patchSlide(index, { titleLine2 })} />
+              <label className="block text-sm">
+                Note
+                <textarea
+                  value={slide.note}
+                  onChange={(event) => patchSlide(index, { note: event.target.value })}
+                  rows={2}
+                  className="mt-2 w-full border-b border-line bg-transparent outline-none"
+                />
+              </label>
+              <div className="grid gap-4 md:grid-cols-2">
+                <AdminField label="Primary CTA" value={slide.cta} onChange={(cta) => patchSlide(index, { cta })} />
+                <AdminField label="Primary link" value={slide.href} onChange={(href) => patchSlide(index, { href })} />
+              </div>
+              <AdminField
+                label="Chips (comma-separated)"
+                value={evergreenChips[index] || ""}
+                onChange={(value) => setEvergreenChips((current) => current.map((item, itemIndex) => (itemIndex === index ? value : item)))}
+              />
+              <AdminField label="Image URL" value={slide.image} onChange={(image) => patchSlide(index, { image })} />
+              <AdminField label="Image alt" value={slide.alt} onChange={(alt) => patchSlide(index, { alt })} />
+              <label className="block text-sm">
+                Upload slide image
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={Boolean(uploading)}
+                  className="mt-2 block w-full text-sm"
+                  onChange={(event) => void onUpload(event.target.files, index)}
+                />
+                <span className="mt-1 block text-xs text-mute">{uploading === `slide-${index}` ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
+              </label>
+              {slide.image ? (
+                <div className="relative h-36 w-full max-w-sm overflow-hidden rounded-lg border border-line bg-paper">
+                  <Media src={slide.image} alt={slide.alt || slide.label} className="object-cover" sizes="100vw" />
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </section>
 
         {error ? <p role="status" className="text-sm text-red-700">{error}</p> : null}
         {message ? <p role="status" className="text-sm text-mute">{message}</p> : null}
         <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
-          {saving ? "Saving…" : "Save hero offer"}
+          {saving ? "Saving…" : "Save hero"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+export function SiteMediaManager() {
+  const store = useStore();
+  const [draft, setDraft] = useState<SiteMediaSettings>(DEFAULT_SITE_MEDIA);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/admin/site-media", { headers: csrfHeaders() });
+        const data = (await response.json()) as { ok?: boolean; media?: SiteMediaSettings; error?: string };
+        if (!response.ok || !data.media) throw new Error(data.error || "Could not load site images.");
+        if (cancelled) return;
+        setDraft(data.media);
+      } catch (failure) {
+        if (!cancelled) setError(failure instanceof Error ? failure.message : "Could not load site images.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const patch = (next: Partial<SiteMediaSettings>) => setDraft((current) => ({ ...current, ...next }));
+
+  const onUploadSlot = async (files: FileList | null, key: string, scope: string) => {
+    const file = files?.[0];
+    if (!file || uploading) return;
+    setUploading(key);
+    setError("");
+    try {
+      const url = await uploadAdminImage(file, { role: "banner", scope });
+      if (key.startsWith("strip:")) {
+        const index = Number(key.slice(6));
+        patch({
+          categoryStrip: draft.categoryStrip.map((item, itemIndex) => (itemIndex === index ? { ...item, image: url } : item)),
+        });
+      } else if (key.startsWith("review:")) {
+        const index = Number(key.slice(7));
+        patch({
+          reviews: draft.reviews.map((item, itemIndex) => (itemIndex === index ? { ...item, image: url } : item)),
+        });
+      } else {
+        patch({ [key]: url } as Partial<SiteMediaSettings>);
+      }
+      setMessage("Image uploaded.");
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : "Could not upload that image.");
+    } finally {
+      setUploading(null);
+    }
+  };
+
+  const patchStrip = (index: number, next: Partial<SiteMediaStripItem>) => {
+    patch({
+      categoryStrip: draft.categoryStrip.map((item, itemIndex) => (itemIndex === index ? { ...item, ...next } : item)),
+    });
+  };
+
+  const patchReview = (index: number, next: Partial<SiteMediaReview>) => {
+    patch({
+      reviews: draft.reviews.map((item, itemIndex) => (itemIndex === index ? { ...item, ...next } : item)),
+    });
+  };
+
+  if (loading) return <p className="text-mute">Loading site images…</p>;
+
+  return (
+    <div className="max-w-3xl">
+      <AdminPageHeader
+        title="Website photos"
+        purpose="Marketing photos that are not product galleries. Use this when a homepage, shop, login, or checkout image needs a real Silken Knot photo. Scroll to the section that matches where it appears on the store."
+      />
+
+      <form
+        className="mt-8 space-y-10"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          setSaving(true);
+          setError("");
+          setMessage("");
+          try {
+            const response = await fetch("/api/admin/site-media", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json", ...csrfHeaders() },
+              body: JSON.stringify({ media: draft }),
+            });
+            const data = (await response.json()) as { ok?: boolean; media?: SiteMediaSettings; message?: string; error?: string };
+            if (!response.ok || !data.media) throw new Error(data.error || "Could not save.");
+            setDraft(data.media);
+            primeSiteMediaCache(data.media);
+            setMessage(data.message || "Saved.");
+          } catch (failure) {
+            setError(failure instanceof Error ? failure.message : "Could not save.");
+          } finally {
+            setSaving(false);
+          }
+        }}
+      >
+        {(
+          [
+            {
+              title: "Homepage collection tiles",
+              hint: "Large photos in the “Four ways to begin” section and related collection cards.",
+              keys: ["collectionBodyCare", "collectionBathSoap", "collectionAromatherapy", "collectionLifestyle", "collectionLifestyleWide", "bestsellerButter", "bestsellerSoap", "bestsellerCandle", "whySilkKnot", "brandStory", "newsletterBackground"] as const,
+            },
+            {
+              title: "Shop page banners",
+              hint: "Top banner and lower story banner on the shop page.",
+              keys: ["shopHero", "shopEditorial"] as const,
+            },
+            {
+              title: "Sign-in, checkout & wishlist",
+              hint: "Backgrounds on login, checkout header, and wishlist page.",
+              keys: ["authBackground", "checkoutBanner", "wishlistBanner"] as const,
+            },
+          ] as const
+        ).map((group) => (
+          <section key={group.title} className="space-y-6">
+            <div>
+              <h2 className="font-serif text-3xl">{group.title}</h2>
+              <p className="mt-2 text-sm text-mute">{group.hint}</p>
+            </div>
+            {SITE_MEDIA_SLOTS.filter((slot) => (group.keys as readonly string[]).includes(slot.key)).map((slot) => {
+              const value = draft[slot.key];
+              return (
+                <div key={slot.key} className="space-y-3 rounded-2xl border border-line p-5">
+                  <div>
+                    <p className="font-medium">{slot.label}</p>
+                    <p className="text-sm text-mute">{slot.hint}</p>
+                  </div>
+                  <AdminField label="Image URL" value={value} onChange={(image) => patch({ [slot.key]: image } as Partial<SiteMediaSettings>)} />
+                  <label className="block text-sm">
+                    Upload
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      disabled={Boolean(uploading)}
+                      className="mt-2 block w-full text-sm"
+                      onChange={(event) => void onUploadSlot(event.target.files, slot.key, `site-${slot.key}`)}
+                    />
+                    <span className="mt-1 block text-xs text-mute">{uploading === slot.key ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
+                  </label>
+                  {value ? (
+                    <div className="relative h-32 w-full max-w-sm overflow-hidden rounded-lg border border-line bg-paper">
+                      <Media src={value} alt={slot.label} className="object-cover" sizes="400px" />
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </section>
+        ))}
+
+        <section className="space-y-6">
+          <div>
+            <h2 className="font-serif text-3xl">Homepage category strip</h2>
+            <p className="mt-2 text-sm text-mute">Circular tiles under the homepage hero (Body Butter, Soap, Candles, and so on).</p>
+          </div>
+          {draft.categoryStrip.map((item, index) => (
+            <div key={item.id} className="space-y-3 rounded-2xl border border-line p-5">
+              <AdminField label="Name" value={item.name} onChange={(name) => patchStrip(index, { name })} />
+              <AdminField label="Link" value={item.href} onChange={(href) => patchStrip(index, { href })} />
+              <AdminField label="Image URL" value={item.image} onChange={(image) => patchStrip(index, { image })} />
+              <label className="block text-sm">
+                Upload
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={Boolean(uploading)}
+                  className="mt-2 block w-full text-sm"
+                  onChange={(event) => void onUploadSlot(event.target.files, `strip:${index}`, `site-strip-${item.id}`)}
+                />
+                <span className="mt-1 block text-xs text-mute">{uploading === `strip:${index}` ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
+              </label>
+              {item.image ? (
+                <div className="relative size-24 overflow-hidden rounded-full border border-line bg-paper">
+                  <Media src={item.image} alt={item.name} className="object-cover" sizes="96px" />
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </section>
+
+        <section className="space-y-6">
+          <div>
+            <h2 className="font-serif text-3xl">Homepage reviews</h2>
+            <p className="mt-2 text-sm text-mute">
+              Quotes on the homepage. Prefer linking each card to a product so the live product photo shows; otherwise upload a fallback image.
+            </p>
+          </div>
+          {draft.reviews.map((review, index) => (
+            <div key={review.id} className="space-y-3 rounded-2xl border border-line p-5">
+              <div className="grid gap-4 md:grid-cols-2">
+                <AdminField label="Customer name" value={review.name} onChange={(name) => patchReview(index, { name })} />
+                <AdminField label="City" value={review.city} onChange={(city) => patchReview(index, { city })} />
+              </div>
+              <label className="block text-sm">
+                Quote
+                <textarea
+                  value={review.text}
+                  onChange={(event) => patchReview(index, { text: event.target.value })}
+                  rows={3}
+                  className="mt-2 w-full border-b border-line bg-transparent outline-none"
+                />
+              </label>
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block text-sm">
+                  Product
+                  <select
+                    value={review.productId}
+                    onChange={(event) => {
+                      const product = store.products.find((item) => item.id === event.target.value);
+                      patchReview(index, {
+                        productId: event.target.value,
+                        productName: product?.name || review.productName,
+                        image: product?.images[0] || review.image,
+                      });
+                    }}
+                    className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+                  >
+                    <option value="">Custom / fallback only</option>
+                    {store.products.map((product) => (
+                      <option key={product.id} value={product.id}>
+                        {product.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <AdminField label="Product label" value={review.productName} onChange={(productName) => patchReview(index, { productName })} />
+              </div>
+              <AdminField label="Fallback image URL" value={review.image} onChange={(image) => patchReview(index, { image })} />
+              <label className="block text-sm">
+                Upload fallback image
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={Boolean(uploading)}
+                  className="mt-2 block w-full text-sm"
+                  onChange={(event) => void onUploadSlot(event.target.files, `review:${index}`, `site-review-${review.id}`)}
+                />
+                <span className="mt-1 block text-xs text-mute">{uploading === `review:${index}` ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
+              </label>
+            </div>
+          ))}
+        </section>
+
+        {error ? <p role="status" className="text-sm text-red-700">{error}</p> : null}
+        {message ? <p role="status" className="text-sm text-mute">{message}</p> : null}
+        <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
+          {saving ? "Saving…" : "Save site images"}
         </button>
       </form>
     </div>
@@ -908,10 +1786,10 @@ export function BrandManager() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="font-serif text-5xl">Brand</h1>
-      <p className="mt-3 max-w-xl text-sm text-mute">
-        Set the Silken Knot icon used across the storefront — header, footer, checkout, and sign-in.
-      </p>
+      <AdminPageHeader
+        title="Logo"
+        purpose="The Silken Knot mark shown in the header, footer, checkout, and sign-in. Upload a clear square icon, then save."
+      />
 
       <form
         className="mt-8 space-y-4"
@@ -982,7 +1860,10 @@ export function OfferManager() {
   const [error, setError] = useState("");
   return (
     <div>
-      <h1 className="font-serif text-5xl">Offers</h1>
+      <AdminPageHeader
+        title="Discount codes"
+        purpose="Coupon codes customers type at checkout (for example DIWALI20). Create a code, choose percent or fixed amount, then turn it active."
+      />
       <ul className="mt-8 divide-y divide-line">
         {store.coupons.map((coupon) => (
           <li key={coupon.id} className="flex flex-wrap items-center justify-between gap-3 py-4">

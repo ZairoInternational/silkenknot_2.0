@@ -6,8 +6,8 @@ import { ArrowRight } from "lucide-react";
 import { seedProducts } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
-import { Media, PriceTag, Stars, WishlistButton, usePrefersReducedMotion } from "@/components/ui";
-import { ProductCartCta } from "@/components/home/ProductCartCta";
+import { PriceTag, WishlistButton, usePrefersReducedMotion } from "@/components/ui";
+import { CardGoldRating, CardMobileAdd, ListingCardMedia } from "@/components/product/ListingCardMedia";
 
 export function BestsellerScroll() {
   const store = useStore();
@@ -94,8 +94,14 @@ function BestsellerCard({ product }: { product: Product }) {
   const discount =
     hasDiscount && compare ? Math.round(((compare - price) / compare) * 100) : 0;
 
-  function add() {
+  function add(event: React.MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
     if (!variant || soldOut) return;
+    if (inBag) {
+      store.openCart();
+      return;
+    }
     const result = store.addToCart(product.id, variant.label, 1);
     if (!result.ok && result.message) store.notify(result.message);
   }
@@ -114,47 +120,39 @@ function BestsellerCard({ product }: { product: Product }) {
       onPointerLeave={(event) => {
         event.currentTarget.style.transform = "";
       }}
-      className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl bg-[#fffcf8] transition-transform duration-200 ease-out motion-reduce:transition-none"
+      className="group flex h-full min-w-0 flex-col transition-transform duration-200 ease-out motion-reduce:transition-none"
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#efe8df]">
-        <Link href={`/products/${product.slug}`} aria-label={`View ${product.name}`} className="absolute inset-0">
-          {product.images?.[0] ? (
-            <Media
-              src={product.images[0]}
-              alt={product.name}
-              sizes="(min-width: 1024px) 22vw, (min-width: 640px) 50vw, 50vw"
-              className="object-cover transition duration-700 hover:scale-[1.04] motion-reduce:transition-none motion-reduce:hover:scale-100"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center p-4 text-center text-sm text-[#6f675d]">{product.name}</div>
-          )}
-        </Link>
+      <ListingCardMedia
+        href={`/products/${product.slug}`}
+        name={product.name}
+        images={product.images ?? []}
+        sizes="(min-width: 1024px) 22vw, (min-width: 640px) 50vw, 50vw"
+        soldOut={soldOut}
+        inCart={inBag}
+        onAdd={add}
+        wishlist={<WishlistButton productId={product.id} name={product.name} />}
+        badge={
+          <>
+            {product.bestseller ? (
+              <span className="bg-[#F7F3EE]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm">
+                Bestseller
+              </span>
+            ) : product.newArrival ? (
+              <span className="bg-[#F7F3EE]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm">
+                New
+              </span>
+            ) : null}
+            {hasDiscount ? (
+              <span className="bg-[#2c2926]/90 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-white backdrop-blur-sm">
+                {discount}% off
+              </span>
+            ) : null}
+          </>
+        }
+      />
 
-        <div className="pointer-events-none absolute left-3 top-3 flex flex-wrap gap-1.5">
-          {product.bestseller ? (
-            <span className="bg-[#F7F3EE] px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350]">
-              Bestseller
-            </span>
-          ) : product.newArrival ? (
-            <span className="bg-[#F7F3EE] px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350]">
-              New
-            </span>
-          ) : null}
-          {hasDiscount ? (
-            <span className="bg-[#2c2926] px-2 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-white">
-              {discount}% off
-            </span>
-          ) : null}
-        </div>
-
-        <div className="absolute right-1 top-1">
-          <WishlistButton productId={product.id} name={product.name} />
-        </div>
-      </div>
-
-      <div className="flex flex-1 flex-col px-1 pt-3">
-        <p className="truncate text-[11px] uppercase tracking-[0.16em] text-[#8a8178]">{product.type}</p>
-        <h3 className="mt-1 font-serif text-[clamp(1.15rem,3.8vw,1.65rem)] leading-none text-[#2c2926]">
+      <div className="pt-3">
+        <h3 className="truncate text-[15px] font-medium leading-snug text-[#2c2926] md:text-base">
           <Link
             href={`/products/${product.slug}`}
             className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
@@ -162,28 +160,11 @@ function BestsellerCard({ product }: { product: Product }) {
             {product.name}
           </Link>
         </h3>
-        {product.scent ? <p className="mt-1 truncate text-sm capitalize text-[#6f675d]">{product.scent}</p> : null}
-        {product.reviewCount > 0 ? (
-          <p className="mt-2 flex items-center gap-2 text-xs text-[#8a8178]">
-            <Stars rating={product.rating} />
-            <span>
-              {product.rating.toFixed(1)} ({product.reviewCount})
-            </span>
-          </p>
-        ) : null}
-        <div className="mt-3">
+        <CardGoldRating rating={product.rating} count={product.reviewCount} />
+        <div className="mt-1.5">
           <PriceTag price={price} compare={compare} />
         </div>
-        <div className="mt-auto pt-4">
-          <ProductCartCta
-            soldOut={soldOut}
-            inCart={inBag}
-            onAdd={add}
-            onOpenCart={store.openCart}
-            addLabel="Add to bag"
-            inCartLabel="In bag"
-          />
-        </div>
+        <CardMobileAdd soldOut={soldOut} inCart={inBag} onAdd={add} />
       </div>
     </article>
   );

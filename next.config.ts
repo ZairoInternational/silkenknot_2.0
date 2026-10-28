@@ -20,6 +20,15 @@ function bunnyHost() {
 
 const nextConfig: NextConfig = {
   agentRules: false,
+  async redirects() {
+    return [
+      {
+        source: "/product-page-new",
+        destination: "/shop",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     loader: "custom",
     loaderFile: "./src/lib/image-loader.ts",

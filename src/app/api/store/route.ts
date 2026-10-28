@@ -1,11 +1,10 @@
-import bcrypt from "bcryptjs";
 import { seedCategories, seedCoupons, seedProducts } from "@/lib/data";
 import { databaseConfigured, getDb, publicUser } from "@/lib/mongo";
 import { readBag, saveBag } from "@/lib/auth/bag";
 import { csrfHeaderMatches, jsonError, sameOrigin } from "@/lib/auth/http";
 import { applyAdminStatus, CheckoutError, publicOrder, type StoredOrder } from "@/lib/payments/service";
 import { customerOrderVisible } from "@/lib/shipping/states";
-import { clearSession, currentSession, ensureCsrfCookie, setSession } from "@/lib/session";
+import { clearSession, currentSession, ensureCsrfCookie } from "@/lib/session";
 import type { Address, CartItem, Category, Coupon, Order, Product, Review } from "@/lib/types";
 
 function clean<T>(doc: T) {
@@ -90,8 +89,7 @@ export async function POST(request: Request) {
   if (!sameOrigin(request)) return jsonError("Request blocked.", 403);
   const body = await bodyOf(request);
   const action = String(body.action || "");
-  const openActions = new Set(["admin-login"]);
-  if (!openActions.has(action) && !csrfHeaderMatches(request)) return jsonError("Request blocked.", 403);
+  if (!csrfHeaderMatches(request)) return jsonError("Request blocked.", 403);
   if (!databaseConfigured()) {
     return fail("Add your MongoDB connection string as MONGODB_URI in .env.local, then restart the app.");
   }
@@ -109,19 +107,7 @@ export async function POST(request: Request) {
     }
 
     if (action === "admin-login") {
-      const email = String(body.email || "").trim().toLowerCase();
-      const password = String(body.password || "");
-      const user = await users.findOne({ email });
-      if (!user || user.role !== "admin" || !(await bcrypt.compare(password, String(user.passwordHash || "")))) {
-        return fail("Those studio details are not recognised.");
-      }
-      await setSession({ id: String(user.id), role: "admin" });
-      const orderQuery = user.role === "admin" ? {} : { $or: [{ userId: user.id }, { email: user.email }] };
-      const mine = (await orders.find(orderQuery).sort({ createdAt: -1 }).toArray()).map((order) => publicOrder(order as unknown as StoredOrder));
-      const customers = user.role === "admin"
-        ? (await users.find({ role: "customer" }).toArray()).map((item) => publicUser(item))
-        : [];
-      return Response.json({ ok: true, user: publicUser(user), orders: mine, customers, admin: user.role === "admin" });
+      return fail("Studio sign-in moved. Refresh the page and try again.", 410);
     }
 
     if (action === "logout" || action === "admin-logout") {

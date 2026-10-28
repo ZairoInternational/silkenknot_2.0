@@ -1,67 +1,53 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Media, PriceTag, Stars, WishlistButton } from "@/components/ui";
+import { PriceTag, WishlistButton } from "@/components/ui";
+import { CardGoldRating, CardMobileAdd, ListingCardMedia } from "@/components/product/ListingCardMedia";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 
 export function ProductCard({ product }: { product: Product }) {
   const store = useStore();
   const variant = product.variants[0];
-  const [showAlt, setShowAlt] = useState(false);
+  const soldOut = product.variants.length > 0 && product.variants.every((item) => item.stock <= 0);
+  const inBag = Boolean(
+    variant && store.cart.some((item) => item.productId === product.id && item.variantLabel === variant.label),
+  );
 
   const add = (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
+    if (!variant || soldOut) return;
+    if (inBag) {
+      store.openCart();
+      return;
+    }
     const result = store.addToCart(product.id, variant.label, 1);
     if (result.ok) store.openCart();
     else if (result.message) store.notify(result.message);
   };
 
   return (
-    <article className="group transition duration-200 hover:-translate-y-0.5">
-      <div
-        className="relative aspect-[4/5] overflow-hidden bg-cream"
-        onMouseEnter={() => setShowAlt(true)}
-        onFocus={() => setShowAlt(true)}
-      >
-        <Link href={`/products/${product.slug}`} className="absolute inset-0" aria-label={product.name}>
-          <Media
-            src={product.images[0]}
-            alt={product.name}
-            sizes="(min-width: 1024px) 25vw, 50vw"
-            className="object-contain transition duration-700 group-hover:scale-[1.04]"
-          />
-          {showAlt && product.images[1] ? (
-            <span className="absolute inset-0 opacity-0 transition duration-700 group-hover:opacity-100">
-              <Media src={product.images[1]} alt="" sizes="(min-width: 1024px) 25vw, 50vw" className="object-contain" />
-            </span>
-          ) : null}
-        </Link>
-        <button
-          type="button"
-          onClick={add}
-          className="absolute inset-x-3 bottom-3 z-20 hidden bg-paper/95 py-3 text-[11px] uppercase tracking-[0.16em] opacity-0 transition duration-300 group-hover:opacity-100 group-focus-within:opacity-100 md:block"
-        >
-          Quick add
-        </button>
-      </div>
-      <div className="mt-4">
-        <p className="eyebrow text-mute">{product.type}</p>
-        <div className="mt-1 flex items-start gap-1">
-          <h3 className="min-w-0 flex-1 font-serif text-[1.7rem] leading-none">
-            <Link href={`/products/${product.slug}`}>{product.name}</Link>
-          </h3>
-          <WishlistButton productId={product.id} name={product.name} className="-mr-2 -mt-1" />
-        </div>
-        <div className="mt-3 flex items-center justify-between gap-3 text-sm">
+    <article className="group min-w-0 transition duration-200 hover:-translate-y-0.5">
+      <ListingCardMedia
+        href={`/products/${product.slug}`}
+        name={product.name}
+        images={product.images}
+        sizes="(min-width: 1024px) 25vw, 50vw"
+        soldOut={soldOut}
+        inCart={inBag}
+        onAdd={add}
+        wishlist={<WishlistButton productId={product.id} name={product.name} />}
+      />
+      <div className="pt-3">
+        <h3 className="truncate text-[15px] font-medium leading-snug text-[#2c2926] md:text-base">
+          <Link href={`/products/${product.slug}`}>{product.name}</Link>
+        </h3>
+        <CardGoldRating rating={product.rating} count={product.reviewCount} />
+        <div className="mt-1.5">
           <PriceTag price={product.price} compare={product.compareAtPrice} />
-          <Stars rating={product.rating} />
         </div>
-        <button type="button" onClick={add} className="mt-3 text-[11px] uppercase tracking-[0.16em] md:hidden">
-          Add
-        </button>
+        <CardMobileAdd soldOut={soldOut} inCart={inBag} onAdd={add} />
       </div>
     </article>
   );

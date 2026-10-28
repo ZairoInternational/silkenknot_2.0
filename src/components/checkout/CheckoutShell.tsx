@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { Check, LockKeyhole } from "lucide-react";
+import { useSiteMedia } from "@/lib/site-media/client";
 
 const steps = [
   { label: "Contact", href: "/checkout" },
@@ -18,9 +21,19 @@ export default function CheckoutShell({
   title: string;
   subtitle: string;
 }) {
+  const media = useSiteMedia();
+
   return (
     <main className="checkoutPage">
-      <div className="checkoutBanner">
+      <div
+        className="checkoutBanner"
+        style={{
+          backgroundImage: `linear-gradient(90deg, rgba(247, 243, 238, 0.94) 0%, rgba(247, 243, 238, 0.78) 46%, rgba(247, 243, 238, 0.28) 100%), url("${media.checkoutBanner}")`,
+          backgroundPosition: "center right",
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
         <p className="eyebrow">Secure checkout</p>
         <h1>{title}</h1>
         <p>{subtitle}</p>

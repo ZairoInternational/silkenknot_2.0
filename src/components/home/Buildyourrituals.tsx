@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import { seedProducts } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
+import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 import { Media } from "@/components/ui";
@@ -31,14 +32,8 @@ const STEPS = [
   },
 ];
 
-const fallbackShots = [
-  "/silknknot/bestseller-butter.jpg",
-  "/silknknot/bestseller-soap.jpg",
-  "/silknknot/bestseller-candle.jpg",
-];
-
 /** Each product's own photo. If your Product type names the field differently, change it here. */
-function productImage(product: Product, index: number) {
+function productImage(product: Product, index: number, fallbackShots: string[]) {
   const p = product as unknown as { images?: string[]; image?: string };
   return (
     p.images?.[0] ?? p.image ?? fallbackShots[index % fallbackShots.length]
@@ -49,6 +44,8 @@ const FOCUS =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]";
 
 export function BuildYourRitual() {
+  const media = useSiteMedia();
+  const fallbackShots = [media.bestsellerButter, media.bestsellerSoap, media.bestsellerCandle];
   const store = useStore();
   const catalog = (
     store.products.length ? store.products : seedProducts
@@ -132,7 +129,7 @@ export function BuildYourRitual() {
               >
                 <span className="relative block h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-gradient-to-b from-[#faf7f2] to-[#efe4d2] md:aspect-square md:h-auto md:w-full">
                   <Media
-                    src={productImage(product, i)}
+                    src={productImage(product, i, fallbackShots)}
                     alt=""
                     sizes="(min-width: 768px) 25vw, 80px"
                     className="object-contain p-2 transition-transform duration-500 group-hover:scale-105 md:p-5"

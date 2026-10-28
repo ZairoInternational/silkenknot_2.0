@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AdminPageHeader } from "@/components/admin/Studio";
 import { csrfHeaders } from "@/lib/auth/browser";
 
 type Policy = {
@@ -57,7 +58,10 @@ export default function ShippingSettingsPage() {
   if (!policy) return <p>Loading shipping settings…</p>;
   return (
     <form onSubmit={save} className="max-w-xl space-y-4">
-      <h1 className="font-serif text-5xl">Shipping</h1>
+      <AdminPageHeader
+        title="Shipping"
+        purpose="Delivery rates, free-shipping threshold, cash on delivery, and Delhivery booking. Change these when shipping rules or courier setup change."
+      />
       <p className="text-sm text-mute">{policy.mode === "mock" ? "Mock mode is on. Paid orders get a test waybill. Refresh tracking steps the status. Nothing is sent to Delhivery." : `Delhivery ${policy.credentialsSet ? "token is set" : "token is missing"}`} · Webhook {policy.webhookConfigured ? "token is set" : "push is off"} · GST {policy.gstConfigured ? "is set" : "is missing"} · Origin PIN {policy.originPin || "is missing"} · {policy.environment}</p>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={policy.delhiveryEnabled} onChange={(event) => setPolicy({ ...policy, delhiveryEnabled: event.target.checked })} /> Enable Delhivery</label>
       <label className="block text-sm">Pickup location<input value={policy.pickupLocation} onChange={(event) => setPolicy({ ...policy, pickupLocation: event.target.value })} className="mt-1 h-11 w-full border-b border-line bg-transparent" /></label>

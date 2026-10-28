@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Check, Heart, Leaf, ShoppingBag, SquarePen, Truck } from "lucide-react";
 import { Media, WishlistButton } from "@/components/ui";
 import { DeliveryChoice } from "@/components/product/DeliveryChoice";
+import { ProductBreadcrumbs } from "@/components/seo/ProductBreadcrumbs";
 import { trackViewItem } from "@/lib/analytics";
 import { seedProducts } from "@/lib/data";
 import { FREE_SHIPPING_AT, formatPrice } from "@/lib/format";
@@ -266,14 +267,24 @@ function ProductLayout({
                 onClick={() => setActiveImage(index)}
                 className={`relative size-16 shrink-0 overflow-hidden rounded-md bg-white sm:size-20 ${activeImage === index ? "ring-2 ring-[#CBAC7C]" : "ring-1 ring-[#e6e0d6]"}`}
               >
-                <Media src={image} alt="" sizes="80px" className="object-contain p-1" />
+                <Media src={image} alt={`${product.name} view ${index + 1}`} sizes="80px" className="object-contain p-1" />
               </button>
             ))}
           </div>
         </div>
 
         <div>
-          <p className="hidden text-xs font-medium uppercase tracking-[0.18em] text-[#8a7350] md:block">{categoryName}</p>
+          <ProductBreadcrumbs
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Shop", href: "/shop" },
+              {
+                label: categoryName,
+                href: `/shop?category=${encodeURIComponent(product.categoryId)}`,
+              },
+              { label: product.name },
+            ]}
+          />
           <div className="flex items-start justify-between gap-3 md:mt-2">
             <h1 className="text-4xl font-medium leading-tight md:text-5xl">{product.name}</h1>
             <WishlistButton productId={product.id} name={product.name} />

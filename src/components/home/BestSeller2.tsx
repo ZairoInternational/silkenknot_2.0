@@ -14,15 +14,10 @@ import {
 } from "framer-motion";
 import { seedProducts } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
+import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 import { Media, Stars, WishlistButton } from "@/components/ui";
-
-const shots = [
-  "/silknknot/bestseller-butter.jpg",
-  "/silknknot/bestseller-soap.jpg",
-  "/silknknot/bestseller-candle.jpg",
-];
 
 // Desktop layout constants (used to work out where each card sits on screen)
 const CARD_W = 280;
@@ -31,6 +26,8 @@ const PAD = 48;
 
 export function BestSeller2() {
   const store = useStore();
+  const media = useSiteMedia();
+  const shots = [media.bestsellerButter, media.bestsellerSoap, media.bestsellerCandle];
   const catalog = (
     store.products.length ? store.products : seedProducts
   ).filter((p) => p.active);

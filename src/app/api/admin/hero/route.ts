@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { csrfHeaderMatches, sameOrigin } from "@/lib/auth/http";
-import { getHeroOffer, saveHeroOffer } from "@/lib/hero/server";
+import { getHeroContent, saveHeroContent } from "@/lib/hero/server";
 import { databaseConfigured } from "@/lib/mongo";
 import { currentSession } from "@/lib/session";
 
@@ -18,10 +18,8 @@ async function requireAdmin() {
 export async function GET() {
   const gate = await requireAdmin();
   if ("error" in gate) return gate.error;
-  if (!databaseConfigured()) {
-    return NextResponse.json({ ok: true, offer: await getHeroOffer() });
-  }
-  return NextResponse.json({ ok: true, offer: await getHeroOffer() });
+  const content = await getHeroContent();
+  return NextResponse.json({ ok: true, content, offer: content.offer, evergreen: content.evergreen });
 }
 
 export async function PUT(request: Request) {
@@ -34,19 +32,26 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Database is not configured." }, { status: 503 });
   }
 
-  let body: { offer?: unknown };
+  let body: { content?: unknown; offer?: unknown; evergreen?: unknown };
   try {
-    body = (await request.json()) as { offer?: unknown };
+    body = (await request.json()) as { content?: unknown; offer?: unknown; evergreen?: unknown };
   } catch {
     return NextResponse.json({ error: "Malformed request." }, { status: 400 });
   }
 
   try {
-    const offer = await saveHeroOffer(body.offer);
+    const payload = body.content ?? { offer: body.offer, evergreen: body.evergreen };
+    const content = await saveHeroContent(payload);
     revalidatePath("/");
-    return NextResponse.json({ ok: true, offer, message: "Hero offer saved." });
+    return NextResponse.json({
+      ok: true,
+      content,
+      offer: content.offer,
+      evergreen: content.evergreen,
+      message: "Hero saved.",
+    });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Could not save the hero offer.";
+    const message = error instanceof Error ? error.message : "Could not save the hero.";
     return NextResponse.json({ error: message }, { status: 503 });
   }
 }

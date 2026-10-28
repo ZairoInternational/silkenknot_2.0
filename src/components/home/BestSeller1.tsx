@@ -6,18 +6,15 @@ import { ArrowRight } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { seedProducts } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
+import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 import { Media, Stars, WishlistButton } from "@/components/ui";
 
-const shots = [
-  "/silknknot/bestseller-butter.jpg",
-  "/silknknot/bestseller-soap.jpg",
-  "/silknknot/bestseller-candle.jpg",
-];
-
 export function BestSeller1() {
   const store = useStore();
+  const media = useSiteMedia();
+  const shots = [media.bestsellerButter, media.bestsellerSoap, media.bestsellerCandle];
   const catalog = (store.products.length ? store.products : seedProducts).filter((product) => product.active);
   const bestsellers = catalog.filter((product) => product.bestseller);
   const products = [...bestsellers, ...catalog.filter((product) => !product.bestseller)].slice(0, 8);

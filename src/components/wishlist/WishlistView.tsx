@@ -16,6 +16,7 @@ import {
 
 import { seedProducts } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
+import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 import { Media, WishlistButton } from "@/components/ui";
@@ -95,11 +96,12 @@ export function WishlistView() {
 }
 
 function WishlistBanner({ empty }: { empty: boolean }) {
+  const media = useSiteMedia();
   return (
     <section className="relative isolate mt-[var(--nav-h)] overflow-hidden bg-[#e9e0d2]">
       <div className="absolute inset-0 -z-20">
         <Media
-          src="/silknknot/hero-butter-right.jpg"
+          src={media.wishlistBanner}
           alt=""
           sizes="100vw"
           className="object-cover object-[65%_50%]"

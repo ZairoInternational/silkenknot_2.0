@@ -1,5 +1,8 @@
+"use client";
+
 import { Feather, Heart, Leaf, Sparkles } from "lucide-react";
 import { Media } from "@/components/ui";
+import { useSiteMedia } from "@/lib/site-media/client";
 
 const points = [
   { icon: Leaf, label: "Simple\nformulas" },
@@ -9,11 +12,13 @@ const points = [
 ];
 
 export function WhySilkKnot() {
+  const media = useSiteMedia();
+
   return (
     <section className="mt-6 hidden bg-[#fbf9f6] px-5 py-6 md:block md:px-8">
       <div className="site-container grid gap-10 md:grid-cols-2 md:gap-16">
         <div className="relative aspect-[3/2] overflow-hidden rounded-[1.75rem] bg-[#e7dfd4]">
-          <Media src="/silknknot/collection-body-care.jpg" alt="Silken Knot body butter" sizes="(min-width: 768px) 46vw, 90vw" className="object-cover" />
+          <Media src={media.whySilkKnot} alt="Silken Knot body butter" sizes="(min-width: 768px) 46vw, 90vw" className="object-cover" />
         </div>
         <div className="flex flex-col md:h-full">
           <p className="text-xl font-medium uppercase tracking-[0.16em] text-[#3f3d37] md:text-2xl">Why Silken Knot</p>

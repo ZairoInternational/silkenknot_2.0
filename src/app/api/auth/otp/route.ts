@@ -9,6 +9,7 @@ import type { CartItem } from "@/lib/types";
 
 function purposeOf(value: unknown): OtpPurpose {
   if (value === "link-email" || value === "link-phone") return value;
+  // Admin MFA / reset OTPs are issued only through /api/admin/auth.
   return "login";
 }
 

@@ -4,16 +4,17 @@ import Link from "next/link";
 import { useRef } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Media } from "@/components/ui";
-
-const collections = [
-  { name: "Body Care", href: "/shop?category=body-care", image: "/silknknot/collection-body-care.jpg" },
-  { name: "Bath & Shower", href: "/shop?category=body-care", image: "/silknknot/bath_salts1.jpg" },
-  { name: "Soaps", href: "/shop?category=bath-soap", image: "/silknknot/bestseller-soap.jpg" },
-  { name: "Candles", href: "/shop?category=aromatherapy", image: "/silknknot/bestseller-candle.jpg" },
-];
+import { useSiteMedia } from "@/lib/site-media/client";
 
 export function ExploreCollections() {
+  const media = useSiteMedia();
   const row = useRef<HTMLDivElement>(null);
+  const collections = [
+    { name: "Body Care", href: "/shop?category=body-care", image: media.collectionBodyCare },
+    { name: "Bath & Shower", href: "/shop?category=body-care", image: media.collectionBathSoap },
+    { name: "Soaps", href: "/shop?category=bath-soap", image: media.bestsellerSoap },
+    { name: "Candles", href: "/shop?category=aromatherapy", image: media.bestsellerCandle },
+  ];
 
   const scroll = (direction: number) => {
     const frame = row.current;

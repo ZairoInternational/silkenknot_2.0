@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AdminPageHeader } from "@/components/admin/Studio";
 import { csrfHeaders } from "@/lib/auth/browser";
 import { formatPrice } from "@/lib/format";
 
@@ -50,11 +51,10 @@ export default function PlatformFeeSettingsPage() {
 
   return (
     <form onSubmit={save} className="max-w-xl space-y-4">
-      <h1 className="font-serif text-5xl">Platform fee</h1>
-      <p className="text-sm text-mute">
-        A small checkout fee (default {formatPrice(30)}) covers operations such as messaging and third-party APIs.
-        Checkout shows only the fee amount. Waiver rules stay admin-only.
-      </p>
+      <AdminPageHeader
+        title="Payment fees"
+        purpose={`Optional checkout “Platform fee” (default ${formatPrice(30)}). Customers only see the fee amount. Use waiver rules below when you want to waive it for large or first orders.`}
+      />
       <label className="flex items-center gap-2 text-sm">
         <input
           type="checkbox"

@@ -171,7 +171,7 @@ export function JournalIndex() {
           <li key={entry.slug}>
             <Link href={`/journal/${entry.slug}`}>
               <span className="relative block aspect-[4/5] bg-cream">
-                <Media src={entry.image} alt="" sizes="(min-width: 768px) 30vw, 100vw" />
+                <Media src={entry.image} alt={entry.title} sizes="(min-width: 768px) 30vw, 100vw" />
               </span>
               <span className="mt-4 block font-serif text-3xl">{entry.title}</span>
               <span className="mt-2 block text-sm text-mute">{entry.excerpt}</span>
@@ -195,7 +195,7 @@ export function JournalArticle({ slug }: { slug: string }) {
   return (
     <Editorial eyebrow={entry.date} title={entry.title} lede={entry.excerpt}>
       <div className="relative mb-8 aspect-[16/10] bg-cream">
-        <Media src={entry.image} alt="" sizes="(min-width: 768px) 720px, 100vw" />
+        <Media src={entry.image} alt={entry.title} sizes="(min-width: 768px) 720px, 100vw" />
       </div>
       {entry.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
     </Editorial>

@@ -15,8 +15,8 @@ import {
 } from "lucide-react";
 import { Media, ease, usePrefersReducedMotion } from "@/components/ui";
 import { setHeroNav } from "@/lib/hero-nav";
-import type { HeroOffer } from "@/lib/hero/content";
-import { DEFAULT_HERO_OFFER } from "@/lib/hero/content";
+import type { HeroContent, HeroEvergreenSlide, HeroOffer } from "@/lib/hero/content";
+import { DEFAULT_HERO_CONTENT, DEFAULT_HERO_OFFER } from "@/lib/hero/content";
 
 /* Palette (existing): ivory #f6f1ea / #f7f3ee, sand #CBAC7C, bronze #9a7352,
    gold text #8a7350 / #a68456, ink #2c2926. New, matched to the set: marigold
@@ -47,56 +47,24 @@ type Slide = {
   isOffer?: boolean;
 };
 
-const evergreenSlides: Slide[] = [
-  {
-    id: "butter",
-    label: "Body butter",
-    pill: "Body butter",
-    title: ["A butter that", "melts on warm skin."],
-    note: "Shea and murumuru for the hour after bathing, with a finish that lets you dress.",
-    cta: "Shop body butter",
-    href: "/shop?category=body-care",
-    secondaryCta: "Browse everything",
-    secondaryHref: "/shop",
-    image: "/silknknot/new_updates/body_butter.png",
-    alt: "Silken Knot body butter jar",
-    cardTag: "Body care",
-    cardName: "Body butter",
-    chips: ["Shea", "Murumuru"],
-  },
-  {
-    id: "scrub",
-    label: "Sugar scrub",
-    pill: "Sugar scrub",
-    title: ["A polish for", "arms, legs, and shoulders."],
-    note: "The grains soften as you massage, so skin feels smooth rather than stripped.",
-    cta: "Shop sugar scrub",
-    href: "/shop?category=body-care",
-    secondaryCta: "Browse everything",
-    secondaryHref: "/shop",
-    image: "/silknknot/new_updates/sugar_scrap.png",
-    alt: "Silken Knot sugar scrub",
-    cardTag: "Body care",
-    cardName: "Sugar scrub",
-    chips: ["Soft grains", "Smooth finish"],
-  },
-  {
-    id: "salts",
-    label: "Bath salts",
-    pill: "Bath salts",
-    title: ["Minerals for", "the soak itself."],
-    note: "Pour them in before the butter. The bath is the first step, not a scent in the room.",
-    cta: "Shop bath salts",
-    href: "/shop?category=bath-soap",
-    secondaryCta: "Browse everything",
-    secondaryHref: "/shop",
-    image: "/silknknot/new_updates/bath-salts.jfif",
-    alt: "Silken Knot bath salts",
-    cardTag: "Bath",
-    cardName: "Bath salts",
-    chips: ["Mineral soak"],
-  },
-];
+function evergreenToSlide(slide: HeroEvergreenSlide): Slide {
+  return {
+    id: slide.id,
+    label: slide.label,
+    pill: slide.pill,
+    title: [slide.titleLine1, slide.titleLine2],
+    note: slide.note,
+    cta: slide.cta,
+    href: slide.href,
+    secondaryCta: slide.secondaryCta,
+    secondaryHref: slide.secondaryHref,
+    image: slide.image,
+    alt: slide.alt,
+    cardTag: slide.cardTag,
+    cardName: slide.cardName,
+    chips: slide.chips,
+  };
+}
 
 function offerToSlide(offer: HeroOffer): Slide {
   return {
@@ -121,8 +89,9 @@ function offerToSlide(offer: HeroOffer): Slide {
   };
 }
 
-function buildSlides(offer: HeroOffer): Slide[] {
-  return offer.enabled ? [offerToSlide(offer), ...evergreenSlides] : evergreenSlides;
+function buildSlides(offer: HeroOffer, evergreen: HeroEvergreenSlide[]): Slide[] {
+  const productSlides = evergreen.map(evergreenToSlide);
+  return offer.enabled ? [offerToSlide(offer), ...productSlides] : productSlides;
 }
 
 const marquee = ["Body butter", "Bath soap", "Sugar scrub", "Candles"];
@@ -223,9 +192,19 @@ const rise = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease } },
 };
 
-export function Hero({ offer = DEFAULT_HERO_OFFER }: { offer?: HeroOffer }) {
+export function Hero({
+  offer = DEFAULT_HERO_OFFER,
+  evergreen = DEFAULT_HERO_CONTENT.evergreen,
+  content,
+}: {
+  offer?: HeroOffer;
+  evergreen?: HeroEvergreenSlide[];
+  content?: HeroContent;
+}) {
+  const resolvedOffer = content?.offer ?? offer;
+  const resolvedEvergreen = content?.evergreen ?? evergreen;
   const reduced = usePrefersReducedMotion();
-  const slides = buildSlides(offer);
+  const slides = buildSlides(resolvedOffer, resolvedEvergreen);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const safeIndex = Math.min(index, slides.length - 1);
@@ -236,7 +215,7 @@ export function Hero({ offer = DEFAULT_HERO_OFFER }: { offer?: HeroOffer }) {
 
   useEffect(() => {
     setIndex(0);
-  }, [offer.enabled, offer.pill, offer.titleLine1]);
+  }, [resolvedOffer.enabled, resolvedOffer.pill, resolvedOffer.titleLine1, resolvedEvergreen]);
 
   // The hero is always ivory now, so the transparent navbar always uses dark ink.
   useEffect(() => {

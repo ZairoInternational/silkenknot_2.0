@@ -80,6 +80,28 @@ async function post(action: string, payload: Record<string, unknown> = {}) {
   return (await response.json()) as ApiResult;
 }
 
+async function postAdminAuth(action: string, payload: Record<string, unknown> = {}) {
+  const response = await fetch("/api/admin/auth", {
+    method: "POST",
+    headers: csrfHeaders(),
+    body: JSON.stringify({ action, ...payload }),
+  });
+  return (await response.json()) as ApiResult & {
+    mfaRequired?: boolean;
+    ticketId?: string;
+    ticketToken?: string;
+    channels?: { channel: "email" | "whatsapp"; masked: string }[];
+    challengeId?: string;
+    resendAt?: string;
+    expiresAt?: string;
+    masked?: string;
+    channel?: "email" | "whatsapp";
+    customers?: User[];
+    orders?: Order[];
+    admin?: boolean;
+  };
+}
+
 type Database = {
   version: 1;
   products: Product[];
@@ -142,7 +164,46 @@ type StoreValue = {
   updateProfile: (input: { name: string }) => Promise<Result>;
   saveAddress: (address: Address) => Promise<void>;
   deleteAddress: (id: string) => Promise<void>;
-  loginAdmin: (email: string, password: string) => Promise<Result>;
+  loginAdmin: (email: string, password: string) => Promise<
+    Result & {
+      mfaRequired?: boolean;
+      ticketId?: string;
+      ticketToken?: string;
+      channels?: { channel: "email" | "whatsapp"; masked: string }[];
+    }
+  >;
+  sendAdminMfa: (input: {
+    ticketId: string;
+    ticketToken: string;
+    channel: "email" | "whatsapp";
+  }) => Promise<Result & { challengeId?: string; resendAt?: string; masked?: string; channel?: "email" | "whatsapp"; devCode?: string }>;
+  verifyAdminMfa: (input: {
+    ticketId: string;
+    ticketToken: string;
+    challengeId: string;
+    code: string;
+  }) => Promise<Result>;
+  requestAdminPasswordReset: (email: string) => Promise<
+    Result & {
+      ticketId?: string;
+      ticketToken?: string;
+      challengeId?: string;
+      resendAt?: string;
+      masked?: string;
+      devCode?: string;
+    }
+  >;
+  resendAdminPasswordReset: (input: { ticketId: string; ticketToken: string }) => Promise<
+    Result & { challengeId?: string; resendAt?: string; masked?: string; devCode?: string }
+  >;
+  confirmAdminPasswordReset: (input: {
+    ticketId: string;
+    ticketToken: string;
+    challengeId: string;
+    code: string;
+    password: string;
+  }) => Promise<Result>;
+  changeAdminPassword: (input: { currentPassword: string; password: string }) => Promise<Result>;
   logoutAdmin: () => Promise<void>;
   placeOrder: (order: Omit<Order, "id" | "number" | "createdAt" | "status">, checkoutOrderId: string) => Promise<Result & { order?: Order }>;
   acceptServerOrder: (order: Order, products?: Product[]) => void;
@@ -512,12 +573,94 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (data.ok && data.user) signedIn(data);
   }, [signedIn]);
 
-  const loginAdmin = useCallback(async (email: string, password: string): Promise<Result> => {
-    const data = await post("admin-login", { email, password });
-    if (!data.ok || !data.user) return { ok: false, message: data.message || "Those studio details are not recognised." };
+  const loginAdmin = useCallback(async (email: string, password: string) => {
+    const data = await postAdminAuth("login", { email, password });
+    if (!data.ok) return { ok: false as const, message: data.message || "Those studio details are not recognised." };
+    if (data.mfaRequired && data.ticketId && data.ticketToken && data.channels?.length) {
+      return {
+        ok: true as const,
+        mfaRequired: true as const,
+        ticketId: data.ticketId,
+        ticketToken: data.ticketToken,
+        channels: data.channels,
+      };
+    }
+    return { ok: false as const, message: "Verification could not be started." };
+  }, []);
+
+  const sendAdminMfa = useCallback(async (input: {
+    ticketId: string;
+    ticketToken: string;
+    channel: "email" | "whatsapp";
+  }) => {
+    const data = await postAdminAuth("mfa-send", input);
+    if (!data.ok || !data.challengeId) return { ok: false as const, message: data.message || "We couldn’t send a code." };
+    return {
+      ok: true as const,
+      challengeId: data.challengeId,
+      resendAt: data.resendAt,
+      masked: data.masked,
+      channel: data.channel,
+      devCode: data.devCode,
+    };
+  }, []);
+
+  const verifyAdminMfa = useCallback(async (input: {
+    ticketId: string;
+    ticketToken: string;
+    challengeId: string;
+    code: string;
+  }) => {
+    const data = await postAdminAuth("mfa-verify", input);
+    if (!data.ok || !data.user) return { ok: false as const, message: data.message || "That code is incorrect or has expired." };
     signedIn(data, true);
-    return { ok: true };
+    return { ok: true as const };
   }, [signedIn]);
+
+  const requestAdminPasswordReset = useCallback(async (email: string) => {
+    const data = await postAdminAuth("forgot-request", { email });
+    if (!data.ok) return { ok: false as const, message: data.message || "Could not start a reset." };
+    return {
+      ok: true as const,
+      message: data.message,
+      ticketId: data.ticketId,
+      ticketToken: data.ticketToken,
+      challengeId: data.challengeId,
+      resendAt: data.resendAt,
+      masked: data.masked,
+      devCode: data.devCode,
+    };
+  }, []);
+
+  const resendAdminPasswordReset = useCallback(async (input: { ticketId: string; ticketToken: string }) => {
+    const data = await postAdminAuth("forgot-resend", input);
+    if (!data.ok || !data.challengeId) return { ok: false as const, message: data.message || "Could not resend the code." };
+    return {
+      ok: true as const,
+      challengeId: data.challengeId,
+      resendAt: data.resendAt,
+      masked: data.masked,
+      devCode: data.devCode,
+    };
+  }, []);
+
+  const confirmAdminPasswordReset = useCallback(async (input: {
+    ticketId: string;
+    ticketToken: string;
+    challengeId: string;
+    code: string;
+    password: string;
+  }) => {
+    const data = await postAdminAuth("forgot-verify", input);
+    if (!data.ok) return { ok: false as const, message: data.message || "Could not update the password." };
+    return { ok: true as const, message: data.message || "Password updated. Sign in with your new password." };
+  }, []);
+
+  const changeAdminPassword = useCallback(async (input: { currentPassword: string; password: string }) => {
+    const data = await postAdminAuth("change-password", input);
+    if (!data.ok) return { ok: false as const, message: data.message || "Could not update the password." };
+    return { ok: true as const, message: data.message || "Password updated." };
+  }, []);
 
   const logout = useCallback(async () => {
     await post("logout");
@@ -781,6 +924,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     saveAddress,
     deleteAddress,
     loginAdmin,
+    sendAdminMfa,
+    verifyAdminMfa,
+    requestAdminPasswordReset,
+    resendAdminPasswordReset,
+    confirmAdminPasswordReset,
+    changeAdminPassword,
     logoutAdmin,
     placeOrder,
     acceptServerOrder,
@@ -807,7 +956,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }), [
     ready, db, currentUser, cartOpen, searchOpen, menuOpen, accountOpen, toast, activeProducts, closeOverlays, notify,
     addToCart, setQuantity, removeFromCart, moveToWishlist, applyCoupon, toggleWishlist, requestOtp, verifyOtp, logout,
-    updateProfile, saveAddress, deleteAddress, loginAdmin, logoutAdmin, placeOrder, acceptServerOrder, rememberOrder, saveProduct, deleteProduct,
+    updateProfile, saveAddress, deleteAddress, loginAdmin, sendAdminMfa, verifyAdminMfa, requestAdminPasswordReset, resendAdminPasswordReset, confirmAdminPasswordReset, changeAdminPassword, logoutAdmin, placeOrder, acceptServerOrder, rememberOrder, saveProduct, deleteProduct,
     saveCategory, deleteCategory, moveCategory, updateOrderStatus, saveCoupon, deleteCoupon, addReview, voteReview, reportReview, loadReviewVotes, rememberSearch, patch,
   ]);
 

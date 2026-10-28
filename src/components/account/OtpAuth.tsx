@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Heart, Mail, ShoppingBag, X } from "lucide-react";
 import { afterAuthPath, needsName, safeNext } from "@/lib/auth/browser";
 import { normalizeEmail, normalizePhone } from "@/lib/auth/contact";
+import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import { Mark } from "@/components/ui";
 import "./auth.css";
@@ -151,14 +152,16 @@ export function OtpAuth({
     router.push(safeNext(path));
   }
 
+  const media = useSiteMedia();
   const heading = purpose === "link-email" ? "Verify your email" : purpose === "link-phone" ? "Verify your WhatsApp number" : "Welcome back";
+  const authBackground = `linear-gradient(180deg, rgba(28,27,25,0.05) 35%, rgba(28,27,25,0.62) 100%), url('${media.authBackground}')`;
 
   return (
     <div className={`sk-auth-shell${variant === "compact" ? " is-compact" : ""}${variant === "inline" ? " is-inline" : ""}`}>
       {variant === "page" ? (
         <section
           className="sk-auth-visual"
-          style={{ backgroundImage: "linear-gradient(180deg, rgba(28,27,25,0.05) 35%, rgba(28,27,25,0.62) 100%), url('/silknknot/collection-lifestyle-wide.jpg')" }}
+          style={{ backgroundImage: authBackground }}
         >
           <Link className="sk-auth-visual-brand" href="/" aria-label="Silken Knot home">
             <Mark className="h-5 w-5" /> Silken Knot

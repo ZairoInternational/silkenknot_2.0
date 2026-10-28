@@ -6,6 +6,7 @@ import { ArrowRight, Check, Gift, ShoppingBag } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { seedProducts } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
+import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 import { Media } from "@/components/ui";
@@ -35,14 +36,8 @@ const TIERS = [
   },
 ];
 
-const fallbackShots = [
-  "/silknknot/bestseller-butter.jpg",
-  "/silknknot/bestseller-soap.jpg",
-  "/silknknot/bestseller-candle.jpg",
-];
-
 /** Each product's own photo. If your Product type names the field differently, change it here. */
-function productImage(product: Product, index: number) {
+function productImage(product: Product, index: number, fallbackShots: string[]) {
   const p = product as unknown as { images?: string[]; image?: string };
   return (
     p.images?.[0] ?? p.image ?? fallbackShots[index % fallbackShots.length]
@@ -53,6 +48,8 @@ const FOCUS =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]";
 
 export function GiftSets() {
+  const media = useSiteMedia();
+  const fallbackShots = [media.bestsellerButter, media.bestsellerSoap, media.bestsellerCandle];
   const store = useStore();
   const catalog = (
     store.products.length ? store.products : seedProducts
@@ -140,7 +137,7 @@ export function GiftSets() {
                 key={product.id}
                 className="w-[74%] shrink-0 snap-start sm:w-[46%] md:w-auto"
               >
-                <GiftCard product={product} image={productImage(product, i)} />
+                <GiftCard product={product} image={productImage(product, i, fallbackShots)} />
               </li>
             ))}
           </motion.ul>

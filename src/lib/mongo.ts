@@ -5,6 +5,7 @@ import { seedCategories, seedCoupons, seedProducts, seedUsers } from "@/lib/data
 import { ensureAnnouncementContent } from "@/lib/announcements/server";
 import { ensureBrandContent } from "@/lib/brand/server";
 import { ensureHeroContent } from "@/lib/hero/server";
+import { ensureSiteMediaContent } from "@/lib/site-media/server";
 import { approxProductWeight } from "@/lib/shipping/weight";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 
@@ -70,14 +71,22 @@ async function seedIfEmpty(db: Db) {
 
   const users = db.collection("users");
   if ((await users.countDocuments()) === 0) {
+    const adminSeedEmail = process.env.ADMIN_SEED_EMAIL?.trim().toLowerCase();
+    const adminSeedPassword = process.env.ADMIN_SEED_PASSWORD?.trim();
+    const adminSeedPhone = process.env.ADMIN_SEED_PHONE?.trim();
     const seededUsers = await Promise.all(
       seedUsers.map(async (user) => {
         const { password, ...rest } = user;
-        const phone = parsePhoneNumberFromString(user.phone, "IN");
+        const isAdmin = user.role === "admin";
+        const email = isAdmin && adminSeedEmail ? adminSeedEmail : user.email;
+        const plain = isAdmin && adminSeedPassword ? adminSeedPassword : password;
+        const rawPhone = isAdmin && adminSeedPhone ? adminSeedPhone : user.phone;
+        const phone = parsePhoneNumberFromString(rawPhone, "IN");
         return {
           ...rest,
-          phone: phone?.isValid() ? phone.number : user.phone,
-          passwordHash: await bcrypt.hash(password, 10),
+          email,
+          phone: phone?.isValid() ? phone.number : rawPhone,
+          passwordHash: await bcrypt.hash(plain, 10),
           emailVerifiedAt: user.role === "customer" ? new Date().toISOString() : null,
           phoneVerifiedAt: null,
           savedCart: [],
@@ -90,6 +99,7 @@ async function seedIfEmpty(db: Db) {
   await ensureHeroContent(db);
   await ensureAnnouncementContent(db);
   await ensureBrandContent(db);
+  await ensureSiteMediaContent(db);
   await ensureAuthCollections(db);
   await ensurePaymentIndexes(db);
 }

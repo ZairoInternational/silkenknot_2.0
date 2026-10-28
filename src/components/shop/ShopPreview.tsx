@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { ArrowDownUp, ArrowRight, Heart, Search, SlidersHorizontal, X } from "lucide-react";
 import { seedProducts } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
+import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 import { Media, WishlistButton } from "@/components/ui";
@@ -17,15 +18,15 @@ const categories = [
   { label: "Lifestyle", id: "lifestyle" },
 ] as const;
 
-const collectionCards = [
-  { title: "Body Care", description: "Nourish and replenish", image: "/silknknot/collection-body-care.jpg", id: "body-care" },
-  { title: "Bath & Soap", description: "Slow down and unwind", image: "/silknknot/collection-bath-soap.jpg", id: "bath-soap" },
-  { title: "Aromatherapy", description: "Find your calm", image: "/silknknot/bestseller-candle.jpg", id: "aromatherapy" },
-  { title: "Lifestyle", description: "Little everyday luxuries", image: "/silknknot/collection-lifestyle.jpg", id: "lifestyle" },
-] as const;
-
 export function ShopPreview() {
   const store = useStore();
+  const media = useSiteMedia();
+  const collectionCards = [
+    { title: "Body Care", description: "Nourish and replenish", image: media.collectionBodyCare, id: "body-care" },
+    { title: "Bath & Soap", description: "Slow down and unwind", image: media.collectionBathSoap, id: "bath-soap" },
+    { title: "Aromatherapy", description: "Find your calm", image: media.bestsellerCandle, id: "aromatherapy" },
+    { title: "Lifestyle", description: "Little everyday luxuries", image: media.collectionLifestyle, id: "lifestyle" },
+  ] as const;
   const [category, setCategory] = useState<(typeof categories)[number]["id"]>("all");
   const [sort, setSort] = useState("featured");
   const [search, setSearch] = useState("");
@@ -52,7 +53,7 @@ export function ShopPreview() {
     <main className="mt-[var(--nav-h)] min-h-screen bg-[#f7f4ef] text-[#2c2926]">
       <section className="relative isolate overflow-hidden bg-[#e9e0d2]">
         <div className="absolute inset-0 -z-20">
-          <Media src="/silknknot/bestseller-candle.jpg" alt="" sizes="100vw" className="object-cover object-center" />
+          <Media src={media.shopHero} alt="" sizes="100vw" className="object-cover object-center" />
         </div>
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#f7f4ef]/95 via-[#f7f4ef]/80 to-[#f7f4ef]/20" />
         <div className="site-container px-5 py-14 sm:px-8 sm:py-20 lg:px-14 lg:py-24">

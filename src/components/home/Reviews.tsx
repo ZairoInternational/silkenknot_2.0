@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, useReducedMotion, type PanInfo } from "framer-motion";
 import {
   ArrowLeft,
@@ -16,9 +16,12 @@ import {
   Truck,
   User,
 } from "lucide-react";
+import { seedProducts } from "@/lib/data";
+import { useSiteMedia } from "@/lib/site-media/client";
+import { useStore } from "@/lib/store";
 
 type Testimonial = {
-  id: number;
+  id: string;
   name: string;
   city: string;
   rating: number;
@@ -27,59 +30,6 @@ type Testimonial = {
   productSlug: string;
   productImage: string;
 };
-
-const testimonials: Testimonial[] = [
-  {
-    id: 1,
-    name: "Ananya R.",
-    city: "Bengaluru",
-    rating: 5,
-    text: "The candle is absolutely beautiful. It fills my room with a calming fragrance and the packaging feels so premium.",
-    product: "Studio Tin Candle",
-    productSlug: "studio-tin-candle",
-    productImage: "/silknknot/candle2.webp",
-  },
-  {
-    id: 2,
-    name: "Priya S.",
-    city: "Hyderabad",
-    rating: 5,
-    text: "My skin has never felt so soft and nourished. The fragrance is subtle yet so luxurious. Truly a self-care essential!",
-    product: "Night Milk Body Butter",
-    productSlug: "night-milk-body-butter",
-    productImage: "/silknknot/new_updates/body_butter.png",
-  },
-  {
-    id: 3,
-    name: "Meera K.",
-    city: "Mumbai",
-    rating: 5,
-    text: "These bath salts are pure bliss! It turns my bath time into a spa experience. Love the natural ingredients.",
-    product: "Mineral Bath Salts",
-    productSlug: "mineral-bath-salts",
-    productImage: "/silknknot/new_updates/bath-salts.jfif",
-  },
-  {
-    id: 4,
-    name: "Ishita M.",
-    city: "Pune",
-    rating: 5,
-    text: "Everything feels thoughtfully made. The texture, the presentation and the little details make my daily routine special.",
-    product: "Atelier Milk Soap",
-    productSlug: "atelier-milk-soap",
-    productImage: "/silknknot/soap1.webp",
-  },
-  {
-    id: 5,
-    name: "Rhea P.",
-    city: "Chennai",
-    rating: 5,
-    text: "A beautiful addition to my evening routine. The product feels indulgent without being over the top.",
-    product: "Palm Sugar Scrub",
-    productSlug: "palm-sugar-scrub",
-    productImage: "/silknknot/sugar_scrap1.jpg",
-  },
-];
 
 // Overall store rating shown in the header. Edit these two to match your real numbers.
 const OVERALL_RATING = "4.9";
@@ -237,6 +187,27 @@ function TestimonialCard({
 /* -------------------------------------------------------------------------- */
 
 export default function Testimonials() {
+  const store = useStore();
+  const media = useSiteMedia();
+  const testimonials = useMemo<Testimonial[]>(() => {
+    const catalog = store.products.length ? store.products : seedProducts;
+    return media.reviews.map((review) => {
+      const product =
+        catalog.find((item) => item.id === review.productId) ||
+        catalog.find((item) => item.slug === review.productId) ||
+        null;
+      return {
+        id: review.id,
+        name: review.name,
+        city: review.city,
+        rating: review.rating,
+        text: review.text,
+        product: product?.name || review.productName,
+        productSlug: product?.slug || review.productId,
+        productImage: product?.images[0] || review.image,
+      };
+    });
+  }, [media.reviews, store.products]);
   const total = testimonials.length;
   const isDesktop = useIsDesktop();
   const reduceMotion = useReducedMotion();

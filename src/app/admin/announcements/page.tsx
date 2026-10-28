@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AdminPageHeader } from "@/components/admin/Studio";
 import { csrfHeaders } from "@/lib/auth/browser";
 import {
   ANNOUNCEMENT_ICONS,
@@ -70,12 +71,10 @@ export default function AnnouncementsPage() {
 
   return (
     <form onSubmit={save} className="max-w-2xl space-y-5">
-      <div>
-        <h1 className="font-serif text-5xl">Announcements</h1>
-        <p className="mt-2 text-sm text-mute">
-          Messages that rotate in the black bar at the top of the store. Keep each line short.
-        </p>
-      </div>
+      <AdminPageHeader
+        title="Top banner"
+        purpose="Short messages that rotate in the black bar at the top of the store (shipping notes, sale lines). Keep each line brief."
+      />
 
       <label className="flex items-center gap-2 text-sm">
         <input

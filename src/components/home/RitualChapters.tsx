@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { ritualChapters, seedProducts } from "@/lib/data";
+import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import { Media, Reveal } from "@/components/ui";
 
@@ -46,42 +47,43 @@ export function RitualChapters() {
   );
 }
 
-const collections = [
-  {
-    number: "01",
-    title: "Body Care",
-    description: "Nourish your skin with nature's finest ingredients.",
-    image: "/silknknot/collection-body-care.jpg",
-    href: "/shop?category=body-care",
-    className: "md:col-span-7 md:row-span-2",
-  },
-  {
-    number: "02",
-    title: "Bath & Soap",
-    description: "Gentle care for body and mind.",
-    image: "/silknknot/collection-bath-soap.jpg",
-    href: "/shop?category=bath-soap",
-    className: "md:col-span-5",
-  },
-  {
-    number: "03",
-    title: "Aromatherapy",
-    description: "Find your calm, naturally.",
-    image: "/silknknot/bestseller-candle.jpg",
-    href: "/shop?category=aromatherapy",
-    className: "md:col-span-5",
-  },
-  {
-    number: "04",
-    title: "Lifestyle",
-    description: "Beautiful moments, made more special.",
-    image: "/silknknot/collection-lifestyle.jpg",
-    href: "/shop?category=lifestyle",
-    className: "md:col-span-12",
-  },
-];
-
 export function CategorySection() {
+  const media = useSiteMedia();
+  const collections = [
+    {
+      number: "01",
+      title: "Body Care",
+      description: "Nourish your skin with nature's finest ingredients.",
+      image: media.collectionBodyCare,
+      href: "/shop?category=body-care",
+      className: "md:col-span-7 md:row-span-2",
+    },
+    {
+      number: "02",
+      title: "Bath & Soap",
+      description: "Gentle care for body and mind.",
+      image: media.collectionBathSoap,
+      href: "/shop?category=bath-soap",
+      className: "md:col-span-5",
+    },
+    {
+      number: "03",
+      title: "Aromatherapy",
+      description: "Find your calm, naturally.",
+      image: media.bestsellerCandle,
+      href: "/shop?category=aromatherapy",
+      className: "md:col-span-5",
+    },
+    {
+      number: "04",
+      title: "Lifestyle",
+      description: "Beautiful moments, made more special.",
+      image: media.collectionLifestyle,
+      href: "/shop?category=lifestyle",
+      className: "md:col-span-12",
+    },
+  ];
+
   return (
     <section className="bg-[#f7f4ef] px-4 py-14 sm:px-6 sm:py-16 lg:px-10 lg:py-20">
       <div className="mx-auto max-w-[1440px]">
