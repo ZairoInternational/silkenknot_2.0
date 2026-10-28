@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Loader2, Search, X } from "lucide-react";
 import { Media, useDialog, WishlistButton } from "@/components/ui";
+import { trackSearch } from "@/lib/analytics";
 import { useStore } from "@/lib/store";
 import { formatPrice } from "@/lib/format";
 import { searchProducts, SearchAbortError } from "@/lib/search/client";
@@ -65,6 +66,8 @@ export function SearchOverlay() {
 
       setLoading(true);
       setSearchError(false);
+      // One analytics event per settled query (debounced), not per keystroke.
+      trackSearch(term);
 
       searchProducts({ q: term, limit: MAX_SUGGESTIONS }, controller.signal)
         .then((data) => {

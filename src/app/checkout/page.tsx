@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Leaf, LockKeyhole, Mail, Phone, Truck, User } from "lucide-react";
 import CheckoutShell from "@/components/checkout/CheckoutShell";
 import OrderSummary from "@/components/checkout/OrderSummary";
+import { trackBeginCheckout } from "@/lib/analytics";
 import { CONTACT_STORAGE_KEY, noteCheckoutOwner, retainCheckoutDraft, type CheckoutContact } from "@/lib/checkout";
 import { useStore } from "@/lib/store";
 
@@ -48,6 +49,11 @@ export default function CheckoutContactPage() {
     setEmail(user.email || "");
     setPhone(localPhone(user.phone || ""));
   }, [store.ready, user]);
+
+  useEffect(() => {
+    if (!store.ready || !store.cart.length) return;
+    trackBeginCheckout({ cart: store.cart, categories: store.categories });
+  }, [store.ready, store.cart, store.categories]);
 
   function submit(event: React.FormEvent) {
     event.preventDefault();

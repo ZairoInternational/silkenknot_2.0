@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test src/lib/payments/payment.test.ts src/lib/shipping/shipping.test.ts src/lib/search/search.test.ts src/lib/media/media.test.ts src/lib/support/faq-catalog.test.ts"
+    "test": "tsx --test src/lib/payments/payment.test.ts src/lib/shipping/shipping.test.ts src/lib/search/search.test.ts src/lib/media/media.test.ts src/lib/support/faq-catalog.test.ts src/lib/analytics/analytics.test.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

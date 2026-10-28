@@ -5,12 +5,39 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarDays, Check, Truck } from "lucide-react";
 import { PendingCover } from "@/components/PendingCover";
+import { itemFromCartLine, trackPurchase } from "@/lib/analytics";
 import { csrfHeaders } from "@/lib/auth/browser";
 import { ORDER_STORAGE_KEY, type CheckoutDraft } from "@/lib/checkout";
 import { formatPrice } from "@/lib/format";
 import { deliveryBy } from "@/lib/shipping/estimate";
 import { useStore } from "@/lib/store";
 import type { Order } from "@/lib/types";
+
+/**
+ * Purchase fires only after checkout has already confirmed the order server-side
+ * (prepaid verify / COD place) and this page loads that order.
+ * Deduped by order id in localStorage across refresh/revisit.
+ */
+function reportPurchase(order: CheckoutDraft) {
+  trackPurchase({
+    transactionId: order.id,
+    value: order.total,
+    shipping: order.shipping,
+    items: order.items.map((item) =>
+      itemFromCartLine({
+        id: `${item.productId}:${item.variant}`,
+        productId: item.productId,
+        slug: "",
+        name: item.name,
+        image: item.image,
+        categoryId: "",
+        variantLabel: item.variant,
+        price: item.price,
+        quantity: item.quantity,
+      }),
+    ),
+  });
+}
 
 function draftFrom(order: Order, userId: string): CheckoutDraft {
   return {
@@ -86,9 +113,13 @@ export default function ThankYouPage() {
         const next = draftFrom(loaded, userId);
         sessionStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(next));
         setOrder(next);
+        reportPurchase(next);
       })
       .catch(() => {
-        if (!cancelled) setOrder(owned);
+        if (cancelled) return;
+        setOrder(owned);
+        // Session draft is written only after server confirmation in checkout/review.
+        reportPurchase(owned);
       });
     return () => {
       cancelled = true;

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Check, Heart, Leaf, ShoppingBag, SquarePen, Truck } from "lucide-react";
 import { Media, WishlistButton } from "@/components/ui";
 import { DeliveryChoice } from "@/components/product/DeliveryChoice";
+import { trackViewItem } from "@/lib/analytics";
 import { seedProducts } from "@/lib/data";
 import { FREE_SHIPPING_AT, formatPrice } from "@/lib/format";
 import { useStore } from "@/lib/store";
@@ -98,6 +99,18 @@ function ProductLayout({
   const [offerId, setOfferId] = useState<string | null>(null);
   const variant = product.variants.find((item) => item.label === variantLabel) ?? product.variants[0];
   const price = variant?.price ?? product.price;
+
+  useEffect(() => {
+    if (!store.ready) return;
+    // Once per product view — not on every variant toggle / re-render.
+    trackViewItem({
+      product,
+      price: variant?.price ?? product.price,
+      variantLabel: variant?.label,
+      categoryName,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- product.id is the view identity
+  }, [store.ready, product.id]);
   const offers = store.coupons.filter(
     (coupon) =>
       coupon.active &&

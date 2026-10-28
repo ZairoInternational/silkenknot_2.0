@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { categoryNameFor, trackAddToCart, trackAddToWishlist } from "@/lib/analytics";
 import { csrfHeaders } from "@/lib/auth/browser";
 import { retainCheckoutDraft } from "@/lib/checkout";
 import { seedCategories, seedCoupons, seedProducts } from "@/lib/data";
@@ -349,6 +350,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         ? current.cart.map((item) => (item.id === lineId ? line : item))
         : [...current.cart, line],
     });
+    trackAddToCart({
+      line,
+      quantityAdded: quantity,
+      categoryName: categoryNameFor(product.categoryId, current.categories),
+    });
     return { ok: true, message: "Added to bag" };
   }, [patch]);
 
@@ -385,6 +391,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         ? current.wishlist.filter((id) => id !== productId)
         : [...current.wishlist, productId],
     });
+    if (!exists) {
+      const product = current.products.find((item) => item.id === productId);
+      if (product) {
+        trackAddToWishlist({
+          product,
+          price: product.price,
+          categoryName: categoryNameFor(product.categoryId, current.categories),
+        });
+      }
+    }
     return { ok: true, message: exists ? "Removed from wishlist" : "Saved to wishlist" };
   }, [patch]);
 
@@ -392,12 +408,25 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const current = dbRef.current;
     const line = current.cart.find((item) => item.id === lineId);
     if (!line) return;
+    const already = current.wishlist.includes(line.productId);
     patch({
       cart: current.cart.filter((item) => item.id !== lineId),
-      wishlist: current.wishlist.includes(line.productId)
+      wishlist: already
         ? current.wishlist
         : [...current.wishlist, line.productId],
     });
+    if (!already) {
+      trackAddToWishlist({
+        product: {
+          id: line.productId,
+          name: line.name,
+          categoryId: line.categoryId,
+          price: line.price,
+        },
+        price: line.price,
+        categoryName: categoryNameFor(line.categoryId, current.categories),
+      });
+    }
     notify("Saved to wishlist");
   }, [notify, patch]);
 
