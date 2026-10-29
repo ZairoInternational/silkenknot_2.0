@@ -114,14 +114,15 @@ test("getSiteOrigin falls back to SITE_URL then Vercel then localhost", () => {
 });
 
 test("isIndexableDeployment blocks Vercel preview and local development", () => {
+  const env = process.env as { NODE_ENV?: string };
   process.env.VERCEL_ENV = "preview";
   assert.equal(isIndexableDeployment(), false);
   process.env.VERCEL_ENV = "production";
   assert.equal(isIndexableDeployment(), true);
   delete process.env.VERCEL_ENV;
-  process.env.NODE_ENV = "development";
+  env.NODE_ENV = "development";
   assert.equal(isIndexableDeployment(), false);
-  process.env.NODE_ENV = "test";
+  env.NODE_ENV = "test";
   assert.equal(isIndexableDeployment(), true);
 });
 
