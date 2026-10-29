@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { formatDate, formatPrice, slugify } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import type { Category, Coupon, Order, OrderStatus, Product, Variant } from "@/lib/types";
-import type { HeroEvergreenSlide, HeroOffer } from "@/lib/hero/content";
+import type { HeroContent, HeroEvergreenSlide, HeroOffer } from "@/lib/hero/content";
 import { DEFAULT_HERO_CONTENT, DEFAULT_HERO_OFFER } from "@/lib/hero/content";
 import type { BrandSettings } from "@/lib/brand/content";
 import { DEFAULT_BRAND } from "@/lib/brand/content";
@@ -17,84 +17,29 @@ import { primeSiteMediaCache } from "@/lib/site-media/client";
 function linesToList(value: string) {
   return value.split("\n").map((item) => item.trimEnd());
 }
-import { Mark, Media } from "@/components/ui";
+import { Media } from "@/components/ui";
 import { csrfHeaders } from "@/lib/auth/browser";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
+import {
+  AdminEditorSkeleton,
+  AdminFormSkeleton,
+  AdminPageHeaderSkeleton,
+} from "@/components/admin/AdminSkeletons";
+import { HeroDraftPreview } from "@/components/admin/HeroDraftPreview";
+import {
+  BrandDraftPreview,
+  CategoryDraftPreview,
+  ProductDraftPreview,
+  SiteMediaDraftPreview,
+} from "@/components/admin/StorefrontPreviews";
 
-type NavItem = { label: string; href: string; hint: string };
-type NavGroup = { title: string; items: NavItem[] };
+export { AdminPageHeader, AdminShell } from "@/components/admin/AdminShell";
 
-const navGroups: NavGroup[] = [
-  {
-    title: "Daily work",
-    items: [
-      { label: "Overview", href: "/admin", hint: "Numbers and common tasks" },
-      { label: "Orders", href: "/admin/orders", hint: "Pack, ship, and track" },
-      { label: "Products", href: "/admin/products", hint: "Catalog, prices, stock, photos" },
-      { label: "Customers", href: "/admin/customers", hint: "Accounts and order history" },
-    ],
-  },
-  {
-    title: "Catalog",
-    items: [
-      { label: "Categories", href: "/admin/categories", hint: "Shop groups and search thumbs" },
-      { label: "Discount codes", href: "/admin/offers", hint: "Coupon codes at checkout" },
-    ],
-  },
-  {
-    title: "Website",
-    items: [
-      { label: "Homepage hero", href: "/admin/hero", hint: "Sale slide and product slides" },
-      { label: "Website photos", href: "/admin/site-media", hint: "Banners, strip, login, checkout" },
-      { label: "Logo", href: "/admin/brand", hint: "Mark in header and checkout" },
-      { label: "Top banner", href: "/admin/announcements", hint: "Rotating bar at the top" },
-    ],
-  },
-  {
-    title: "Settings",
-    items: [
-      { label: "Account", href: "/admin/account", hint: "Studio password" },
-      { label: "Shipping", href: "/admin/shipping", hint: "Rates, Delhivery, COD" },
-      { label: "Payment fees", href: "/admin/fees", hint: "Checkout platform fee" },
-    ],
-  },
-];
-
-function navItemActive(pathname: string, href: string) {
-  if (href === "/admin") return pathname === "/admin";
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-export function AdminPageHeader({
-  title,
-  purpose,
-  action,
-}: {
-  title: string;
-  purpose: string;
-  action?: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-wrap items-end justify-between gap-4">
-      <div className="max-w-2xl">
-        <h1 className="font-serif text-4xl md:text-5xl">{title}</h1>
-        <p className="mt-3 text-sm leading-6 text-mute">{purpose}</p>
-      </div>
-      {action ? <div className="shrink-0">{action}</div> : null}
-    </div>
-  );
-}
-
-function AdminNavLink({ item, pathname }: { item: NavItem; pathname: string }) {
-  const active = navItemActive(pathname, item.href);
-  return (
-    <Link
-      href={item.href}
-      className={`block rounded-lg px-2 py-2 ${active ? "bg-cream text-ink" : "text-mute hover:text-ink"}`}
-    >
-      <span className={`block text-sm ${active ? "font-medium" : ""}`}>{item.label}</span>
-      <span className="mt-0.5 block text-[11px] leading-snug text-mute">{item.hint}</span>
-    </Link>
-  );
+function parseChipList(value: string) {
+  return value
+    .split(",")
+    .map((chip) => chip.trim())
+    .filter(Boolean);
 }
 
 async function uploadAdminImage(file: File, fields: Record<string, string>) {
@@ -105,80 +50,6 @@ async function uploadAdminImage(file: File, fields: Record<string, string>) {
   const payload = (await response.json()) as { url?: string; message?: string };
   if (!response.ok || !payload.url) throw new Error(payload.message || "Could not upload that image.");
   return payload.url;
-}
-
-export function AdminShell({ children }: { children: React.ReactNode }) {
-  const store = useStore();
-  const pathname = usePathname();
-  const router = useRouter();
-  const login = pathname === "/admin/login";
-
-  useEffect(() => {
-    if (!store.ready) return;
-    if (!store.adminAuthed && !login) router.replace("/admin/login");
-    if (store.adminAuthed && login) router.replace("/admin");
-  }, [store.ready, store.adminAuthed, login, router]);
-
-  if (!store.ready) return <p className="p-10 text-mute">Opening admin…</p>;
-  if (login) return <div className="min-h-screen bg-cream">{children}</div>;
-  if (!store.adminAuthed) return null;
-
-  return (
-    <div className="min-h-screen bg-cream text-ink">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 overflow-y-auto border-r border-line bg-paper p-5 md:block">
-        <Link href="/admin" className="inline-flex items-center gap-2 font-serif text-2xl">
-          <Mark className="h-5 w-8" />
-          Silken Knot
-        </Link>
-        <p className="mt-1 text-[11px] uppercase tracking-[0.16em] text-mute">Admin</p>
-
-        <nav className="mt-8 space-y-6" aria-label="Admin">
-          {navGroups.map((group) => (
-            <div key={group.title}>
-              <p className="px-2 text-[10px] font-medium uppercase tracking-[0.16em] text-mute">{group.title}</p>
-              <div className="mt-2 space-y-0.5">
-                {group.items.map((item) => (
-                  <AdminNavLink key={item.href} item={item} pathname={pathname} />
-                ))}
-              </div>
-            </div>
-          ))}
-        </nav>
-      </aside>
-      <div className="md:pl-64">
-        <header className="border-b border-line px-4 md:px-8">
-          <div className="flex h-14 items-center justify-between gap-4">
-            <p className="hidden text-sm text-mute md:block">Manage the Silken Knot store</p>
-            <div className="ml-auto flex items-center gap-4 text-[11px] uppercase tracking-[0.16em]">
-              <Link href="/">View store</Link>
-              <button type="button" onClick={() => void store.logoutAdmin()}>
-                Log out
-              </button>
-            </div>
-          </div>
-          <nav className="flex gap-6 overflow-x-auto pb-3 md:hidden" aria-label="Admin mobile">
-            {navGroups.map((group) => (
-              <div key={group.title} className="shrink-0">
-                <p className="text-[10px] uppercase tracking-[0.14em] text-mute">{group.title}</p>
-                <div className="mt-1 flex gap-3 text-sm">
-                  {group.items.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={navItemActive(pathname, item.href) ? "font-medium text-ink" : "text-mute"}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </nav>
-        </header>
-        <div className="px-4 py-8 md:px-8">{children}</div>
-      </div>
-    </div>
-  );
 }
 
 type LoginStep = "credentials" | "channel" | "code" | "forgot" | "forgot-code";
@@ -645,8 +516,8 @@ export function ProductIndex() {
 export function ProductEditor({ id }: { id?: string }) {
   const store = useStore();
   const existing = id ? store.productById(id) : undefined;
-  if (id && store.ready && !existing) return <p>Product not found.</p>;
-  if (!store.ready) return <p>Loading…</p>;
+  if (!store.ready) return <AdminEditorSkeleton />;
+  if (id && !existing) return <p>Product not found.</p>;
   return <ProductForm initial={existing} />;
 }
 
@@ -742,7 +613,7 @@ function ProductForm({ initial }: { initial?: Product }) {
 
   return (
     <form
-      className="mx-auto max-w-3xl space-y-10"
+      className="space-y-10"
       onSubmit={async (event) => {
         event.preventDefault();
         const nextImages = product.images;
@@ -776,9 +647,11 @@ function ProductForm({ initial }: { initial?: Product }) {
     >
       <AdminPageHeader
         title={initial ? "Edit product" : "New product"}
-        purpose="Fill in the details customers see on the product page. Upload photos here — these are the product gallery, not the homepage marketing images."
+        purpose="Fill in the details customers see on the product page. Upload photos here — these are the product gallery, not the homepage marketing images. The live preview shows the shop-card look before you save."
       />
-      <section className="mt-8 space-y-5 bg-paper p-6">
+      <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)] xl:items-start">
+      <div className="mx-auto w-full max-w-3xl space-y-10 xl:mx-0">
+      <section className="mt-8 space-y-5 bg-paper p-6 xl:mt-0">
         <p className="eyebrow text-mute">Product information</p>
         <AdminField label="Product name" value={product.name} onChange={(value) => set("name", value)} />
         <label className="block text-sm">
@@ -960,6 +833,11 @@ function ProductForm({ initial }: { initial?: Product }) {
           </button>
         ) : null}
       </div>
+      </div>
+      <div className="order-first xl:order-none xl:sticky xl:top-4">
+        <ProductDraftPreview product={product} />
+      </div>
+      </div>
     </form>
   );
 }
@@ -1022,12 +900,12 @@ export function CategoryManager() {
   };
 
   return (
-    <div>
+    <div className="space-y-8">
       <AdminPageHeader
         title="Categories"
-        purpose="Shop groups like Body Care or Candles. Images here are used in search and as a fallback in the header menu. Homepage collection tiles and the circular category strip are under Website photos."
+        purpose="Shop groups like Body Care or Candles. Images here are used in search and as a fallback in the header menu. Homepage collection tiles and the circular category strip are under Website photos. Check the live preview before you save."
       />
-      <ul className="mt-8 space-y-4">
+      <ul className="space-y-4">
         {store.categories.map((category, index) => (
           <li key={category.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-line py-4">
             <div className="flex items-center gap-4">
@@ -1050,39 +928,39 @@ export function CategoryManager() {
           </li>
         ))}
       </ul>
-      <form
-        className="mt-8 max-w-xl space-y-4"
-        onSubmit={async (event) => {
-          event.preventDefault();
-          const isNew = !store.categories.some((category) => category.id === draft.id);
-          const result = await store.saveCategory({ ...draft, id: slugify(draft.id || draft.name), order: draft.order ?? store.categories.length }, isNew);
-          setError(result.message || "");
-          if (result.ok) setDraft({ id: "", name: "", description: "", image: "", imageAlt: "", order: store.categories.length + 1 });
-        }}
-      >
-        <AdminField label="Name" value={draft.name} onChange={(name) => setDraft({ ...draft, name })} />
-        <AdminField label="Slug" value={draft.id} onChange={(id) => setDraft({ ...draft, id })} />
-        <AdminField label="Description" value={draft.description} onChange={(description) => setDraft({ ...draft, description })} />
-        <AdminField label="Image URL" value={draft.image} onChange={(image) => setDraft({ ...draft, image })} />
-        <label className="block text-sm">
-          Upload primary image
-          <input type="file" accept="image/jpeg,image/png,image/webp" disabled={Boolean(uploading)} className="mt-2 block w-full text-sm" onChange={(event) => void onUpload(event.target.files, "image")} />
-          <span className="mt-1 block text-xs text-mute">{uploading === "image" ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
-        </label>
-        {draft.image ? (
-          <div className="relative h-28 w-full max-w-xs overflow-hidden rounded-lg border border-line bg-paper">
-            <Media src={draft.image} alt="" className="object-cover" sizes="320px" />
-          </div>
-        ) : null}
-        <AdminField label="Second image URL" value={draft.imageAlt} onChange={(imageAlt) => setDraft({ ...draft, imageAlt })} />
-        <label className="block text-sm">
-          Upload second image
-          <input type="file" accept="image/jpeg,image/png,image/webp" disabled={Boolean(uploading)} className="mt-2 block w-full text-sm" onChange={(event) => void onUpload(event.target.files, "imageAlt")} />
-          <span className="mt-1 block text-xs text-mute">{uploading === "imageAlt" ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
-        </label>
-        {error ? <p role="status" className="text-sm">{error}</p> : null}
-        <button type="submit" className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper">Save category</button>
-      </form>
+      <div className="grid gap-10 xl:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] xl:items-start">
+        <form
+          className="space-y-4"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            const isNew = !store.categories.some((category) => category.id === draft.id);
+            const result = await store.saveCategory({ ...draft, id: slugify(draft.id || draft.name), order: draft.order ?? store.categories.length }, isNew);
+            setError(result.message || "");
+            if (result.ok) setDraft({ id: "", name: "", description: "", image: "", imageAlt: "", order: store.categories.length + 1 });
+          }}
+        >
+          <AdminField label="Name" value={draft.name} onChange={(name) => setDraft({ ...draft, name })} />
+          <AdminField label="Slug" value={draft.id} onChange={(id) => setDraft({ ...draft, id })} />
+          <AdminField label="Description" value={draft.description} onChange={(description) => setDraft({ ...draft, description })} />
+          <AdminField label="Image URL" value={draft.image} onChange={(image) => setDraft({ ...draft, image })} />
+          <label className="block text-sm">
+            Upload primary image
+            <input type="file" accept="image/jpeg,image/png,image/webp" disabled={Boolean(uploading)} className="mt-2 block w-full text-sm" onChange={(event) => void onUpload(event.target.files, "image")} />
+            <span className="mt-1 block text-xs text-mute">{uploading === "image" ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
+          </label>
+          <AdminField label="Second image URL" value={draft.imageAlt} onChange={(imageAlt) => setDraft({ ...draft, imageAlt })} />
+          <label className="block text-sm">
+            Upload second image
+            <input type="file" accept="image/jpeg,image/png,image/webp" disabled={Boolean(uploading)} className="mt-2 block w-full text-sm" onChange={(event) => void onUpload(event.target.files, "imageAlt")} />
+            <span className="mt-1 block text-xs text-mute">{uploading === "imageAlt" ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
+          </label>
+          {error ? <p role="status" className="text-sm">{error}</p> : null}
+          <button type="submit" className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper">Save category</button>
+        </form>
+        <div className="order-first xl:order-none xl:sticky xl:top-4">
+          <CategoryDraftPreview category={draft} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -1145,6 +1023,14 @@ export function OrderIndex() {
 export function OrderDetail({ id }: { id: string }) {
   const store = useStore();
   const order = store.orders.find((item) => item.id === id);
+  if (!store.ready) {
+    return (
+      <div>
+        <AdminPageHeaderSkeleton />
+        <AdminFormSkeleton fields={4} />
+      </div>
+    );
+  }
   if (!order) return <p>Order not found.</p>;
   return (
     <div className="max-w-3xl">
@@ -1206,6 +1092,14 @@ export function CustomerIndex() {
 export function CustomerDetail({ id }: { id: string }) {
   const store = useStore();
   const customer = store.users.find((user) => user.id === id);
+  if (!store.ready) {
+    return (
+      <div>
+        <AdminPageHeaderSkeleton />
+        <AdminFormSkeleton fields={3} />
+      </div>
+    );
+  }
   if (!customer) return <p>Customer not found.</p>;
   const orders = store.orders.filter((order) => order.userId === customer.id || order.email === customer.email);
   return (
@@ -1291,179 +1185,179 @@ export function HeroManager() {
     }
   };
 
-  if (loading) return <p className="text-mute">Loading hero…</p>;
+  const previewContent = useMemo<HeroContent>(
+    () => ({
+      offer: { ...draft, chips: parseChipList(chipsText) },
+      evergreen: evergreen.map((slide, index) => ({
+        ...slide,
+        chips: parseChipList(evergreenChips[index] || ""),
+      })),
+    }),
+    [draft, chipsText, evergreen, evergreenChips],
+  );
+
+  if (loading) return <AdminEditorSkeleton />;
 
   return (
-    <div className="max-w-2xl">
+    <div className="space-y-8">
       <AdminPageHeader
         title="Homepage hero"
-        purpose="These are the first slides on the homepage. The campaign slide is for a sale or festival (you can turn it off). The product slides stay on all the time. Upload photos here — no redeploy needed."
+        purpose="These are the first slides on the homepage. The campaign slide is for a sale or festival (you can turn it off). The product slides stay on all the time. Upload photos here — no redeploy needed. Use the live preview to check the look before you save."
       />
 
-      <form
-        className="mt-8 space-y-10"
-        onSubmit={async (event) => {
-          event.preventDefault();
-          setSaving(true);
-          setError("");
-          setMessage("");
-          const chips = chipsText
-            .split(",")
-            .map((chip) => chip.trim())
-            .filter(Boolean);
-          const offer: HeroOffer = { ...draft, chips };
-          const slides = evergreen.map((slide, index) => ({
-            ...slide,
-            chips: evergreenChips[index]
-              .split(",")
-              .map((chip) => chip.trim())
-              .filter(Boolean),
-          }));
-          try {
-            const response = await fetch("/api/admin/hero", {
-              method: "PUT",
-              headers: { "Content-Type": "application/json", ...csrfHeaders() },
-              body: JSON.stringify({ content: { offer, evergreen: slides } }),
-            });
-            const data = (await response.json()) as {
-              ok?: boolean;
-              offer?: HeroOffer;
-              evergreen?: HeroEvergreenSlide[];
-              message?: string;
-              error?: string;
-            };
-            if (!response.ok || !data.offer) throw new Error(data.error || "Could not save.");
-            setDraft(data.offer);
-            setChipsText(data.offer.chips.join(", "));
-            const nextSlides = data.evergreen?.length ? data.evergreen : slides;
-            setEvergreen(nextSlides);
-            setEvergreenChips(nextSlides.map((slide) => slide.chips.join(", ")));
-            setMessage(data.message || "Saved.");
-          } catch (failure) {
-            setError(failure instanceof Error ? failure.message : "Could not save.");
-          } finally {
-            setSaving(false);
-          }
-        }}
-      >
-        <section className="space-y-4 border-b border-line pb-10">
-          <div>
-            <h2 className="font-serif text-3xl">Campaign slide</h2>
-            <p className="mt-2 text-sm text-mute">Optional sale or festival slide. Turn it off to hide it without deleting the copy.</p>
-          </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={draft.enabled} onChange={(event) => patch({ enabled: event.target.checked })} />
-            Show campaign slide on the homepage
-          </label>
-
-          <AdminField label="Pill label" value={draft.pill} onChange={(pill) => patch({ pill })} />
-          <AdminField label="Title line 1" value={draft.titleLine1} onChange={(titleLine1) => patch({ titleLine1 })} />
-          <AdminField label="Title line 2 (accent)" value={draft.titleLine2} onChange={(titleLine2) => patch({ titleLine2 })} />
-          <label className="block text-sm">
-            Supporting note
-            <textarea
-              value={draft.note}
-              onChange={(event) => patch({ note: event.target.value })}
-              rows={3}
-              className="mt-2 w-full border-b border-line bg-transparent outline-none"
-            />
-          </label>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <AdminField label="Primary CTA" value={draft.cta} onChange={(cta) => patch({ cta })} />
-            <AdminField label="Primary link" value={draft.href} onChange={(href) => patch({ href })} />
-            <AdminField label="Secondary CTA" value={draft.secondaryCta} onChange={(secondaryCta) => patch({ secondaryCta })} />
-            <AdminField label="Secondary link" value={draft.secondaryHref} onChange={(secondaryHref) => patch({ secondaryHref })} />
-          </div>
-
-          <AdminField label="Coupon code" value={draft.couponCode} onChange={(couponCode) => patch({ couponCode })} />
-          <AdminField label="Seal label (rotating ring)" value={draft.sealLabel} onChange={(sealLabel) => patch({ sealLabel })} />
-          <AdminField label="Seal percent" value={draft.sealPercent} onChange={(sealPercent) => patch({ sealPercent })} />
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <AdminField label="Card tag" value={draft.cardTag} onChange={(cardTag) => patch({ cardTag })} />
-            <AdminField label="Card name" value={draft.cardName} onChange={(cardName) => patch({ cardName })} />
-          </div>
-          <AdminField label="Chips (comma-separated)" value={chipsText} onChange={setChipsText} />
-
-          <AdminField label="Image URL" value={draft.image} onChange={(image) => patch({ image })} />
-          <AdminField label="Image alt text" value={draft.alt} onChange={(alt) => patch({ alt })} />
-          <label className="block text-sm">
-            Upload campaign image
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              disabled={Boolean(uploading)}
-              className="mt-2 block w-full text-sm"
-              onChange={(event) => void onUpload(event.target.files, "offer")}
-            />
-            <span className="mt-1 block text-xs text-mute">{uploading === "offer" ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
-          </label>
-
-          {draft.image ? (
-            <div className="relative h-40 w-full max-w-sm overflow-hidden rounded-lg border border-line bg-paper">
-              <Media src={draft.image} alt={draft.alt || "Hero preview"} className="object-cover" sizes="100vw" />
+      <div className="grid gap-10 xl:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] xl:items-start">
+        <form
+          className="space-y-10"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setSaving(true);
+            setError("");
+            setMessage("");
+            const chips = parseChipList(chipsText);
+            const offer: HeroOffer = { ...draft, chips };
+            const slides = evergreen.map((slide, index) => ({
+              ...slide,
+              chips: parseChipList(evergreenChips[index] || ""),
+            }));
+            try {
+              const response = await fetch("/api/admin/hero", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", ...csrfHeaders() },
+                body: JSON.stringify({ content: { offer, evergreen: slides } }),
+              });
+              const data = (await response.json()) as {
+                ok?: boolean;
+                offer?: HeroOffer;
+                evergreen?: HeroEvergreenSlide[];
+                message?: string;
+                error?: string;
+              };
+              if (!response.ok || !data.offer) throw new Error(data.error || "Could not save.");
+              setDraft(data.offer);
+              setChipsText(data.offer.chips.join(", "));
+              const nextSlides = data.evergreen?.length ? data.evergreen : slides;
+              setEvergreen(nextSlides);
+              setEvergreenChips(nextSlides.map((slide) => slide.chips.join(", ")));
+              setMessage(data.message || "Saved.");
+            } catch (failure) {
+              setError(failure instanceof Error ? failure.message : "Could not save.");
+            } finally {
+              setSaving(false);
+            }
+          }}
+        >
+          <section className="space-y-4 border-b border-line pb-10">
+            <div>
+              <h2 className="font-serif text-3xl">Campaign slide</h2>
+              <p className="mt-2 text-sm text-mute">Optional sale or festival slide. Turn it off to hide it without deleting the copy.</p>
             </div>
-          ) : null}
-        </section>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={draft.enabled} onChange={(event) => patch({ enabled: event.target.checked })} />
+              Show campaign slide on the homepage
+            </label>
 
-        <section className="space-y-8">
-          <div>
-            <h2 className="font-serif text-3xl">Product slides</h2>
-            <p className="mt-2 text-sm text-mute">Always-on slides (body butter, scrub, salts). They rotate with the campaign slide when that slide is enabled.</p>
-          </div>
-          {evergreen.map((slide, index) => (
-            <div key={slide.id} className="space-y-4 rounded-2xl border border-line p-5">
-              <p className="text-[11px] uppercase tracking-[0.16em] text-mute">Slide {index + 1} · {slide.label}</p>
-              <AdminField label="Pill" value={slide.pill} onChange={(pill) => patchSlide(index, { pill })} />
-              <AdminField label="Title line 1" value={slide.titleLine1} onChange={(titleLine1) => patchSlide(index, { titleLine1 })} />
-              <AdminField label="Title line 2" value={slide.titleLine2} onChange={(titleLine2) => patchSlide(index, { titleLine2 })} />
-              <label className="block text-sm">
-                Note
-                <textarea
-                  value={slide.note}
-                  onChange={(event) => patchSlide(index, { note: event.target.value })}
-                  rows={2}
-                  className="mt-2 w-full border-b border-line bg-transparent outline-none"
-                />
-              </label>
-              <div className="grid gap-4 md:grid-cols-2">
-                <AdminField label="Primary CTA" value={slide.cta} onChange={(cta) => patchSlide(index, { cta })} />
-                <AdminField label="Primary link" value={slide.href} onChange={(href) => patchSlide(index, { href })} />
-              </div>
-              <AdminField
-                label="Chips (comma-separated)"
-                value={evergreenChips[index] || ""}
-                onChange={(value) => setEvergreenChips((current) => current.map((item, itemIndex) => (itemIndex === index ? value : item)))}
+            <AdminField label="Pill label" value={draft.pill} onChange={(pill) => patch({ pill })} />
+            <AdminField label="Title line 1" value={draft.titleLine1} onChange={(titleLine1) => patch({ titleLine1 })} />
+            <AdminField label="Title line 2 (accent)" value={draft.titleLine2} onChange={(titleLine2) => patch({ titleLine2 })} />
+            <label className="block text-sm">
+              Supporting note
+              <textarea
+                value={draft.note}
+                onChange={(event) => patch({ note: event.target.value })}
+                rows={3}
+                className="mt-2 w-full border-b border-line bg-transparent outline-none"
               />
-              <AdminField label="Image URL" value={slide.image} onChange={(image) => patchSlide(index, { image })} />
-              <AdminField label="Image alt" value={slide.alt} onChange={(alt) => patchSlide(index, { alt })} />
-              <label className="block text-sm">
-                Upload slide image
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  disabled={Boolean(uploading)}
-                  className="mt-2 block w-full text-sm"
-                  onChange={(event) => void onUpload(event.target.files, index)}
-                />
-                <span className="mt-1 block text-xs text-mute">{uploading === `slide-${index}` ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
-              </label>
-              {slide.image ? (
-                <div className="relative h-36 w-full max-w-sm overflow-hidden rounded-lg border border-line bg-paper">
-                  <Media src={slide.image} alt={slide.alt || slide.label} className="object-cover" sizes="100vw" />
-                </div>
-              ) : null}
-            </div>
-          ))}
-        </section>
+            </label>
 
-        {error ? <p role="status" className="text-sm text-red-700">{error}</p> : null}
-        {message ? <p role="status" className="text-sm text-mute">{message}</p> : null}
-        <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
-          {saving ? "Saving…" : "Save hero"}
-        </button>
-      </form>
+            <div className="grid gap-4 md:grid-cols-2">
+              <AdminField label="Primary CTA" value={draft.cta} onChange={(cta) => patch({ cta })} />
+              <AdminField label="Primary link" value={draft.href} onChange={(href) => patch({ href })} />
+              <AdminField label="Secondary CTA" value={draft.secondaryCta} onChange={(secondaryCta) => patch({ secondaryCta })} />
+              <AdminField label="Secondary link" value={draft.secondaryHref} onChange={(secondaryHref) => patch({ secondaryHref })} />
+            </div>
+
+            <AdminField label="Coupon code" value={draft.couponCode} onChange={(couponCode) => patch({ couponCode })} />
+            <AdminField label="Seal label (rotating ring)" value={draft.sealLabel} onChange={(sealLabel) => patch({ sealLabel })} />
+            <AdminField label="Seal percent" value={draft.sealPercent} onChange={(sealPercent) => patch({ sealPercent })} />
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <AdminField label="Card tag" value={draft.cardTag} onChange={(cardTag) => patch({ cardTag })} />
+              <AdminField label="Card name" value={draft.cardName} onChange={(cardName) => patch({ cardName })} />
+            </div>
+            <AdminField label="Chips (comma-separated)" value={chipsText} onChange={setChipsText} />
+
+            <AdminField label="Image URL" value={draft.image} onChange={(image) => patch({ image })} />
+            <AdminField label="Image alt text" value={draft.alt} onChange={(alt) => patch({ alt })} />
+            <label className="block text-sm">
+              Upload campaign image
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                disabled={Boolean(uploading)}
+                className="mt-2 block w-full text-sm"
+                onChange={(event) => void onUpload(event.target.files, "offer")}
+              />
+              <span className="mt-1 block text-xs text-mute">{uploading === "offer" ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
+            </label>
+          </section>
+
+          <section className="space-y-8">
+            <div>
+              <h2 className="font-serif text-3xl">Product slides</h2>
+              <p className="mt-2 text-sm text-mute">Always-on slides (body butter, scrub, salts). They rotate with the campaign slide when that slide is enabled.</p>
+            </div>
+            {evergreen.map((slide, index) => (
+              <div key={slide.id} className="space-y-4 rounded-2xl border border-line p-5">
+                <p className="text-[11px] uppercase tracking-[0.16em] text-mute">Slide {index + 1} · {slide.label}</p>
+                <AdminField label="Pill" value={slide.pill} onChange={(pill) => patchSlide(index, { pill })} />
+                <AdminField label="Title line 1" value={slide.titleLine1} onChange={(titleLine1) => patchSlide(index, { titleLine1 })} />
+                <AdminField label="Title line 2" value={slide.titleLine2} onChange={(titleLine2) => patchSlide(index, { titleLine2 })} />
+                <label className="block text-sm">
+                  Note
+                  <textarea
+                    value={slide.note}
+                    onChange={(event) => patchSlide(index, { note: event.target.value })}
+                    rows={2}
+                    className="mt-2 w-full border-b border-line bg-transparent outline-none"
+                  />
+                </label>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <AdminField label="Primary CTA" value={slide.cta} onChange={(cta) => patchSlide(index, { cta })} />
+                  <AdminField label="Primary link" value={slide.href} onChange={(href) => patchSlide(index, { href })} />
+                </div>
+                <AdminField
+                  label="Chips (comma-separated)"
+                  value={evergreenChips[index] || ""}
+                  onChange={(value) => setEvergreenChips((current) => current.map((item, itemIndex) => (itemIndex === index ? value : item)))}
+                />
+                <AdminField label="Image URL" value={slide.image} onChange={(image) => patchSlide(index, { image })} />
+                <AdminField label="Image alt" value={slide.alt} onChange={(alt) => patchSlide(index, { alt })} />
+                <label className="block text-sm">
+                  Upload slide image
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={Boolean(uploading)}
+                    className="mt-2 block w-full text-sm"
+                    onChange={(event) => void onUpload(event.target.files, index)}
+                  />
+                  <span className="mt-1 block text-xs text-mute">{uploading === `slide-${index}` ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
+                </label>
+              </div>
+            ))}
+          </section>
+
+          {error ? <p role="status" className="text-sm text-red-700">{error}</p> : null}
+          {message ? <p role="status" className="text-sm text-mute">{message}</p> : null}
+          <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
+            {saving ? "Saving…" : "Save hero"}
+          </button>
+        </form>
+
+        <div className="order-first xl:order-none xl:sticky xl:top-4">
+          <HeroDraftPreview content={previewContent} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -1539,194 +1433,190 @@ export function SiteMediaManager() {
     });
   };
 
-  if (loading) return <p className="text-mute">Loading site images…</p>;
+  if (loading) return <AdminEditorSkeleton />;
 
   return (
-    <div className="max-w-3xl">
+    <div className="space-y-8">
       <AdminPageHeader
         title="Website photos"
-        purpose="Marketing photos that are not product galleries. Use this when a homepage, shop, login, or checkout image needs a real Silken Knot photo. Scroll to the section that matches where it appears on the store."
+        purpose="Marketing photos that are not product galleries. Use this when a homepage, shop, login, or checkout image needs a real Silken Knot photo. Use the live preview tabs to check each surface before you save."
       />
 
-      <form
-        className="mt-8 space-y-10"
-        onSubmit={async (event) => {
-          event.preventDefault();
-          setSaving(true);
-          setError("");
-          setMessage("");
-          try {
-            const response = await fetch("/api/admin/site-media", {
-              method: "PUT",
-              headers: { "Content-Type": "application/json", ...csrfHeaders() },
-              body: JSON.stringify({ media: draft }),
-            });
-            const data = (await response.json()) as { ok?: boolean; media?: SiteMediaSettings; message?: string; error?: string };
-            if (!response.ok || !data.media) throw new Error(data.error || "Could not save.");
-            setDraft(data.media);
-            primeSiteMediaCache(data.media);
-            setMessage(data.message || "Saved.");
-          } catch (failure) {
-            setError(failure instanceof Error ? failure.message : "Could not save.");
-          } finally {
-            setSaving(false);
-          }
-        }}
-      >
-        {(
-          [
-            {
-              title: "Homepage collection tiles",
-              hint: "Large photos in the “Four ways to begin” section and related collection cards.",
-              keys: ["collectionBodyCare", "collectionBathSoap", "collectionAromatherapy", "collectionLifestyle", "collectionLifestyleWide", "bestsellerButter", "bestsellerSoap", "bestsellerCandle", "whySilkKnot", "brandStory", "newsletterBackground"] as const,
-            },
-            {
-              title: "Shop page banners",
-              hint: "Top banner and lower story banner on the shop page.",
-              keys: ["shopHero", "shopEditorial"] as const,
-            },
-            {
-              title: "Sign-in, checkout & wishlist",
-              hint: "Backgrounds on login, checkout header, and wishlist page.",
-              keys: ["authBackground", "checkoutBanner", "wishlistBanner"] as const,
-            },
-          ] as const
-        ).map((group) => (
-          <section key={group.title} className="space-y-6">
-            <div>
-              <h2 className="font-serif text-3xl">{group.title}</h2>
-              <p className="mt-2 text-sm text-mute">{group.hint}</p>
-            </div>
-            {SITE_MEDIA_SLOTS.filter((slot) => (group.keys as readonly string[]).includes(slot.key)).map((slot) => {
-              const value = draft[slot.key];
-              return (
-                <div key={slot.key} className="space-y-3 rounded-2xl border border-line p-5">
-                  <div>
-                    <p className="font-medium">{slot.label}</p>
-                    <p className="text-sm text-mute">{slot.hint}</p>
-                  </div>
-                  <AdminField label="Image URL" value={value} onChange={(image) => patch({ [slot.key]: image } as Partial<SiteMediaSettings>)} />
-                  <label className="block text-sm">
-                    Upload
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      disabled={Boolean(uploading)}
-                      className="mt-2 block w-full text-sm"
-                      onChange={(event) => void onUploadSlot(event.target.files, slot.key, `site-${slot.key}`)}
-                    />
-                    <span className="mt-1 block text-xs text-mute">{uploading === slot.key ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
-                  </label>
-                  {value ? (
-                    <div className="relative h-32 w-full max-w-sm overflow-hidden rounded-lg border border-line bg-paper">
-                      <Media src={value} alt={slot.label} className="object-cover" sizes="400px" />
+      <div className="grid gap-10 xl:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] xl:items-start">
+        <form
+          className="space-y-10"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setSaving(true);
+            setError("");
+            setMessage("");
+            try {
+              const response = await fetch("/api/admin/site-media", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", ...csrfHeaders() },
+                body: JSON.stringify({ media: draft }),
+              });
+              const data = (await response.json()) as { ok?: boolean; media?: SiteMediaSettings; message?: string; error?: string };
+              if (!response.ok || !data.media) throw new Error(data.error || "Could not save.");
+              setDraft(data.media);
+              primeSiteMediaCache(data.media);
+              setMessage(data.message || "Saved.");
+            } catch (failure) {
+              setError(failure instanceof Error ? failure.message : "Could not save.");
+            } finally {
+              setSaving(false);
+            }
+          }}
+        >
+          {(
+            [
+              {
+                title: "Homepage collection tiles",
+                hint: "Large photos in the “Four ways to begin” section and related collection cards.",
+                keys: ["collectionBodyCare", "collectionBathSoap", "collectionAromatherapy", "collectionLifestyle", "collectionLifestyleWide", "bestsellerButter", "bestsellerSoap", "bestsellerCandle", "whySilkKnot", "brandStory", "newsletterBackground"] as const,
+              },
+              {
+                title: "Shop page banners",
+                hint: "Top banner and lower story banner on the shop page.",
+                keys: ["shopHero", "shopEditorial"] as const,
+              },
+              {
+                title: "Sign-in, checkout & wishlist",
+                hint: "Backgrounds on login, checkout header, and wishlist page.",
+                keys: ["authBackground", "checkoutBanner", "wishlistBanner"] as const,
+              },
+            ] as const
+          ).map((group) => (
+            <section key={group.title} className="space-y-6">
+              <div>
+                <h2 className="font-serif text-3xl">{group.title}</h2>
+                <p className="mt-2 text-sm text-mute">{group.hint}</p>
+              </div>
+              {SITE_MEDIA_SLOTS.filter((slot) => (group.keys as readonly string[]).includes(slot.key)).map((slot) => {
+                const value = draft[slot.key];
+                return (
+                  <div key={slot.key} className="space-y-3 rounded-2xl border border-line p-5">
+                    <div>
+                      <p className="font-medium">{slot.label}</p>
+                      <p className="text-sm text-mute">{slot.hint}</p>
                     </div>
-                  ) : null}
-                </div>
-              );
-            })}
-          </section>
-        ))}
-
-        <section className="space-y-6">
-          <div>
-            <h2 className="font-serif text-3xl">Homepage category strip</h2>
-            <p className="mt-2 text-sm text-mute">Circular tiles under the homepage hero (Body Butter, Soap, Candles, and so on).</p>
-          </div>
-          {draft.categoryStrip.map((item, index) => (
-            <div key={item.id} className="space-y-3 rounded-2xl border border-line p-5">
-              <AdminField label="Name" value={item.name} onChange={(name) => patchStrip(index, { name })} />
-              <AdminField label="Link" value={item.href} onChange={(href) => patchStrip(index, { href })} />
-              <AdminField label="Image URL" value={item.image} onChange={(image) => patchStrip(index, { image })} />
-              <label className="block text-sm">
-                Upload
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  disabled={Boolean(uploading)}
-                  className="mt-2 block w-full text-sm"
-                  onChange={(event) => void onUploadSlot(event.target.files, `strip:${index}`, `site-strip-${item.id}`)}
-                />
-                <span className="mt-1 block text-xs text-mute">{uploading === `strip:${index}` ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
-              </label>
-              {item.image ? (
-                <div className="relative size-24 overflow-hidden rounded-full border border-line bg-paper">
-                  <Media src={item.image} alt={item.name} className="object-cover" sizes="96px" />
-                </div>
-              ) : null}
-            </div>
+                    <AdminField label="Image URL" value={value} onChange={(image) => patch({ [slot.key]: image } as Partial<SiteMediaSettings>)} />
+                    <label className="block text-sm">
+                      Upload
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        disabled={Boolean(uploading)}
+                        className="mt-2 block w-full text-sm"
+                        onChange={(event) => void onUploadSlot(event.target.files, slot.key, `site-${slot.key}`)}
+                      />
+                      <span className="mt-1 block text-xs text-mute">{uploading === slot.key ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
+                    </label>
+                  </div>
+                );
+              })}
+            </section>
           ))}
-        </section>
 
-        <section className="space-y-6">
-          <div>
-            <h2 className="font-serif text-3xl">Homepage reviews</h2>
-            <p className="mt-2 text-sm text-mute">
-              Quotes on the homepage. Prefer linking each card to a product so the live product photo shows; otherwise upload a fallback image.
-            </p>
-          </div>
-          {draft.reviews.map((review, index) => (
-            <div key={review.id} className="space-y-3 rounded-2xl border border-line p-5">
-              <div className="grid gap-4 md:grid-cols-2">
-                <AdminField label="Customer name" value={review.name} onChange={(name) => patchReview(index, { name })} />
-                <AdminField label="City" value={review.city} onChange={(city) => patchReview(index, { city })} />
-              </div>
-              <label className="block text-sm">
-                Quote
-                <textarea
-                  value={review.text}
-                  onChange={(event) => patchReview(index, { text: event.target.value })}
-                  rows={3}
-                  className="mt-2 w-full border-b border-line bg-transparent outline-none"
-                />
-              </label>
-              <div className="grid gap-4 md:grid-cols-2">
+          <section className="space-y-6">
+            <div>
+              <h2 className="font-serif text-3xl">Homepage category strip</h2>
+              <p className="mt-2 text-sm text-mute">Circular tiles under the homepage hero (Body Butter, Soap, Candles, and so on).</p>
+            </div>
+            {draft.categoryStrip.map((item, index) => (
+              <div key={item.id} className="space-y-3 rounded-2xl border border-line p-5">
+                <AdminField label="Name" value={item.name} onChange={(name) => patchStrip(index, { name })} />
+                <AdminField label="Link" value={item.href} onChange={(href) => patchStrip(index, { href })} />
+                <AdminField label="Image URL" value={item.image} onChange={(image) => patchStrip(index, { image })} />
                 <label className="block text-sm">
-                  Product
-                  <select
-                    value={review.productId}
-                    onChange={(event) => {
-                      const product = store.products.find((item) => item.id === event.target.value);
-                      patchReview(index, {
-                        productId: event.target.value,
-                        productName: product?.name || review.productName,
-                        image: product?.images[0] || review.image,
-                      });
-                    }}
-                    className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
-                  >
-                    <option value="">Custom / fallback only</option>
-                    {store.products.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.name}
-                      </option>
-                    ))}
-                  </select>
+                  Upload
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={Boolean(uploading)}
+                    className="mt-2 block w-full text-sm"
+                    onChange={(event) => void onUploadSlot(event.target.files, `strip:${index}`, `site-strip-${item.id}`)}
+                  />
+                  <span className="mt-1 block text-xs text-mute">{uploading === `strip:${index}` ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
                 </label>
-                <AdminField label="Product label" value={review.productName} onChange={(productName) => patchReview(index, { productName })} />
               </div>
-              <AdminField label="Fallback image URL" value={review.image} onChange={(image) => patchReview(index, { image })} />
-              <label className="block text-sm">
-                Upload fallback image
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  disabled={Boolean(uploading)}
-                  className="mt-2 block w-full text-sm"
-                  onChange={(event) => void onUploadSlot(event.target.files, `review:${index}`, `site-review-${review.id}`)}
-                />
-                <span className="mt-1 block text-xs text-mute">{uploading === `review:${index}` ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
-              </label>
-            </div>
-          ))}
-        </section>
+            ))}
+          </section>
 
-        {error ? <p role="status" className="text-sm text-red-700">{error}</p> : null}
-        {message ? <p role="status" className="text-sm text-mute">{message}</p> : null}
-        <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
-          {saving ? "Saving…" : "Save site images"}
-        </button>
-      </form>
+          <section className="space-y-6">
+            <div>
+              <h2 className="font-serif text-3xl">Homepage reviews</h2>
+              <p className="mt-2 text-sm text-mute">
+                Quotes on the homepage. Prefer linking each card to a product so the live product photo shows; otherwise upload a fallback image.
+              </p>
+            </div>
+            {draft.reviews.map((review, index) => (
+              <div key={review.id} className="space-y-3 rounded-2xl border border-line p-5">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <AdminField label="Customer name" value={review.name} onChange={(name) => patchReview(index, { name })} />
+                  <AdminField label="City" value={review.city} onChange={(city) => patchReview(index, { city })} />
+                </div>
+                <label className="block text-sm">
+                  Quote
+                  <textarea
+                    value={review.text}
+                    onChange={(event) => patchReview(index, { text: event.target.value })}
+                    rows={3}
+                    className="mt-2 w-full border-b border-line bg-transparent outline-none"
+                  />
+                </label>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <label className="block text-sm">
+                    Product
+                    <select
+                      value={review.productId}
+                      onChange={(event) => {
+                        const product = store.products.find((item) => item.id === event.target.value);
+                        patchReview(index, {
+                          productId: event.target.value,
+                          productName: product?.name || review.productName,
+                          image: product?.images[0] || review.image,
+                        });
+                      }}
+                      className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+                    >
+                      <option value="">Custom / fallback only</option>
+                      {store.products.map((product) => (
+                        <option key={product.id} value={product.id}>
+                          {product.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <AdminField label="Product label" value={review.productName} onChange={(productName) => patchReview(index, { productName })} />
+                </div>
+                <AdminField label="Fallback image URL" value={review.image} onChange={(image) => patchReview(index, { image })} />
+                <label className="block text-sm">
+                  Upload fallback image
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={Boolean(uploading)}
+                    className="mt-2 block w-full text-sm"
+                    onChange={(event) => void onUploadSlot(event.target.files, `review:${index}`, `site-review-${review.id}`)}
+                  />
+                  <span className="mt-1 block text-xs text-mute">{uploading === `review:${index}` ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB."}</span>
+                </label>
+              </div>
+            ))}
+          </section>
+
+          {error ? <p role="status" className="text-sm text-red-700">{error}</p> : null}
+          {message ? <p role="status" className="text-sm text-mute">{message}</p> : null}
+          <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
+            {saving ? "Saving…" : "Save site images"}
+          </button>
+        </form>
+
+        <div className="order-first xl:order-none xl:sticky xl:top-4">
+          <SiteMediaDraftPreview media={draft} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -1782,73 +1672,66 @@ export function BrandManager() {
     }
   };
 
-  if (loading) return <p className="text-mute">Loading brand…</p>;
+  if (loading) return <AdminEditorSkeleton />;
 
   return (
-    <div className="max-w-2xl">
+    <div className="space-y-8">
       <AdminPageHeader
         title="Logo"
-        purpose="The Silken Knot mark shown in the header, footer, checkout, and sign-in. Upload a clear square icon, then save."
+        purpose="Shown in the header, footer, checkout, and sign-in. Prefer a logo with a transparent background. On the dark footer the mark is shown alone (no extra brand text), so use a light or high-contrast version if your art is dark."
       />
 
-      <form
-        className="mt-8 space-y-4"
-        onSubmit={async (event) => {
-          event.preventDefault();
-          setSaving(true);
-          setError("");
-          setMessage("");
-          try {
-            const response = await fetch("/api/admin/brand", {
-              method: "PUT",
-              headers: { "Content-Type": "application/json", ...csrfHeaders() },
-              body: JSON.stringify({ brand: draft }),
-            });
-            const data = (await response.json()) as { ok?: boolean; brand?: BrandSettings; message?: string; error?: string };
-            if (!response.ok || !data.brand) throw new Error(data.error || "Could not save.");
-            setDraft(data.brand);
-            primeBrandCache(data.brand);
-            setMessage(data.message || "Saved.");
-          } catch (failure) {
-            setError(failure instanceof Error ? failure.message : "Could not save.");
-          } finally {
-            setSaving(false);
-          }
-        }}
-      >
-        <AdminField label="Icon URL" value={draft.iconUrl} onChange={(iconUrl) => patch({ iconUrl })} />
-        <AdminField label="Icon alt text" value={draft.iconAlt} onChange={(iconAlt) => patch({ iconAlt })} />
-        <label className="block text-sm">
-          Upload brand icon
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            disabled={uploading}
-            className="mt-2 block w-full text-sm"
-            onChange={(event) => void onUpload(event.target.files)}
-          />
-          <span className="mt-1 block text-xs text-mute">{uploading ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB. Prefer a square mark with a transparent background."}</span>
-        </label>
+      <div className="grid gap-10 xl:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] xl:items-start">
+        <form
+          className="space-y-4"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setSaving(true);
+            setError("");
+            setMessage("");
+            try {
+              const response = await fetch("/api/admin/brand", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json", ...csrfHeaders() },
+                body: JSON.stringify({ brand: draft }),
+              });
+              const data = (await response.json()) as { ok?: boolean; brand?: BrandSettings; message?: string; error?: string };
+              if (!response.ok || !data.brand) throw new Error(data.error || "Could not save.");
+              setDraft(data.brand);
+              primeBrandCache(data.brand);
+              setMessage(data.message || "Saved.");
+            } catch (failure) {
+              setError(failure instanceof Error ? failure.message : "Could not save.");
+            } finally {
+              setSaving(false);
+            }
+          }}
+        >
+          <AdminField label="Icon URL" value={draft.iconUrl} onChange={(iconUrl) => patch({ iconUrl })} />
+          <AdminField label="Icon alt text" value={draft.iconAlt} onChange={(iconAlt) => patch({ iconAlt })} />
+          <label className="block text-sm">
+            Upload brand icon
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              disabled={uploading}
+              className="mt-2 block w-full text-sm"
+              onChange={(event) => void onUpload(event.target.files)}
+            />
+            <span className="mt-1 block text-xs text-mute">{uploading ? "Uploading…" : "JPEG, PNG, or WebP under 6 MB. Prefer a square mark with a transparent background."}</span>
+          </label>
 
-        {draft.iconUrl ? (
-          <div className="flex items-end gap-6">
-            <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper p-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={draft.iconUrl} alt={draft.iconAlt || "Brand icon preview"} className="max-h-full max-w-full object-contain" />
-            </div>
-            <div className="relative flex h-24 w-40 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper p-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={draft.iconUrl} alt={draft.iconAlt || "Brand logo preview"} className="max-h-full max-w-full object-contain" />
-            </div>
-          </div>
-        ) : null}
+          {error ? <p role="status" className="text-sm text-red-700">{error}</p> : null}
+          {message ? <p role="status" className="text-sm text-mute">{message}</p> : null}
+          <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
+            {saving ? "Saving…" : "Save brand icon"}
+          </button>
+        </form>
 
-        {error ? <p role="status" className="text-sm text-red-700">{error}</p> : null}
-        {message ? <p role="status" className="text-sm text-mute">{message}</p> : null}
-        <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
-          {saving ? "Saving…" : "Save brand icon"}
-        </button>
-      </form>
+        <div className="order-first xl:order-none xl:sticky xl:top-4">
+          <BrandDraftPreview brand={draft} />
+        </div>
+      </div>
     </div>
   );
 }

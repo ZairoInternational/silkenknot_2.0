@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Award,
@@ -13,7 +15,7 @@ import {
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
-import { Mark } from "@/components/ui";
+import { useBrandSettings } from "@/lib/brand/client";
 
 type FooterLink = {
   label: string;
@@ -77,15 +79,29 @@ function FooterNavLink({ label, href, icon: Icon }: FooterLink) {
   );
 }
 
+function FooterBrand() {
+  const brand = useBrandSettings();
+  return (
+    <Link href="/" aria-label="Silken Knot home" className="inline-flex max-w-full items-center">
+      {/* Same mark as the header — sized for the dark footer, no duplicate wordmark text. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={brand.iconUrl}
+        alt={brand.iconAlt || "Silken Knot"}
+        width={220}
+        height={80}
+        className="h-10 w-auto max-w-[12rem] object-contain object-left md:h-12 md:max-w-[14rem]"
+      />
+    </Link>
+  );
+}
+
 export function Footer() {
   return (
     <footer className="bg-ink text-paper">
       <div className="mx-auto grid max-w-[1440px] grid-cols-2 gap-x-6 gap-y-8 px-5 py-10 md:grid-cols-[1.3fr_1fr_1fr_1.2fr] md:gap-10 md:px-10 md:py-14">
         <div className="col-span-2 md:col-span-1">
-          <p className="inline-flex items-center gap-2 font-serif text-3xl">
-            <Mark className="h-8 w-15" />
-            Silken Knot
-          </p>
+          <FooterBrand />
           <p className="mt-4 max-w-xs text-sm leading-6 text-paper/70">
             Body care, bath, wellness, and aromatherapy for everyday rituals.
           </p>

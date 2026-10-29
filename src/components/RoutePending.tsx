@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { PendingCover } from "@/components/PendingCover";
 
+/** Slim top progress bar on in-app navigations — no full-screen spinner. */
 export function RoutePending() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
@@ -40,5 +40,15 @@ export function RoutePending() {
   }, []);
 
   if (!visible) return null;
-  return <PendingCover message="Loading…" />;
+
+  return (
+    <div
+      className="pointer-events-none fixed inset-x-0 top-0 z-[90] h-0.5 overflow-hidden bg-transparent"
+      role="progressbar"
+      aria-label="Loading page"
+      aria-busy="true"
+    >
+      <div className="route-pending-bar h-full w-1/3 bg-ink" />
+    </div>
+  );
 }

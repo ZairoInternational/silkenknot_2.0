@@ -5,20 +5,23 @@ import { DEFAULT_BRAND, type BrandSettings } from "@/lib/brand/content";
 
 let cached: BrandSettings | null = null;
 let inflight: Promise<BrandSettings> | null = null;
+/** True once server or admin has seeded a real brand — avoid flashing DEFAULT on first paint. */
+let seededFromServer = false;
 
 async function loadBrand(): Promise<BrandSettings> {
-  if (cached) return cached;
+  if (cached && seededFromServer) return cached;
   if (!inflight) {
     inflight = fetch("/api/brand")
       .then(async (response) => {
         const body = (await response.json()) as { brand?: BrandSettings };
         const next = body.brand || DEFAULT_BRAND;
         cached = next;
+        seededFromServer = true;
         return next;
       })
       .catch(() => {
-        cached = DEFAULT_BRAND;
-        return DEFAULT_BRAND;
+        if (!cached) cached = DEFAULT_BRAND;
+        return cached || DEFAULT_BRAND;
       })
       .finally(() => {
         inflight = null;
@@ -32,18 +35,27 @@ const BRAND_EVENT = "silkknot:brand";
 /** Invalidate after admin saves so the next load picks up the new icon. */
 export function clearBrandCache() {
   cached = null;
+  seededFromServer = false;
 }
 
-/** Seed the client cache and notify open Mark/Logo instances after a Studio save. */
+/**
+ * Seed the client cache (from RSC layout or after Studio save) and notify listeners.
+ * Call synchronously during Providers render so the first logo paint is already correct.
+ */
 export function primeBrandCache(brand: BrandSettings) {
+  const unchanged =
+    cached &&
+    cached.iconUrl === brand.iconUrl &&
+    cached.iconAlt === brand.iconAlt;
   cached = brand;
-  if (typeof window !== "undefined") {
+  seededFromServer = true;
+  if (!unchanged && typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(BRAND_EVENT, { detail: brand }));
   }
 }
 
 export function useBrandSettings(): BrandSettings {
-  const [brand, setBrand] = useState<BrandSettings>(cached || DEFAULT_BRAND);
+  const [brand, setBrand] = useState<BrandSettings>(() => cached || DEFAULT_BRAND);
 
   useEffect(() => {
     let cancelled = false;

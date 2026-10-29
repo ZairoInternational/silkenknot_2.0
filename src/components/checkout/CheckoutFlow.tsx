@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { couponDiscount, formatPrice, shippingCost, subtotal } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import type { Address, DeliveryMethod, PaymentMethod } from "@/lib/types";
+import { CheckoutPageSkeleton } from "@/components/storefront/PageSkeletons";
 import { Field } from "@/components/ui";
 
 const steps = ["Customer", "Address", "Delivery", "Payment", "Review"] as const;
@@ -51,7 +52,7 @@ export function CheckoutFlow() {
 
   const summary = useMemo(() => store.cart, [store.cart]);
 
-  if (!store.ready) return <p className="px-5 py-20 text-mute">Preparing checkout…</p>;
+  if (!store.ready) return <CheckoutPageSkeleton />;
   if (store.cart.length === 0) {
     return (
       <div className="px-5 py-20">

@@ -69,7 +69,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </noscript>
         ) : null}
         <GoogleTagManager containerId={gtmId} />
-        <Providers>{children}</Providers>
+        <Providers initialBrand={brand}>{children}</Providers>
         <AnalyticsConsentBanner />
       </body>
     </html>

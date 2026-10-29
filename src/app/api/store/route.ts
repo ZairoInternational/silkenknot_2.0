@@ -32,32 +32,41 @@ export async function GET() {
   try {
     await ensureCsrfCookie();
     const db = await getDb();
-    const [products, categories, coupons] = await Promise.all([
+    // Session in parallel with catalog — admin path used to wait on products first.
+    const [products, categories, coupons, session] = await Promise.all([
       db.collection("products").find().toArray(),
       db.collection("categories").find().sort({ order: 1 }).toArray(),
       db.collection("coupons").find().toArray(),
+      currentSession(),
     ]);
-    const session = await currentSession();
     let user = null;
     let orders: Order[] = [];
     let customers: ReturnType<typeof publicUser>[] = [];
     let admin = false;
     let bag = null;
     if (session) {
-      const found = await db.collection("users").findOne({ id: session.id });
-      if (found) user = publicUser(found);
-      if (session.role === "customer") bag = await readBag(db, session.id);
       if (session.role === "admin") {
         admin = true;
-        customers = (await db.collection("users").find({ role: "customer" }).toArray()).map((item) => publicUser(item));
-        orders = (await db.collection("orders").find().sort({ createdAt: -1 }).toArray()).map((order) => publicOrder(order as unknown as StoredOrder));
-      } else if (found) {
-        const orderQuery = found.email
-          ? { $or: [{ userId: found.id }, { email: found.email }] }
-          : { userId: found.id };
-        orders = (await db.collection("orders").find(orderQuery).sort({ createdAt: -1 }).toArray())
-          .map((order) => publicOrder(order as unknown as StoredOrder))
-          .filter((order) => customerOrderVisible(order));
+        const [found, customerRows, orderRows] = await Promise.all([
+          db.collection("users").findOne({ id: session.id }),
+          db.collection("users").find({ role: "customer" }).toArray(),
+          db.collection("orders").find().sort({ createdAt: -1 }).limit(250).toArray(),
+        ]);
+        if (found) user = publicUser(found);
+        customers = customerRows.map((item) => publicUser(item));
+        orders = orderRows.map((order) => publicOrder(order as unknown as StoredOrder));
+      } else {
+        const found = await db.collection("users").findOne({ id: session.id });
+        if (found) user = publicUser(found);
+        bag = await readBag(db, session.id);
+        if (found) {
+          const orderQuery = found.email
+            ? { $or: [{ userId: found.id }, { email: found.email }] }
+            : { userId: found.id };
+          orders = (await db.collection("orders").find(orderQuery).sort({ createdAt: -1 }).toArray())
+            .map((order) => publicOrder(order as unknown as StoredOrder))
+            .filter((order) => customerOrderVisible(order));
+        }
       }
     }
     return Response.json({

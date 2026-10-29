@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { CheckoutPageSkeleton } from "@/components/storefront/PageSkeletons";
 import { formatPrice } from "@/lib/format";
 import { useStore } from "@/lib/store";
 
@@ -9,7 +10,7 @@ export function Confirmation() {
   const params = useSearchParams();
   const store = useStore();
   const order = store.orders.find((item) => item.id === params.get("order"));
-  if (!store.ready) return <p className="px-5 py-16 text-mute">Finding your order…</p>;
+  if (!store.ready) return <CheckoutPageSkeleton />;
   if (!order) {
     return (
       <div className="px-5 py-16">

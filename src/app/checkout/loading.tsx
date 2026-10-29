@@ -1,5 +1,5 @@
-import { PendingCover } from "@/components/PendingCover";
+import { CheckoutPageSkeleton } from "@/components/storefront/PageSkeletons";
 
 export default function CheckoutLoading() {
-  return <PendingCover message="Loading…" />;
+  return <CheckoutPageSkeleton />;
 }

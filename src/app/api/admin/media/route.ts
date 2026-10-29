@@ -237,12 +237,19 @@ export async function DELETE(request: Request) {
   if (!url) return jsonError("Image URL is required.", 400, { correlationId });
 
   try {
-    // Refuse delete while any product still references the URL (shared-asset safety).
+    // Refuse delete while any product or banner still references the URL (shared-asset safety).
     if (databaseConfigured()) {
       const db = await getDb();
       const stillUsed = await db.collection("products").countDocuments({ images: url }, { limit: 1 });
       if (stillUsed > 0) {
         return jsonError("That image is still attached to a product.", 409, { correlationId });
+      }
+      const bannerUsed = await db.collection("banners").countDocuments(
+        { $or: [{ "image.desktopUrl": url }, { "image.mobileUrl": url }] },
+        { limit: 1 },
+      );
+      if (bannerUsed > 0) {
+        return jsonError("That image is still attached to a banner.", 409, { correlationId });
       }
     }
     await removeFromBunny(url, correlationId);

@@ -1,60 +1,53 @@
 # Silken Knot SEO setup
 
-Technical SEO is implemented in the Next.js App Router (`src/lib/seo/*`, `src/app/sitemap.ts`, `src/app/robots.ts`).
+Technical SEO lives in `src/lib/seo/*`, `src/app/sitemap.ts`, and `src/app/robots.ts`.
 
-## Required environment
+No setup can guarantee #1 rankings. This stack makes genuine product pages eligible to be crawled, understood, and ranked for relevant searches.
 
-Set the public storefront origin (no trailing slash):
+## Vercel + silkenknot.com
 
-```bash
-NEXT_PUBLIC_SITE_URL=https://YOUR-PRODUCTION-DOMAIN
-```
+Canonical host after cutover: **`https://www.silkenknot.com`**  
+Current app: **`https://silkenknot-2-0.vercel.app`**
 
-Optional server-only alias: `SITE_URL`.
+Full migration steps: **[docs/seo-cutover.md](./seo-cutover.md)**.
 
-Without this, canonical URLs, Open Graph, sitemap, and robots fall back to `http://localhost:3000`.
+1. **Until DNS points at Vercel**, Production env must be:
+   `NEXT_PUBLIC_SITE_URL=https://silkenknot-2-0.vercel.app`
+2. **After cutover**, change it to:
+   `NEXT_PUBLIC_SITE_URL=https://www.silkenknot.com` and redeploy.
+3. Preview / branch URLs stay **noindex** automatically.
+4. Optional: `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` for Search Console HTML verification.
 
-Email examples in the repo mention `silkenknot.com`, but the live canonical host must be confirmed (www vs apex, custom domain on the VPS).
+## Google Search Console (do this on production)
 
-## Optional Google Search Console
+1. Verify ownership (HTML tag → set `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`, or DNS TXT).
+2. Submit sitemap: `/sitemap.xml`.
+3. Use URL Inspection on homepage + 2–3 product URLs → Request indexing.
+4. Watch Coverage / Page indexing for soft-404s or excluded URLs.
 
-1. Verify ownership in Search Console (HTML tag or DNS).
-2. For the HTML tag method, set:
+## What ranks products (beyond code)
 
-```bash
-NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION=your-token-from-google
-```
+Technical SEO is the floor. Ranking also needs:
 
-3. Submit `https://YOUR-PRODUCTION-DOMAIN/sitemap.xml`.
+1. **Unique product content** — real descriptions, ingredients, how-to-use (already on PDPs when filled in Studio).
+2. **Internal links** — homepage, shop, categories, related products (in place).
+3. **Reviews** — genuine visible reviews help Product rich results when present.
+4. **Speed on mobile** — measure with PageSpeed Insights after deploy.
+5. **External discovery** — Instagram, email, directories, Google Merchant Center (Shopping) when ready.
+6. **Time** — new domains/stores often need weeks for indexing and months for competitive queries.
 
-## What the app emits
+## Validate after each production deploy
 
-| Surface | Behavior |
-|---------|----------|
-| `/robots.txt` | Allows public storefront; disallows admin, API, checkout, account, wishlist, orders |
-| `/sitemap.xml` | Home, shop, category shop URLs, active products, journal, content pages |
-| Product pages | Live Mongo (or seed) metadata, canonical, Product + BreadcrumbList JSON-LD; HTTP 404 when missing/inactive |
-| Shop filters | Category-only URLs indexable; search/sort/pagination/price filters `noindex` with canonical to `/shop` or category |
-| Private routes | `noindex` via layout/page metadata |
+1. `https://YOUR-HOST/robots.txt` — allows `/`, lists sitemap (production only).
+2. `https://YOUR-HOST/sitemap.xml` — products and content URLs.
+3. View source on a product — canonical, OG, `application/ld+json`.
+4. [Rich Results Test](https://search.google.com/test/rich-results) on a PDP and `/faq`.
 
-## Validate after deploy
+## Core Web Vitals
 
-1. Open `/robots.txt` and `/sitemap.xml` on production.
-2. View source on a product URL — confirm `<link rel="canonical">`, OG tags, and `application/ld+json`.
-3. [Google Rich Results Test](https://search.google.com/test/rich-results) on a representative product and `/faq`.
-4. [URL Inspection](https://search.google.com/search-console) after GSC verification.
+Measure on the live Production URL (not preview):
 
-## Measurement (Core Web Vitals)
-
-Code changes do not prove LCP/INP/CLS improvements. Measure with:
-
-- Chrome DevTools → Lighthouse (mobile)
-- PageSpeed Insights on production URLs
-- CrUX / Search Console Core Web Vitals (field data)
+- PageSpeed Insights
+- Search Console → Core Web Vitals
 
 Targets: LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1.
-
-## Content / Merchant Center (not automated here)
-
-- Do not mass-rewrite product copy without a reversible review plan.
-- Google Merchant Center product feeds need a separate feed or Content API integration when you are ready.

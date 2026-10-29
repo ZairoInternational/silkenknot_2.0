@@ -11,13 +11,24 @@ import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { accountBarPath, MobileAccountBar } from "@/components/account/MobileAccountBar";
 import { RoutePending } from "@/components/RoutePending";
 import { Toast } from "@/components/ui";
+import { primeBrandCache } from "@/lib/brand/client";
+import type { BrandSettings } from "@/lib/brand/content";
 
 const SupportChat = dynamic(
   () => import("@/components/support/SupportChat").then((mod) => mod.SupportChat),
   { ssr: false },
 );
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({
+  children,
+  initialBrand,
+}: {
+  children: React.ReactNode;
+  /** Server-fetched brand so header/footer never flash the default SK mark. */
+  initialBrand?: BrandSettings;
+}) {
+  if (initialBrand) primeBrandCache(initialBrand);
+
   return (
     <MotionConfig reducedMotion="user">
       <StoreProvider>

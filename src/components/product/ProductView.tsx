@@ -5,6 +5,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { ProductCard } from "@/components/product/ProductCard";
+import { ProductPageSkeleton } from "@/components/storefront/PageSkeletons";
 import { Media, PriceTag, Quantity, Reveal, Stars, usePrefersReducedMotion, WishlistButton } from "@/components/ui";
 import { getSeedProduct } from "@/lib/data";
 import { categoryName, formatDate } from "@/lib/format";
@@ -18,7 +19,7 @@ export function ProductView({ slug }: { slug: string }) {
 
   if (!product || !product.active) {
     if (!store.ready) {
-      return <div className="page-pad px-5 pb-24 text-mute">Opening the piece…</div>;
+      return <ProductPageSkeleton />;
     }
     return (
       <div className="page-pad px-5 pb-24">

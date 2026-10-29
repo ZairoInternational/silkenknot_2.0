@@ -1,8 +1,16 @@
 import type { MetadataRoute } from "next";
-import { getSiteOrigin } from "@/lib/seo/site";
+import { getSiteOrigin, isIndexableDeployment } from "@/lib/seo/site";
 
 export default function robots(): MetadataRoute.Robots {
   const origin = getSiteOrigin();
+
+  // Preview / branch deployments: block crawling entirely so temporary URLs never rank.
+  if (!isIndexableDeployment()) {
+    return {
+      rules: [{ userAgent: "*", disallow: "/" }],
+    };
+  }
+
   return {
     rules: [
       {

@@ -3,6 +3,7 @@ import { ensurePaymentIndexes } from "@/lib/payments/indexes";
 import bcrypt from "bcryptjs";
 import { seedCategories, seedCoupons, seedProducts, seedUsers } from "@/lib/data";
 import { ensureAnnouncementContent } from "@/lib/announcements/server";
+import { ensureBannerBootstrap } from "@/lib/banners/server";
 import { ensureBrandContent } from "@/lib/brand/server";
 import { ensureHeroContent } from "@/lib/hero/server";
 import { ensureSiteMediaContent } from "@/lib/site-media/server";
@@ -100,6 +101,7 @@ async function seedIfEmpty(db: Db) {
   await ensureAnnouncementContent(db);
   await ensureBrandContent(db);
   await ensureSiteMediaContent(db);
+  await ensureBannerBootstrap(db);
   await ensureAuthCollections(db);
   await ensurePaymentIndexes(db);
 }

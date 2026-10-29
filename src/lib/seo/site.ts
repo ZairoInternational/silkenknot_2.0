@@ -1,8 +1,11 @@
 /**
  * Canonical site origin for metadata, sitemap, robots, and JSON-LD.
  *
- * Set NEXT_PUBLIC_SITE_URL (preferred) or SITE_URL to the production HTTPS origin
- * with no trailing slash, e.g. https://www.example.com
+ * Priority:
+ * 1. NEXT_PUBLIC_SITE_URL (preferred) or SITE_URL — set this to your custom domain
+ * 2. Vercel production host (VERCEL_PROJECT_PRODUCTION_URL)
+ * 3. Current Vercel deployment host (VERCEL_URL) — preview/branch URLs
+ * 4. http://localhost:3000 in local/dev
  */
 
 const LOCAL_DEV_ORIGIN = "http://localhost:3000";
@@ -20,27 +23,51 @@ function isHttpOrigin(value: string) {
   }
 }
 
-/** True when an absolute production-style site URL is configured. */
+function originFromHost(host: string | undefined) {
+  const raw = host?.trim();
+  if (!raw) return null;
+  const withProtocol = raw.startsWith("http://") || raw.startsWith("https://") ? raw : `https://${raw}`;
+  const origin = trimOrigin(withProtocol);
+  return isHttpOrigin(origin) ? origin : null;
+}
+
+/** True when an explicit site URL env is set (custom domain or fixed origin). */
 export function hasConfiguredSiteUrl() {
   const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim() || process.env.SITE_URL?.trim();
   return Boolean(raw && isHttpOrigin(trimOrigin(raw)));
 }
 
 /**
- * Absolute site origin. Prefers NEXT_PUBLIC_SITE_URL, then SITE_URL.
- * Falls back to localhost in development so local metadata/OG still resolve.
- * In production without env, falls back to localhost and logs once — set the env.
+ * Index production (and non-Vercel) hosts.
+ * Vercel preview/development URLs and local `next dev` must not compete in Google.
+ */
+export function isIndexableDeployment() {
+  const vercelEnv = process.env.VERCEL_ENV?.trim();
+  if (vercelEnv === "preview" || vercelEnv === "development") return false;
+  if (process.env.NODE_ENV === "development") return false;
+  return true;
+}
+
+/**
+ * Absolute site origin for canonicals, OG, sitemap, and robots.
  */
 export function getSiteOrigin(): string {
-  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim() || process.env.SITE_URL?.trim();
-  if (raw) {
-    const origin = trimOrigin(raw);
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim() || process.env.SITE_URL?.trim();
+  if (configured) {
+    const origin = trimOrigin(configured);
     if (isHttpOrigin(origin)) return origin;
   }
+
+  const vercelProduction = originFromHost(process.env.VERCEL_PROJECT_PRODUCTION_URL);
+  if (vercelProduction && process.env.VERCEL_ENV === "production") return vercelProduction;
+
+  const vercelDeployment = originFromHost(process.env.VERCEL_URL);
+  if (vercelDeployment) return vercelDeployment;
+
   if (process.env.NODE_ENV === "production" && !getSiteOrigin.warned) {
     getSiteOrigin.warned = true;
     console.warn(
-      "[seo] NEXT_PUBLIC_SITE_URL (or SITE_URL) is unset. Canonical URLs will use http://localhost:3000 until configured.",
+      "[seo] NEXT_PUBLIC_SITE_URL is unset. On Vercel, set it to your custom domain when ready; until then production uses VERCEL_PROJECT_PRODUCTION_URL when available.",
     );
   }
   return LOCAL_DEV_ORIGIN;

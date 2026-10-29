@@ -1,5 +1,5 @@
-import { PendingCover } from "@/components/PendingCover";
+import { StoreRouteSkeleton } from "@/components/storefront/PageSkeletons";
 
 export default function StoreLoading() {
-  return <PendingCover message="Loading…" />;
+  return <StoreRouteSkeleton />;
 }

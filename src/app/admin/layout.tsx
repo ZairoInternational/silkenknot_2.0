@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AdminShell } from "@/components/admin/Studio";
+import { AdminShell } from "@/components/admin/AdminShell";
 import { noIndexRobots } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = {

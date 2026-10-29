@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AdminPageHeader } from "@/components/admin/Studio";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
+import { AdminFormSkeleton, AdminPageHeaderSkeleton } from "@/components/admin/AdminSkeletons";
 import { csrfHeaders } from "@/lib/auth/browser";
 import { formatPrice } from "@/lib/format";
 
@@ -47,7 +48,14 @@ export default function PlatformFeeSettingsPage() {
     setMessage("Saved. Customers only see “Platform fee” — not why it is charged or waived.");
   }
 
-  if (!policy) return <p>Loading platform fee settings…</p>;
+  if (!policy) {
+    return (
+      <div>
+        <AdminPageHeaderSkeleton />
+        <AdminFormSkeleton fields={5} />
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={save} className="max-w-xl space-y-4">

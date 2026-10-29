@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { CheckoutPageSkeleton } from "@/components/storefront/PageSkeletons";
 import { needsName } from "@/lib/auth/browser";
 import { useStore } from "@/lib/store";
 
@@ -22,7 +23,7 @@ export function CheckoutAuth({ children }: { children: React.ReactNode }) {
   }, [store.ready, store.currentUser, router, pathname]);
 
   if (!store.ready || !store.currentUser || needsName(store.currentUser)) {
-    return <p className="px-5 py-16 text-mute">Opening checkout…</p>;
+    return <CheckoutPageSkeleton />;
   }
   return <>{children}</>;
 }

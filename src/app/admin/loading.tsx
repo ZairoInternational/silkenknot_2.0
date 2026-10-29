@@ -1,5 +1,5 @@
-import { PendingCover } from "@/components/PendingCover";
+import { AdminContentSkeleton } from "@/components/admin/AdminSkeletons";
 
 export default function AdminLoading() {
-  return <PendingCover message="Loading…" />;
+  return <AdminContentSkeleton />;
 }

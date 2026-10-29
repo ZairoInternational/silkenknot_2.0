@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { absoluteAssetUrl, absoluteUrl, getSiteOrigin } from "@/lib/seo/site";
+import { absoluteAssetUrl, absoluteUrl, getSiteOrigin, isIndexableDeployment } from "@/lib/seo/site";
 
 export const SITE_NAME = "Silken Knot";
 export const DEFAULT_DESCRIPTION =
@@ -44,7 +44,7 @@ export function buildPageMetadata(input: PageMetaInput): Metadata {
   const description = truncateMeta(input.description?.trim() || DEFAULT_DESCRIPTION);
   const canonical = absoluteUrl(input.path);
   const image = absoluteAssetUrl(input.image ?? undefined);
-  const indexable = input.index !== false;
+  const indexable = input.index !== false && isIndexableDeployment();
 
   return {
     title: input.title,
@@ -73,6 +73,7 @@ export function buildPageMetadata(input: PageMetaInput): Metadata {
 export function buildRootMetadata(input: { iconUrl: string }): Metadata {
   const origin = getSiteOrigin();
   const verificationToken = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
+  const indexable = isIndexableDeployment();
   return {
     metadataBase: new URL(origin),
     title: {
@@ -98,7 +99,7 @@ export function buildRootMetadata(input: { iconUrl: string }): Metadata {
       title: `${SITE_NAME} — Body care, bath & wellness`,
       description: DEFAULT_DESCRIPTION,
     },
-    robots: INDEX,
+    robots: indexable ? INDEX : NOINDEX,
     ...(verificationToken
       ? { verification: { google: verificationToken } }
       : {}),

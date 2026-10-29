@@ -12,6 +12,7 @@ import {
   absoluteUrl,
   getSiteOrigin,
   hasConfiguredSiteUrl,
+  isIndexableDeployment,
 } from "./site";
 import {
   serializeJsonLd,
@@ -35,6 +36,9 @@ beforeEach(() => {
   process.env = { ...ORIGINAL_ENV };
   delete process.env.NEXT_PUBLIC_SITE_URL;
   delete process.env.SITE_URL;
+  delete process.env.VERCEL_URL;
+  delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  delete process.env.VERCEL_ENV;
   getSiteOrigin.warned = false;
 });
 
@@ -89,12 +93,36 @@ test("getSiteOrigin prefers NEXT_PUBLIC_SITE_URL and strips trailing slash", () 
   assert.equal(hasConfiguredSiteUrl(), true);
 });
 
-test("getSiteOrigin falls back to SITE_URL then localhost", () => {
+test("getSiteOrigin falls back to SITE_URL then Vercel then localhost", () => {
   process.env.SITE_URL = "https://shop.example.in";
   assert.equal(getSiteOrigin(), "https://shop.example.in");
   delete process.env.SITE_URL;
+
+  process.env.VERCEL_ENV = "production";
+  process.env.VERCEL_PROJECT_PRODUCTION_URL = "silk-knot.vercel.app";
+  assert.equal(getSiteOrigin(), "https://silk-knot.vercel.app");
+
+  delete process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  process.env.VERCEL_ENV = "preview";
+  process.env.VERCEL_URL = "silk-knot-git-feature.vercel.app";
+  assert.equal(getSiteOrigin(), "https://silk-knot-git-feature.vercel.app");
+
+  delete process.env.VERCEL_URL;
+  delete process.env.VERCEL_ENV;
   assert.equal(getSiteOrigin(), "http://localhost:3000");
   assert.equal(hasConfiguredSiteUrl(), false);
+});
+
+test("isIndexableDeployment blocks Vercel preview and local development", () => {
+  process.env.VERCEL_ENV = "preview";
+  assert.equal(isIndexableDeployment(), false);
+  process.env.VERCEL_ENV = "production";
+  assert.equal(isIndexableDeployment(), true);
+  delete process.env.VERCEL_ENV;
+  process.env.NODE_ENV = "development";
+  assert.equal(isIndexableDeployment(), false);
+  process.env.NODE_ENV = "test";
+  assert.equal(isIndexableDeployment(), true);
 });
 
 test("absoluteUrl and absoluteAssetUrl resolve paths", () => {

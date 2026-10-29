@@ -1,11 +1,12 @@
 import { Suspense } from "react";
 import { Confirmation } from "@/components/checkout/Confirmation";
+import { CheckoutPageSkeleton } from "@/components/storefront/PageSkeletons";
 
 export const metadata = { title: "Confirmation" };
 
 export default function ConfirmationPage() {
   return (
-    <Suspense fallback={<p className="px-5 py-16 text-mute">Finding your order…</p>}>
+    <Suspense fallback={<CheckoutPageSkeleton />}>
       <Confirmation />
     </Suspense>
   );

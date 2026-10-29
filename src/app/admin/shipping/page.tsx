@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AdminPageHeader } from "@/components/admin/Studio";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
+import { AdminFormSkeleton, AdminPageHeaderSkeleton } from "@/components/admin/AdminSkeletons";
 import { csrfHeaders } from "@/lib/auth/browser";
 
 type Policy = {
@@ -55,7 +56,14 @@ export default function ShippingSettingsPage() {
     setMessage("Saved. API tokens stay in server environment variables.");
   }
 
-  if (!policy) return <p>Loading shipping settings…</p>;
+  if (!policy) {
+    return (
+      <div>
+        <AdminPageHeaderSkeleton />
+        <AdminFormSkeleton fields={6} />
+      </div>
+    );
+  }
   return (
     <form onSubmit={save} className="max-w-xl space-y-4">
       <AdminPageHeader

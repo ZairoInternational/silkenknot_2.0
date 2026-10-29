@@ -10,6 +10,7 @@ import type { Address, Order } from "@/lib/types";
 import { LogoutConfirm } from "@/components/account/LogoutConfirm";
 import { OtpAuth } from "@/components/account/OtpAuth";
 import { AccountDrawer } from "@/components/layout/AccountDrawer";
+import { AccountPageSkeleton } from "@/components/storefront/PageSkeletons";
 import { Field, Media } from "@/components/ui";
 import { afterAuthPath, needsName, profileCompletion, safeNext } from "@/lib/auth/browser";
 import { waybillListLabel } from "@/lib/shipping/states";
@@ -54,7 +55,7 @@ function Guard({ children }: { children: React.ReactNode }) {
       router.replace(`/account/login?next=${encodeURIComponent(pathname || "/account")}`);
     }
   }, [store.ready, store.currentUser, router, pathname]);
-  if (!store.currentUser) return <div className="page-pad px-5 text-mute">Opening your account…</div>;
+  if (!store.currentUser) return <AccountPageSkeleton />;
   return <>{children}</>;
 }
 

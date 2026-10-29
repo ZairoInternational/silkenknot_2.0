@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AdminPageHeader } from "@/components/admin/Studio";
+import { AdminPageHeader } from "@/components/admin/AdminShell";
 import { useStore } from "@/lib/store";
 
 export default function AdminAccountPage() {

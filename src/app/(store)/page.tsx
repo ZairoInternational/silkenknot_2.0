@@ -8,7 +8,9 @@ import { ClaimMarquee } from "@/components/home/ClaimMarquee";
 import { NewLaunches } from "@/components/home/NewLaunches";
 import { BrandStory, Newsletter } from "@/components/home/Flow";
 import Reviews from "@/components/home/Reviews";
+import { PromotionalStrip } from "@/components/home/PromotionalStrip";
 import { WelcomeScratchOffer } from "@/components/offers/WelcomeScratchOffer";
+import { getPublicBannersForHome } from "@/lib/banners/server";
 import { getHeroContent } from "@/lib/hero/server";
 import { buildPageMetadata, DEFAULT_DESCRIPTION, SITE_NAME } from "@/lib/seo/metadata";
 // import { GiftSets } from "@/components/home/GiftSets";
@@ -29,10 +31,11 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const hero = await getHeroContent();
+  const [hero, campaigns] = await Promise.all([getHeroContent(), getPublicBannersForHome()]);
   return (
     <>
-      <Hero content={hero} />
+      <Hero content={hero} campaignBanners={campaigns.hero} />
+      <PromotionalStrip banners={campaigns.strip} />
       <CategoryStrip />
       <NewLaunches />
       <CategorySection />

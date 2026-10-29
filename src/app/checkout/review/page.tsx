@@ -303,7 +303,11 @@ export default function ReviewPage() {
                 {address.email} · {address.phone}
               </p>
             ) : (
-              <p>Loading address…</p>
+              <div className="space-y-2" aria-busy="true" aria-label="Loading address">
+                <div className="h-4 w-40 animate-pulse rounded bg-[#e6e0d6]" />
+                <div className="h-4 w-56 animate-pulse rounded bg-[#eee8de]" />
+                <div className="h-4 w-48 animate-pulse rounded bg-[#eee8de]" />
+              </div>
             )}
           </div>
           <div className="reviewBlock">

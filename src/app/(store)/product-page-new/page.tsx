@@ -7,6 +7,7 @@ import { Check, Heart, Leaf, ShoppingBag, SquarePen, Truck } from "lucide-react"
 import { Media, WishlistButton } from "@/components/ui";
 import { DeliveryChoice } from "@/components/product/DeliveryChoice";
 import { ProductBreadcrumbs } from "@/components/seo/ProductBreadcrumbs";
+import { ProductPageSkeleton } from "@/components/storefront/PageSkeletons";
 import { trackViewItem } from "@/lib/analytics";
 import { seedProducts } from "@/lib/data";
 import { FREE_SHIPPING_AT, formatPrice } from "@/lib/format";
@@ -36,7 +37,7 @@ export default function ProductPageNew({ slug = "silk-veil-body-butter" }: { slu
 
   if (!product || !product.active) {
     if (!store.ready) {
-      return <p className="page-pad px-6 text-base text-[#4e4943]">Opening this product…</p>;
+      return <ProductPageSkeleton />;
     }
     return (
       <p className="page-pad px-6 text-base text-[#4e4943]">
