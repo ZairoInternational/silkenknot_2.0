@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import { ArrowRight, Leaf, ShieldCheck, Truck } from "lucide-react";
 import { SiteChrome } from "@/components/providers";
 
-const display = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+const display = localFont({
+  src: "./fonts/playfair-display-latin-wght-normal.woff2",
+  weight: "400 600",
   display: "swap",
 });
 

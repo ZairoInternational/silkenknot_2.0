@@ -321,6 +321,7 @@ function CampaignFullBleed({
   const href = banner.cta.enabled && banner.cta.href ? banner.cta.href : "";
   const label = banner.image.alt || "Campaign banner";
   const linkProps = banner.cta.openInNewTab ? ({ target: "_blank", rel: "noopener noreferrer" } as const) : {};
+  const fadeMs = reduced ? 0.01 : 0.7;
 
   return (
     <div className="absolute inset-0" style={{ touchAction: "pan-y" }}>
@@ -328,15 +329,16 @@ function CampaignFullBleed({
       <div aria-hidden className="absolute inset-x-0 top-0 z-0 h-[var(--nav-h)] bg-white" />
 
       {/* Creative lives fully below the nav — no overlay copy, blur, or CTA chrome. */}
-      <div className="absolute inset-x-0 bottom-0 top-[var(--nav-h)] overflow-hidden">
+      <div className="absolute inset-x-0 bottom-0 top-[var(--nav-h)] overflow-hidden bg-[#f6f1ea]">
         <AnimatePresence initial={false}>
           <motion.div
             key={banner.id}
             className="absolute inset-0"
-            initial={{ opacity: 0, scale: reduced ? 1 : 1.04 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: reduced ? 0.01 : 1.1, ease }}
+            // Fade the new image in on top; keep the outgoing image fully opaque underneath
+            // so the loop never flashes an empty (black) frame between slides.
+            initial={{ opacity: 0, zIndex: 2 }}
+            animate={{ opacity: 1, zIndex: 2, transition: { duration: fadeMs, ease } }}
+            exit={{ opacity: 1, zIndex: 1, transition: { duration: fadeMs } }}
           >
             <FullBleedMedia
               desktop={banner.image.desktopUrl}
@@ -416,14 +418,19 @@ export function Hero({
       }
     >
       <section
-        className={`relative min-h-[72svh] overflow-hidden md:min-h-0 md:flex-1 ${isCampaign ? "bg-[#2c2926] text-[#f7f3ee]" : "bg-[#f6f1ea] text-ink"}`}
+        className="relative min-h-[72svh] overflow-hidden bg-[#f6f1ea] text-ink md:min-h-0 md:flex-1"
         aria-label={preview ? "Homepage hero preview" : "Body care, bath, and scent"}
         aria-roledescription="carousel"
       >
-        <AnimatePresence mode="wait" initial={false}>
+        {/*
+          Crossfade modes (no mode="wait"): wait left a blank frame while the section
+          was still on the campaign black bg — that flash showed between the last slide
+          and the first campaign. Stable keys keep campaign↔campaign on one shell.
+        */}
+        <AnimatePresence initial={false}>
           {isCampaign && current.kind === "campaign" ? (
             <motion.div
-              key={`mode-campaign-${current.id}`}
+              key="mode-campaign"
               className="absolute inset-0"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -440,7 +447,7 @@ export function Hero({
           ) : classic ? (
             <motion.div
               key="mode-classic"
-              className="absolute inset-0"
+              className="absolute inset-0 bg-[#f6f1ea]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

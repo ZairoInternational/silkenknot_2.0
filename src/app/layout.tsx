@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import localFont from "next/font/local";
 import { AnalyticsConsentBanner } from "@/components/analytics/AnalyticsConsentBanner";
 import { GoogleTagManager } from "@/components/analytics/GoogleTagManager";
 import { Providers } from "@/components/providers";
@@ -13,9 +13,9 @@ import "./globals.css";
 
 const gtmId = parseGtmId(process.env.NEXT_PUBLIC_GTM_ID);
 
-const outfit = Outfit({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+const outfit = localFont({
+  src: "./fonts/outfit-latin-wght-normal.woff2",
+  weight: "300 600",
   variable: "--font-outfit",
   display: "swap",
 });

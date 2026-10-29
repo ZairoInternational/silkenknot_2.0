@@ -15,7 +15,7 @@ import {
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
-import { useBrandSettings } from "@/lib/brand/client";
+import { Mark } from "@/components/ui";
 
 type FooterLink = {
   label: string;
@@ -23,8 +23,60 @@ type FooterLink = {
   icon?: LucideIcon;
 };
 
-/** Update when the brand Instagram handle is ready. */
+/** Update when each brand profile URL is ready. */
 const INSTAGRAM_HREF = "https://www.instagram.com/silkenknot_/";
+const FACEBOOK_HREF = "";
+const X_HREF = "";
+const LINKEDIN_HREF = "";
+
+const socialLinks = [
+  {
+    label: "Instagram",
+    href: INSTAGRAM_HREF,
+    icon: (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src="/silknknot/instagram_icon.webp"
+        alt=""
+        width={24}
+        height={24}
+        className="object-contain"
+      />
+    ),
+  },
+  // {
+  //   label: "Facebook",
+  //   href: FACEBOOK_HREF,
+  //   icon: (
+  //           <img
+  //       src="/silknknot/facebook_icon.avif"
+  //       alt=""
+  //       width={24}
+  //       height={24}
+  //       className="object-contain"
+  //     />
+
+  //   ),
+  // },
+  // {
+  //   label: "X",
+  //   href: X_HREF,
+  //   icon: (
+  //     <svg viewBox="0 0 24 24" width={20} height={20} aria-hidden fill="currentColor">
+  //       <path d="M17.7 3H20.5l-7.05 8.06L21.5 21h-5.9l-4.62-6.04L5.7 21H2.9l7.55-8.63L2.5 3h6.05l4.17 5.52L17.7 3Zm-1.04 16.2h1.64L7.43 4.7H5.67l11 14.5Z" />
+  //     </svg>
+  //   ),
+  // },
+  // {
+  //   label: "LinkedIn",
+  //   href: LINKEDIN_HREF,
+  //   icon: (
+  //     <svg viewBox="0 0 24 24" width={22} height={22} aria-hidden fill="currentColor">
+  //       <path d="M6.94 8.5H3.56V20h3.38V8.5ZM5.25 3.5A1.97 1.97 0 1 0 5.26 7.44 1.97 1.97 0 0 0 5.25 3.5ZM20.44 20h-3.37v-5.6c0-1.34-.02-3.05-1.86-3.05-1.86 0-2.15 1.45-2.15 2.95V20H9.7V8.5h3.23v1.57h.05c.45-.85 1.55-1.75 3.19-1.75 3.41 0 4.04 2.25 4.04 5.17V20Z" />
+  //     </svg>
+  //   ),
+  // },
+] as const;
 
 const CONTACT = {
   address: "117/N/70 3rd Floor, Kakadeo, Kanpur, India",
@@ -79,29 +131,15 @@ function FooterNavLink({ label, href, icon: Icon }: FooterLink) {
   );
 }
 
-function FooterBrand() {
-  const brand = useBrandSettings();
-  return (
-    <Link href="/" aria-label="Silken Knot home" className="inline-flex max-w-full items-center">
-      {/* Same mark as the header — sized for the dark footer, no duplicate wordmark text. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={brand.iconUrl}
-        alt={brand.iconAlt || "Silken Knot"}
-        width={220}
-        height={80}
-        className="h-10 w-auto max-w-[12rem] object-contain object-left md:h-12 md:max-w-[14rem]"
-      />
-    </Link>
-  );
-}
-
 export function Footer() {
   return (
     <footer className="bg-ink text-paper">
       <div className="mx-auto grid max-w-[1440px] grid-cols-2 gap-x-6 gap-y-8 px-5 py-10 md:grid-cols-[1.3fr_1fr_1fr_1.2fr] md:gap-10 md:px-10 md:py-14">
         <div className="col-span-2 md:col-span-1">
-          <FooterBrand />
+          <p className="inline-flex items-center gap-2 font-serif text-3xl">
+            <Mark className="h-8 w-15" />
+            Silken Knot
+          </p>
           <p className="mt-4 max-w-xs text-sm leading-6 text-paper/70">
             Body care, bath, wellness, and aromatherapy for everyday rituals.
           </p>
@@ -147,23 +185,28 @@ export function Footer() {
         </div>
       </div>
       <div className="mx-auto flex max-w-[1440px] flex-col items-center gap-4 border-t border-white/10 px-5 py-5 text-[11px] uppercase tracking-[0.16em] text-paper/55 md:flex-row md:justify-between md:px-10">
-        <p>© {new Date().getFullYear()} Silken Knot</p>
-        <Link
-          href={INSTAGRAM_HREF}
-          target="_blank"
-          rel="noreferrer"
-          aria-label="Silken Knot on Instagram"
-          className="inline-flex items-center justify-center transition-opacity hover:opacity-70"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/silknknot/instagram_icon.webp"
-            alt="Instagram icon"
-            width={24}
-            height={24}
-            className=" object-contain"
-          />
-        </Link>
+        <p>
+          © {new Date().getFullYear()} Silken Knot
+          <sup className="ml-0.5 text-[0.7em] tracking-normal" aria-label="trademark">
+            ™
+          </sup>
+        </p>
+        <nav className="flex items-center gap-4" aria-label="Social">
+          {socialLinks.map((item) => {
+            const href = item.href.trim();
+            return (
+              <Link
+                key={item.label}
+                href={href || "#"}
+                {...(href ? { target: "_blank", rel: "noreferrer" } : {})}
+                aria-label={`Silken Knot on ${item.label}`}
+                className="inline-flex size-6 items-center justify-center text-paper/85 transition-opacity hover:opacity-70"
+              >
+                {item.icon}
+              </Link>
+            );
+          })}
+        </nav>
         <nav className="flex flex-wrap items-center justify-center gap-5" aria-label="Policies">
           {legalLinks.map((link) => (
             <FooterNavLink key={link.label} {...link} />
