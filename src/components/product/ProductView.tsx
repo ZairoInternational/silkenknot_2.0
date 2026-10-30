@@ -134,7 +134,7 @@ function ProductDetail({ product }: { product: Product }) {
             </div>
             <p className="mt-6 max-w-md text-mute">{product.shortDescription}</p>
             <fieldset className="mt-8">
-              <legend className="eyebrow text-mute">{product.categoryId === "lifestyle" ? "Size" : "Size"}</legend>
+              <legend className="eyebrow text-mute">Size</legend>
               <div className="mt-3 flex flex-wrap gap-2">
                 {product.variants.map((item) => (
                   <button
@@ -218,7 +218,7 @@ function ProductDetail({ product }: { product: Product }) {
         <section>
           <h2 className="font-serif text-4xl">Returns</h2>
           <p className="mt-4 leading-7 text-mute">
-            All products are final sale for hygiene and safety reasons. You can cancel an order before it is dispatched.{" "}
+            No returns or replacements once an order has shipped. A refund is only available if you paid online and cancel before the order ships.{" "}
             <a href="/returns" className="underline underline-offset-4">
               Cancellation & refunds
             </a>

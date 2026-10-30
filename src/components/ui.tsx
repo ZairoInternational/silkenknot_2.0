@@ -5,7 +5,12 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion as useFramerReduced } from "framer-motion";
 import { Heart } from "lucide-react";
 import { useBrandSettings } from "@/lib/brand/client";
-import { getBrandPlacement, getBrandPlacementIcon, type BrandPlacementId } from "@/lib/brand/content";
+import {
+  getBrandPlacement,
+  getBrandPlacementIcon,
+  resolveBrandIconUrl,
+  type BrandPlacementId,
+} from "@/lib/brand/content";
 import { discountPercent, formatPrice } from "@/lib/format";
 import { useStore } from "@/lib/store";
 
@@ -109,10 +114,11 @@ export function Reveal({
 
 export function Mark({ className = "h-6 w-6" }: { className?: string }) {
   const brand = useBrandSettings();
+  const src = resolveBrandIconUrl(brand.iconUrl);
   return (
     // Brand mark is configured in Studio → Logo; keep a plain img so any CDN/local URL works.
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={brand.iconUrl} alt="" aria-hidden className={`object-contain ${className}`} />
+    <img src={src} alt="" aria-hidden className={`object-contain ${className}`} />
   );
 }
 

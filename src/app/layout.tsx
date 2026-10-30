@@ -5,6 +5,7 @@ import { GoogleTagManager } from "@/components/analytics/GoogleTagManager";
 import { Providers } from "@/components/providers";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { parseGtmId } from "@/lib/analytics/config";
+import { resolveBrandIconUrl } from "@/lib/brand/content";
 import { getBrandSettings } from "@/lib/brand/server";
 import { getSiteMedia } from "@/lib/site-media/server";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/jsonLd";
@@ -23,13 +24,13 @@ const outfit = localFont({
 
 export async function generateMetadata(): Promise<Metadata> {
   const brand = await getBrandSettings();
-  return buildRootMetadata({ iconUrl: brand.iconUrl });
+  return buildRootMetadata({ iconUrl: resolveBrandIconUrl(brand.iconUrl) });
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const [brand, siteMedia] = await Promise.all([getBrandSettings(), getSiteMedia()]);
   const origin = absoluteUrl("/");
-  const logoUrl = absoluteAssetUrl(brand.iconUrl);
+  const logoUrl = absoluteAssetUrl(resolveBrandIconUrl(brand.iconUrl));
   const org = organizationJsonLd({
     name: SITE_NAME,
     url: origin,

@@ -93,7 +93,6 @@ const columns: { title: string; links: FooterLink[] }[] = [
       { label: "Bath", href: "/shop?type=Bath%20Salts,Sugar%20Scrub,Whipped%20Soap", icon: Bath },
       { label: "Soap", href: "/shop?category=bath-soap", icon: Sparkles },
       { label: "Candles", href: "/shop?category=aromatherapy", icon: Flame },
-      { label: "Lifestyle", href: "/shop?category=lifestyle", icon: Leaf },
       { label: "Best Sellers", href: "/shop?bestseller=1", icon: Award },
     ],
   },
@@ -102,7 +101,6 @@ const columns: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: "Contact & grievance", href: "/contact", icon: Mail },
       { label: "FAQ", href: "/faq", icon: HelpCircle },
-      { label: "Journal", href: "/journal", icon: BookOpen },
       { label: "Ingredients", href: "/ingredients", icon: Leaf },
       { label: "Our Story", href: "/about", icon: BookOpen },
     ],

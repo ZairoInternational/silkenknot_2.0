@@ -3,7 +3,6 @@ import type {
   Category,
   Coupon,
   Faq,
-  JournalEntry,
   Order,
   Product,
   Review,
@@ -130,14 +129,6 @@ const guides: Record<string, { ingredients: string[]; howToUse: string[] }> = {
       "Extinguish and let the wax settle before relighting.",
     ],
   },
-  Apparel: {
-    ingredients: ["Washed linen or cotton, as described on the garment label."],
-    howToUse: [
-      "Wash cold with similar colours.",
-      "Hang to dry.",
-      "Warm iron on the reverse if you want a sharper line.",
-    ],
-  },
 };
 
 function faqs(name: string, scent: string): Faq[] {
@@ -179,16 +170,6 @@ function vols(
     price: row.price,
     compareAtPrice: row.compare,
     stock: row.stock,
-  }));
-}
-
-function sizes(price: number, compare?: number): Variant[] {
-  return ["XS", "S", "M", "L", "XL"].map((label, index) => ({
-    id: label.toLowerCase(),
-    label,
-    price,
-    compareAtPrice: compare,
-    stock: [3, 8, 12, 9, 4][index],
   }));
 }
 
@@ -268,14 +249,6 @@ export const seedCategories: Category[] = [
     imageAlt: "/silknknot/candle2.webp",
     order: 2,
   },
-  {
-    id: "lifestyle",
-    name: "Lifestyle",
-    description: "Linen and washed cotton meant to be worn after the bath.",
-    image: "/silknknot/candle4.jpg",
-    imageAlt: "/silknknot/whipped_shop.jpg",
-    order: 3,
-  },
 ];
 
 export const seedProducts: Product[] = [
@@ -287,7 +260,7 @@ export const seedProducts: Product[] = [
     scent: "sandalwood and rice milk",
     shortDescription: "A whipped shea butter that melts on warm skin and leaves a soft, dry finish.",
     description:
-      "Silk Veil is the butter we reach for when the bath is over and the skin is still warm. Shea and murumuru melt on contact, then settle so clothing can follow. The scent — sandalwood warmed with rice milk — is present for a minute and then stays close.",
+      "Silk Veil is the butter we reach for when the bath is over and the skin is still warm. Shea and murumuru melt on contact, then settle to a soft, dry finish. The scent — sandalwood warmed with rice milk — is present for a minute and then stays close.",
     benefits: ["Deeply nourishing", "Softens dry skin", "Comfortable for every day"],
     images: ["/silknknot/body_butter.jpg", "/silknknot/body_butter2.webp"],
     variants: vols([
@@ -304,7 +277,7 @@ export const seedProducts: Product[] = [
       review("Meera Iyer", 5, "The finish is the point", "It sinks in. I can dress straight after and my skin still feels looked after at night.", 12),
       review("Anika Shah", 5, "Quiet scent", "Sandalwood without the heavy trail. The 200 ml lives by the shower.", 4),
       review("Rahul Menon", 4, "Rich, not greasy", "A little goes further than I expected. Elbows are finally calm.", 18),
-      review("Leela Krishnan", 5, "Warm skin, then clothes", "I press it in while my skin is still damp. It melts, then settles, and a shirt can go on.", 7),
+      review("Leela Krishnan", 5, "Warm skin, soft finish", "I press it in while my skin is still damp. It melts, then settles without feeling greasy.", 7),
       review("Farah Qureshi", 4, "The 100 ml for a week away", "Enough for travel. The scent stays close to the skin instead of filling the room.", 21),
       review("Sana Kapoor", 5, "A little covers both shins", "A small amount is enough for shins and elbows. I have gone back to the 200 ml.", 27),
     ],
@@ -590,76 +563,6 @@ export const seedProducts: Product[] = [
     createdAt: "2026-04-19T00:00:00.000Z",
     reviews: [review("Noor Abdullah", 5, "Dinner, then quiet", "We light it when people arrive and it is still good after they leave.", 14)],
   }),
-  make({
-    id: "stonewashed-robe",
-    name: "Stonewashed Robe",
-    categoryId: "lifestyle",
-    type: "Apparel",
-    scent: "unscented washed linen",
-    shortDescription: "A stonewashed linen robe for the walk from the bath to the rest of the evening.",
-    description:
-      "The Stonewashed Robe is cut simply and washed until the linen stops standing at attention. It is the piece you put on while the candle is being lit. Deep pockets. A tie that stays tied. Nothing else to negotiate.",
-    benefits: ["Washed linen", "Easy after the bath", "Gets better with wear"],
-    images: ["/silknknot/whipped_shop.jpg", "/silknknot/candle4.jpg"],
-    variants: sizes(3400, 3900),
-    rating: 4.8,
-    reviewCount: 61,
-    bestseller: true,
-    createdAt: "2026-02-02T00:00:00.000Z",
-    reviews: [review("Rhea Kapoor", 5, "Lives on the back of the door", "I wear it most nights. It doesn’t look precious, which is why I actually use it.", 17)],
-  }),
-  make({
-    id: "ritual-wrap",
-    name: "Ritual Wrap",
-    categoryId: "lifestyle",
-    type: "Apparel",
-    scent: "unscented cotton",
-    shortDescription: "A light cotton wrap for hair, shoulders, or the few minutes after washing.",
-    description:
-      "The Ritual Wrap is a length of washed cotton with a weight that stays put on the shoulders. Use it as a robe when the evening is warm, or as a wrap while oil is still settling into the ends of your hair.",
-    benefits: ["Light cotton", "Works as a wrap or cover", "Washes without fuss"],
-    images: ["/silknknot/candle4.jpg", "/silknknot/whipped_shop.jpg"],
-    variants: sizes(1890).filter((size) => size.label !== "XL"),
-    rating: 4.5,
-    reviewCount: 24,
-    createdAt: "2026-05-11T00:00:00.000Z",
-    reviews: [review("Simran Kaur", 4, "Shoulder wrap", "Soft from the first wash. I wanted a smaller everyday layer and this is it.", 22)],
-  }),
-  make({
-    id: "column-lounge-set",
-    name: "Column Lounge Set",
-    categoryId: "lifestyle",
-    type: "Apparel",
-    scent: "unscented linen",
-    shortDescription: "A column top and trouser in washed linen, for evenings that stay at home.",
-    description:
-      "The Column Set is two pieces cut with almost no decoration: a straight top and a straight trouser. The linen is washed, the colour is the colour of undyed cloth, and the set is meant to be worn after a bath or for a long morning.",
-    benefits: ["Two-piece set", "Undyed linen", "Room to move"],
-    images: ["/silknknot/bath_salts2.webp", "/silknknot/candle2.webp"],
-    variants: sizes(4200).filter((size) => ["XS", "S", "M", "L"].includes(size.label)),
-    rating: 4.7,
-    reviewCount: 19,
-    newArrival: true,
-    createdAt: "2026-09-15T00:00:00.000Z",
-    reviews: [review("Amrita Sen", 5, "Sunday uniform", "I wore it the day it arrived. The trouser length is honest.", 2)],
-  }),
-  make({
-    id: "everyday-linen-shirt",
-    name: "Everyday Linen Shirt",
-    categoryId: "lifestyle",
-    type: "Apparel",
-    scent: "unscented linen",
-    shortDescription: "A plain linen shirt with a soft collar, for the hours between home and outside.",
-    description:
-      "Everyday Linen is the shirt that can leave the house. It is cut with a little air, the collar sits quietly, and the cloth wrinkles in the way linen should. Wear it open over the lounge trouser or buttoned on its own.",
-    benefits: ["All-day linen", "Soft collar", "Layers easily"],
-    images: ["/silknknot/candle2.webp", "/silknknot/bath_salts1.jpg"],
-    variants: sizes(2450),
-    rating: 4.6,
-    reviewCount: 37,
-    createdAt: "2026-03-22T00:00:00.000Z",
-    reviews: [review("Vikram Iyer", 4, "Wrinkles correctly", "It looks worn-in after one wash. True to size for me in M.", 20)],
-  }),
 ];
 
 export const seedCoupons: Coupon[] = [
@@ -825,11 +728,11 @@ export const seedOrders: Order[] = [
     address: seedUsers[1].addresses[0],
     delivery: "standard",
     payment: "cod",
-    items: [line("linen-cedar-jar", 1, 1), line("everyday-linen-shirt", 2, 1)],
-    subtotal: 3430,
+    items: [line("linen-cedar-jar", 1, 1), line("quiet-hour-candle", 0, 1)],
+    subtotal: 2360,
     discount: 200,
     shipping: 0,
-    total: 3230,
+    total: 2160,
     couponCode: "QUIET200",
   },
   {
@@ -862,45 +765,6 @@ export const seedOrders: Order[] = [
   },
 ];
 
-export const journal: JournalEntry[] = [
-  {
-    slug: "the-order-of-a-bath",
-    title: "The order of a bath",
-    date: "2026-09-12",
-    excerpt: "Cleanse, polish, nourish, then light something. The sequence matters more than the number of products.",
-    image: photo("1544161515-4ab6ce6db874"),
-    paragraphs: [
-      "A ritual is only a routine you are willing to repeat. At Silken Knot that usually means four gestures, in the same order, even when the evening is short.",
-      "Cleanse first, while the water is still honest. Exfoliate only a few nights a week — skin that is polished daily has nothing left to give. Nourish while you are still damp. Relax last, which is often just a candle and a robe and the decision not to start something else.",
-      "You do not need every object at once. You need the order. The butter works better after the salt. The candle works better when your hands are already quiet.",
-    ],
-  },
-  {
-    slug: "how-we-think-about-scent",
-    title: "How we think about scent",
-    date: "2026-08-03",
-    excerpt: "If a fragrance announces you from across a room, it is too loud for this house.",
-    image: photo("1572726729207-a78d6feb18d7"),
-    paragraphs: [
-      "We build scents to stay near the skin or near the table. Sandalwood, hinoki, fig leaf, linen, a little smoke. Nothing that needs to be introduced.",
-      "Candles are the exception that proves the rule: they may scent a room, but they should not scent the corridor. If you can smell Quiet Hour from the front door, the room is too small or the burn is too long.",
-      "Bodies are similar. A butter should be discoverable by someone close to you, not by the person who shares your lift.",
-    ],
-  },
-  {
-    slug: "linen-after-water",
-    title: "Linen after water",
-    date: "2026-06-21",
-    excerpt: "The clothes in the collection are not a separate idea. They are what you put on next.",
-    image: photo("1620799140408-edc6dcb6d633"),
-    paragraphs: [
-      "We added apparel only when we could imagine it on a hook beside the bath. If a garment needed an occasion, it did not belong.",
-      "Linen wrinkles. That is not a flaw we are interested in solving. The stonewashed robe, the column set, and the everyday shirt are washed before they reach you so the first wear is already the second personality of the cloth.",
-      "Put them on while your skin is still soft from the butter. That is the styling advice.",
-    ],
-  },
-];
-
 export const sharedFaqs: Faq[] = [
   {
     question: "When do I get free shipping?",
@@ -912,7 +776,8 @@ export const sharedFaqs: Faq[] = [
   },
   {
     question: "Can I return a product?",
-    answer: "All products are final sale for hygiene and safety reasons. You can cancel an order before it is dispatched by visiting your order page.",
+    answer:
+      "No. We do not accept returns or replacements once an order has shipped. A refund is only available if you paid online and cancel before the order ships. Requests outside these terms are not accepted.",
   },
   {
     question: "Are the scents strong?",

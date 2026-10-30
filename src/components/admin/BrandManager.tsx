@@ -34,6 +34,7 @@ import {
   BRAND_SIZE_PRESETS,
   BRAND_SPACING_OPTIONS,
   DEFAULT_BRAND,
+  resolveBrandIconUrl,
   getBrandPlacement,
   getBrandPlacementIcon,
 } from "@/lib/brand/content";
@@ -541,7 +542,7 @@ export function BrandManager() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={draft.iconUrl || DEFAULT_BRAND.iconUrl}
+              src={resolveBrandIconUrl(draft.iconUrl || DEFAULT_BRAND.iconUrl)}
               alt={draft.iconAlt || "Brand logo"}
               className="max-h-28 w-auto max-w-full object-contain"
             />
@@ -614,7 +615,7 @@ export function BrandManager() {
                   patch({ iconUrl });
                   inspectUrl(iconUrl);
                 }}
-                placeholder="https://cdn.example.com/logo.png"
+                placeholder="/favicon.ico or https://cdn.example.com/mark.png"
                 className="h-full w-full bg-transparent text-sm outline-none"
                 style={{ color: TEAL }}
               />

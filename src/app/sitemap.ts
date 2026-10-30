@@ -1,5 +1,4 @@
 import type { MetadataRoute } from "next";
-import { journal } from "@/lib/data";
 import { listCategories } from "@/lib/repository";
 import { absoluteUrl } from "@/lib/seo/site";
 import { listActiveProductsForSitemap } from "@/lib/seo/product";
@@ -10,7 +9,6 @@ const STATIC_PATHS: Array<{ path: string; changeFrequency: MetadataRoute.Sitemap
   { path: "/about", changeFrequency: "monthly", priority: 0.6 },
   { path: "/faq", changeFrequency: "monthly", priority: 0.6 },
   { path: "/ingredients", changeFrequency: "monthly", priority: 0.5 },
-  { path: "/journal", changeFrequency: "weekly", priority: 0.7 },
   { path: "/contact", changeFrequency: "yearly", priority: 0.4 },
   { path: "/shipping", changeFrequency: "yearly", priority: 0.3 },
   { path: "/returns", changeFrequency: "yearly", priority: 0.3 },
@@ -37,15 +35,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: absoluteUrl(`/shop?category=${encodeURIComponent(category.id)}`),
       changeFrequency: "weekly",
       priority: 0.8,
-    });
-  }
-
-  for (const entry of journal) {
-    entries.push({
-      url: absoluteUrl(`/journal/${entry.slug}`),
-      lastModified: parseDate(entry.date),
-      changeFrequency: "monthly",
-      priority: 0.55,
     });
   }
 

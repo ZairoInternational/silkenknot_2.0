@@ -15,7 +15,6 @@ const categories = [
   { label: "Body Care", id: "body-care" },
   { label: "Bath & Soap", id: "bath-soap" },
   { label: "Aromatherapy", id: "aromatherapy" },
-  { label: "Lifestyle", id: "lifestyle" },
 ] as const;
 
 export function ShopPreview() {
@@ -25,7 +24,6 @@ export function ShopPreview() {
     { title: "Body Care", description: "Nourish and replenish", image: media.collectionBodyCare, id: "body-care" },
     { title: "Bath & Soap", description: "Slow down and unwind", image: media.collectionBathSoap, id: "bath-soap" },
     { title: "Aromatherapy", description: "Find your calm", image: media.bestsellerCandle, id: "aromatherapy" },
-    { title: "Lifestyle", description: "Little everyday luxuries", image: media.collectionLifestyle, id: "lifestyle" },
   ] as const;
   const [category, setCategory] = useState<(typeof categories)[number]["id"]>("all");
   const [sort, setSort] = useState("featured");

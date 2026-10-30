@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { resolveBrandIconUrl } from "@/lib/brand/content";
 import { absoluteAssetUrl, absoluteUrl, getSiteOrigin, isIndexableDeployment } from "@/lib/seo/site";
 
 export const SITE_NAME = "Silken Knot";
 export const DEFAULT_DESCRIPTION =
-  "Body care, bath essentials, aromatherapy, and quiet apparel. Everyday rituals, made better.";
+  "Body care, bath essentials, soap, and aromatherapy. Everyday rituals, made better.";
 
 const NOINDEX: Metadata["robots"] = {
   index: false,
@@ -74,6 +75,7 @@ export function buildRootMetadata(input: { iconUrl: string }): Metadata {
   const origin = getSiteOrigin();
   const verificationToken = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
   const indexable = isIndexableDeployment();
+  const iconUrl = resolveBrandIconUrl(input.iconUrl);
   return {
     metadataBase: new URL(origin),
     title: {
@@ -83,8 +85,8 @@ export function buildRootMetadata(input: { iconUrl: string }): Metadata {
     description: DEFAULT_DESCRIPTION,
     applicationName: SITE_NAME,
     icons: {
-      icon: [{ url: input.iconUrl }],
-      apple: [{ url: input.iconUrl }],
+      icon: [{ url: iconUrl }, { url: "/favicon.ico" }],
+      apple: [{ url: iconUrl }],
     },
     openGraph: {
       type: "website",
@@ -142,7 +144,6 @@ export function shopMetadataFromSearchParams(params: Record<string, string | str
     "body-care": "Body Care",
     "bath-soap": "Bath & Soap",
     aromatherapy: "Aromatherapy",
-    lifestyle: "Lifestyle",
   };
 
   const categoryLabel = category ? categoryLabels[category] : undefined;
@@ -151,7 +152,7 @@ export function shopMetadataFromSearchParams(params: Record<string, string | str
   const title = categoryLabel ? `${categoryLabel}` : "Shop";
   const description = categoryLabel
     ? `Shop Silken Knot ${categoryLabel.toLowerCase()} — body care, bath, and wellness made for everyday rituals.`
-    : "Shop Silken Knot body care, bath essentials, aromatherapy, and quiet apparel.";
+    : "Shop Silken Knot body care, bath essentials, soap, and aromatherapy.";
 
   return buildPageMetadata({
     title,

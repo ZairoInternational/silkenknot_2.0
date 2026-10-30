@@ -118,8 +118,8 @@ export const SUPPORT_FAQ: SupportFaqEntry[] = [
     id: "returns",
     label: "Returns and replacements",
     answer:
-      "All products are final sale for hygiene and safety reasons. You can cancel an order before it is dispatched from your order page. Refund returns and change-of-mind returns are not offered. If a line cannot be fulfilled, that line is refunded.",
-    policySource: "sharedFaqs Can I return; /returns policy; TermsPage fulfil/refund line",
+      "We do not accept returns or replacements once an order has shipped. A refund is only processed if you paid online and cancel before the order ships. Requests outside these terms are not accepted. If we cannot fulfil a prepaid item, that item is refunded.",
+    policySource: "sharedFaqs Can I return; /returns policy; TermsPage",
     followUps: ["returns_eligible", "returns_how_cancel", "returns_damaged"],
     actions: [viewOrders, readReturns, { id: "read_faq", label: "Read FAQ", kind: "link", href: SUPPORT_LINKS.faq }, backTopics],
   },
@@ -127,15 +127,15 @@ export const SUPPORT_FAQ: SupportFaqEntry[] = [
     id: "returns_eligible",
     label: "What can I cancel or return?",
     answer:
-      "You can cancel an order that has not been dispatched yet, from your order page. After dispatch, products are final sale. There is no self-service replacement request in your account — if something arrives damaged or incorrect, contact support.",
-    policySource: "sharedFaqs + customerCanCancel (pre-dispatch only); /returns",
+      "You can cancel from your order page before the order ships. Returns and replacements are not accepted after shipping. A refund applies only to online payments cancelled before shipping — not to cash on delivery, and not after the order has shipped.",
+    policySource: "sharedFaqs + customerCanCancel (pre-ship only); /returns",
     actions: [viewOrders, readReturns, contactSupport, backTopics],
   },
   {
     id: "returns_how_cancel",
     label: "How do I cancel an order?",
     answer:
-      "Open your order and cancel it before it is dispatched. If an online payment was already captured, your order page will show whether a refund is pending.",
+      "Open your order and cancel it before it ships. If you paid online and cancel in time, your order page will show refund status. If Cancel is gone, the order has already shipped and cannot be refunded under our terms.",
     policySource: "customerCanCancel; POST /api/checkout/cancel; paymentState refund_pending",
     actions: [viewOrders, backTopics],
     flow: "orders",
@@ -144,8 +144,8 @@ export const SUPPORT_FAQ: SupportFaqEntry[] = [
     id: "returns_damaged",
     label: "My order arrived damaged or incorrect",
     answer:
-      "Sorry about that. Under our final-sale policy there is no automated replacement form. Contact support with your order number and a short description so the team can help you.",
-    policySource: "Final sale policy; ContactForm /contact — no replacement workflow",
+      "Contact support with your order number and what went wrong. We only act within our stated terms — returns, replacements, and refunds outside those terms are not accepted.",
+    policySource: "/returns terms; ContactForm /contact — no replacement workflow outside terms",
     actions: [contactSupport, viewOrders, backTopics],
   },
   {
@@ -210,7 +210,7 @@ export const SUPPORT_FAQ: SupportFaqEntry[] = [
   {
     id: "products_categories",
     label: "Explore product categories",
-    answer: "The shop groups body care, bath & soap, aromatherapy, and lifestyle. Open the shop to filter by category.",
+    answer: "The shop groups body care, bath & soap, and aromatherapy. Open the shop to filter by category.",
     policySource: "CategoryId union + /shop filters",
     actions: [
       browseShop,

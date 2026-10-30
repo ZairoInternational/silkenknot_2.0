@@ -855,7 +855,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const currentUser = db.users.find((user) => user.id === db.sessionUserId) ?? null;
   const activeProducts = useMemo(
-    () => db.products.filter((product) => product.active),
+    () =>
+      db.products.filter(
+        (product) =>
+          product.active &&
+          product.categoryId !== "lifestyle" &&
+          product.type !== "Apparel",
+      ),
     [db.products],
   );
 

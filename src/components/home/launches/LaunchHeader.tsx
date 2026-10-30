@@ -10,7 +10,7 @@ export function LaunchHeader() {
           Meet your new rituals
         </h2>
         <p className="mt-3 max-w-md text-sm leading-relaxed text-[#6f675d] md:text-base">
-          The newest butter, soap, candle, and linen, still close to the day they arrived.
+          The newest butter, soap, and candle, still close to the day they arrived.
         </p>
       </div>
       <Link

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { journal, sharedFaqs } from "@/lib/data";
+import { sharedFaqs } from "@/lib/data";
 import { photo } from "@/lib/format";
 import { Media } from "@/components/ui";
 
@@ -29,13 +29,13 @@ export function AboutPage() {
     <Editorial
       eyebrow="Our story"
       title="A studio for ordinary care."
-      lede="Silken Knot makes body care, bath, aromatherapy, and the clothes you put on afterwards."
+      lede="Silken Knot makes body care, bath, soap, and aromatherapy for everyday rituals."
     >
       <p>
         The house started with a butter that did not feel like a project. It was something to use after a shower, on a Tuesday, without a mirror speech. The soaps, scrubs, salts, and candles followed because the order of a bath asked for them.
       </p>
       <p>
-        We keep the palette quiet on purpose. The colour belongs to the product: cream, wood, linen, a little smoke. Formulas stay short. Scents stay close. Apparel is only here if it belongs on the hook beside the bath.
+        We keep the palette quiet on purpose. The colour belongs to the product: cream, wood, warm light, a little smoke. Formulas stay short. Scents stay close.
       </p>
       <p>
         Nothing in the collection is meant to be saved for a better day. The better day is the one you already have, slowed down by a few minutes.
@@ -51,8 +51,7 @@ export function IngredientsPage() {
   return (
     <Editorial eyebrow="Formulas" title="What goes into the jar." lede="Short lists. Recognisable materials. No theatre.">
       <p>Butters are built on shea and murumuru, softened with jojoba. Soaps are saponified olive, coconut, and shea, with glycerin left in the bar. Scrubs use sugar, not plastic beads. Salts are sea salt and magnesium. Candles are a coconut and soy wax with cotton wicks.</p>
-      <p>Fragrance is an essential-oil blend, dosed to sit near the skin. If you are sensitive, begin with Everyday Olive Soap or the unscented linen pieces.</p>
-      <p>Apparel is washed linen or cotton. The fibre is on the garment label, and the care is cold wash, hang dry.</p>
+      <p>Fragrance is an essential-oil blend, dosed to sit near the skin. If you are sensitive, begin with Everyday Olive Soap or a lightly scented formula.</p>
     </Editorial>
   );
 }
@@ -117,10 +116,10 @@ export function TermsPage() {
   return (
     <Editorial eyebrow="Studio" title="Terms" lede="A simple agreement for shopping with Silken Knot.">
       <p>
-        We describe products as honestly as we can. Colours on a screen may differ a little from what arrives. Sizes for clothing are listed on each piece. Ingredient and how-to notes are for everyday use—they’re not medical advice.
+        We describe products as honestly as we can. Colours on a screen may differ a little from what arrives. Ingredient and how-to notes are for everyday use—they’re not medical advice.
       </p>
       <p>
-        When you place an order, you’re offering to buy. We accept when you see confirmation after a successful online payment, or when a cash-on-delivery order is confirmed. If we can’t send something you ordered, we’ll refund that item. For cancellations and refunds, read{" "}
+        When you place an order, you’re offering to buy. We accept when you see confirmation after a successful online payment, or when a cash-on-delivery order is confirmed. Returns and replacements are not accepted outside our stated terms. A refund is only available for online payments cancelled before the order ships, or if we cannot fulfil an item you already paid for online. Read{" "}
         <Link href="/returns" className="underline underline-offset-4">
           Cancellation, returns & refunds
         </Link>
@@ -157,47 +156,6 @@ export function FaqPage() {
           <p>{faq.answer}</p>
         </section>
       ))}
-    </Editorial>
-  );
-}
-
-export function JournalIndex() {
-  return (
-    <div className="page-pad px-5 pb-24 md:px-10">
-      <p className="eyebrow text-mute">Journal</p>
-      <h1 className="mt-3 font-serif text-6xl">Notes from the studio.</h1>
-      <ul className="mt-12 grid gap-10 md:grid-cols-3">
-        {journal.map((entry) => (
-          <li key={entry.slug}>
-            <Link href={`/journal/${entry.slug}`}>
-              <span className="relative block aspect-[4/5] bg-cream">
-                <Media src={entry.image} alt={entry.title} sizes="(min-width: 768px) 30vw, 100vw" />
-              </span>
-              <span className="mt-4 block font-serif text-3xl">{entry.title}</span>
-              <span className="mt-2 block text-sm text-mute">{entry.excerpt}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export function JournalArticle({ slug }: { slug: string }) {
-  const entry = journal.find((item) => item.slug === slug);
-  if (!entry) {
-    return (
-      <Editorial eyebrow="Journal" title="This note is gone.">
-        <Link href="/journal">Back to the journal</Link>
-      </Editorial>
-    );
-  }
-  return (
-    <Editorial eyebrow={entry.date} title={entry.title} lede={entry.excerpt}>
-      <div className="relative mb-8 aspect-[16/10] bg-cream">
-        <Media src={entry.image} alt={entry.title} sizes="(min-width: 768px) 720px, 100vw" />
-      </div>
-      {entry.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
     </Editorial>
   );
 }

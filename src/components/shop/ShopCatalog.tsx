@@ -75,7 +75,9 @@ export function ShopCatalog() {
   // Use store.activeProducts ONLY for price-range slider metadata and category
   // counts — not for filtering or rendering product cards.
   const fullCatalog = store.activeProducts;
-  const categories = store.categories.length ? store.categories : seedCategories;
+  const categories = (store.categories.length ? store.categories : seedCategories).filter(
+    (item) => item.id !== "lifestyle",
+  );
 
   // ── URL-driven filter state ────────────────────────────────────────────
   const category = params.get("category") ?? "all";

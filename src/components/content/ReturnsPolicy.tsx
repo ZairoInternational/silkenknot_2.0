@@ -6,14 +6,12 @@ export function ReturnsPolicyPage() {
     <PolicyDoc
       eyebrow="Help"
       title="Cancellation, returns & refunds"
-      lede="What you can do if you need to stop an order, or if something arrives wrong."
-      updated="27 Oct 2026"
+      lede="Please read this carefully. We only process returns, replacements, and refunds exactly as stated below—nothing outside these terms."
+      updated="30 Oct 2026"
       nav={[
         { id: "glance", label: "At a glance" },
-        { id: "cancel", label: "Cancellation" },
+        { id: "cancel", label: "Cancellation & refunds" },
         { id: "returns", label: "Returns & replacements" },
-        { id: "refunds", label: "Refunds" },
-        { id: "issues", label: "Damaged or wrong item" },
         { id: "help", label: "Need help" },
       ]}
       related={[
@@ -26,22 +24,32 @@ export function ReturnsPolicyPage() {
       <div id="glance">
         <PolicyGlance
           items={[
-            "You can cancel from your account until your order has been sent out.",
-            "After that, products are final sale for hygiene and safety.",
-            "We don’t offer returns for a change of mind.",
-            "If we can’t send an item you paid for, we’ll refund that item.",
-            "If you paid online and cancel in time, your refund status appears on your order.",
+            "No returns after an order has shipped.",
+            "No replacements for change of mind, unused products, or preference.",
+            "A refund is only available for orders paid online, and only if you cancel before the order ships.",
+            "Cash on delivery is not charged until delivery—cancelling early stops the order; there is no online refund.",
+            "We will not accept a return, replacement, or refund request that falls outside these terms.",
           ]}
         />
       </div>
 
-      <PolicySection id="cancel" title="How to cancel">
+      <PolicySection id="cancel" title="Cancellation & refunds">
         <p>
-          You can cancel an order yourself from{" "}
+          You may cancel an order from{" "}
           <Link href="/account/orders" className="underline underline-offset-4">
             your orders
           </Link>{" "}
-          as long as it hasn’t been sent out for delivery yet. Once it’s on the way, cancellation isn’t available.
+          only while the order has not yet shipped. Once the order has shipped, cancellation is not available.
+        </p>
+        <p>
+          <strong>Refunds:</strong> A refund is processed only when both of the following are true:
+        </p>
+        <ul className="list-disc space-y-2 pl-5">
+          <li>You paid for the order online (UPI, card, or wallet—not cash on delivery).</li>
+          <li>You cancel the order before it ships.</li>
+        </ul>
+        <p>
+          If either condition is missing, we cannot process a refund under these terms.
         </p>
         <PolicySteps
           steps={[
@@ -50,67 +58,45 @@ export function ReturnsPolicyPage() {
               body: "Sign in, go to Orders, and open the order you want to stop.",
             },
             {
-              title: "Cancel if the option is still there",
-              body: "If you can still cancel, tap Cancel on that page. If the option isn’t shown, the order has already moved too far to stop online.",
+              title: "Cancel before it ships",
+              body: "If Cancel is still available, use it. If the option is gone, the order has already shipped and cannot be cancelled or refunded under these terms.",
             },
             {
-              title: "Watch for your refund",
-              body: "If you paid online, check the same order page for your refund status. Your bank or UPI app may take a little longer to show the money back.",
+              title: "Online payments only",
+              body: "For prepaid online orders cancelled in time, your refund status appears on the same order page. Your bank or UPI app may take extra time to show the credit. Refunds go back to the same payment method.",
             },
           ]}
         />
         <p>
-          If you chose cash on delivery and cancel before the order is sent out, the order is simply stopped—nothing was charged online.
+          If you chose cash on delivery and cancel before the order ships, the order is simply stopped. Nothing was charged online, so there is no refund to process.
+        </p>
+        <p>
+          If we cannot fulfil an item you already paid for online, we will refund that item to the same payment method.
         </p>
       </PolicySection>
 
       <PolicySection id="returns" title="Returns & replacements">
         <p>
-          Once an order has been sent out, Silken Knot products are final sale. Body care, bath, and scent products are personal-care items; we don’t take them back for hygiene and safety reasons.
+          Silken Knot does not accept returns or replacements once an order has shipped. Body care, bath, soap, and scent products are personal-care items; for hygiene and safety we do not take them back.
         </p>
         <p>
-          That means no returns for a change of mind, and no exchanges through your account. Lifestyle pieces follow the same rule unless a product page says otherwise.
+          That means: no returns for a change of mind, no returns of unused products, and no replacements or exchanges through your account—unless a remedy is expressly allowed in these terms (for example, a prepaid cancellation refund before shipping, or a refund when we cannot fulfil an item you paid for online).
         </p>
         <PolicyRows
           rows={[
-            { label: "Changed my mind", value: "Not available after the order is sent out." },
-            { label: "Unused product", value: "Not available after the order is sent out." },
-            { label: "Wrong size", value: "We don’t offer size exchanges online." },
-            { label: "Want a replacement", value: "Write to us if something arrived damaged or incorrect—we’ll help from there." },
+            { label: "Changed my mind", value: "Not accepted after the order has shipped. Cancel before shipping if you paid online to request a refund." },
+            { label: "Unused product", value: "Not accepted." },
+            { label: "Want a return", value: "Not accepted outside these terms." },
+            { label: "Want a replacement", value: "Not accepted outside these terms." },
+            { label: "Refund", value: "Only for online payment + cancel before the order ships (or if we cannot fulfil a prepaid item)." },
           ]}
         />
-      </PolicySection>
-
-      <PolicySection id="refunds" title="When you get a refund">
-        <p>You may receive a refund when:</p>
-        <ul className="list-disc space-y-2 pl-5">
-          <li>You cancel an order you already paid for, before it’s sent out.</li>
-          <li>We can’t send an item you ordered.</li>
-          <li>We’ve agreed a refund after you told us about a delivery problem.</li>
-        </ul>
         <p>
-          Refunds for online payments go back to the same method you used. You’ll see the status on your order. Your bank or UPI app may take extra time to show the credit.
-        </p>
-        <p>
-          Cash on delivery isn’t charged until delivery, so cancelling COD early doesn’t create an online refund.
-        </p>
-      </PolicySection>
-
-      <PolicySection id="issues" title="Damaged, wrong, or missing items">
-        <p>
-          If your parcel arrives damaged, a product isn’t right, you got the wrong item, or something is missing, please{" "}
+          If your parcel arrives damaged, incomplete, or with the wrong item, please{" "}
           <Link href="/contact" className="underline underline-offset-4">
             write to us
           </Link>{" "}
-          soon. It helps if you include:
-        </p>
-        <ul className="list-disc space-y-2 pl-5">
-          <li>Your order number</li>
-          <li>What went wrong</li>
-          <li>Photos of the parcel and product, if you can</li>
-        </ul>
-        <p>
-          We’ll look into it and tell you the next step—whether that’s a refund, a replacement when we can arrange one, or another way to put it right.
+          with your order number and what went wrong (photos help). We will only act within these terms—we do not accept returns, replacements, or refunds that fall outside what is stated here.
         </p>
       </PolicySection>
 

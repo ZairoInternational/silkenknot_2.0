@@ -74,14 +74,6 @@ export function CategorySection() {
       href: "/shop?category=aromatherapy",
       className: "md:col-span-5",
     },
-    {
-      number: "04",
-      title: "Lifestyle",
-      description: "Beautiful moments, made more special.",
-      image: media.collectionLifestyle,
-      href: "/shop?category=lifestyle",
-      className: "md:col-span-12",
-    },
   ];
 
   return (
@@ -92,12 +84,12 @@ export function CategorySection() {
             <span className="h-px w-7 bg-[#59634b]" />
             Explore the collections
           </p>
-          <h2 className="font-serif text-3xl leading-tight tracking-tight text-[#292d25] sm:text-4xl lg:text-5xl">Four ways to begin.</h2>
+          <h2 className="font-serif text-3xl leading-tight tracking-tight text-[#292d25] sm:text-4xl lg:text-5xl">Three ways to begin.</h2>
           <p className="mt-3 max-w-xl text-sm leading-6 text-[#817c71] sm:text-base">
             Discover your self-care ritual — from nourishing body care to calming scents, thoughtfully crafted for your everyday moments.
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-12 md:grid-rows-[225px_225px_240px] lg:gap-4">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-12 md:grid-rows-[225px_225px] lg:gap-4">
           {collections.map((collection) => (
             <Link
               key={collection.number}

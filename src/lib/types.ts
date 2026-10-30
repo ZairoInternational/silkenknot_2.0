@@ -1,3 +1,4 @@
+/** `lifestyle` kept for legacy DB rows only — not seeded or linked on the storefront. */
 export type CategoryId = "body-care" | "bath-soap" | "aromatherapy" | "lifestyle";
 
 export type Variant = {
@@ -257,15 +258,6 @@ export type Coupon = {
   label: string;
   maxRedemptions?: number;
   redeemed?: number;
-};
-
-export type JournalEntry = {
-  slug: string;
-  title: string;
-  date: string;
-  excerpt: string;
-  image: string;
-  paragraphs: string[];
 };
 
 export type Result = { ok: true; message?: string } | { ok: false; message: string };

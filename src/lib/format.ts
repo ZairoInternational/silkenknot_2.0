@@ -98,7 +98,6 @@ export function categoryName(id: string) {
   if (id === "body-care") return "Body Care";
   if (id === "bath-soap") return "Bath & Soap";
   if (id === "aromatherapy") return "Aromatherapy";
-  if (id === "lifestyle") return "Lifestyle";
   return id;
 }
 

@@ -52,11 +52,16 @@ export function ShopClient() {
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   }
 
-  const activeCategory = store.categories.find((item) => item.id === category);
+  const shopCategories = useMemo(
+    () => store.categories.filter((item) => item.id !== "lifestyle"),
+    [store.categories],
+  );
+  const activeCategory = shopCategories.find((item) => item.id === category);
 
   const filtered = useMemo(() => {
     const types = type.split(",").map((item) => item.trim()).filter(Boolean);
     let items = store.activeProducts.filter((product) => {
+      if (product.categoryId === "lifestyle" || product.type === "Apparel") return false;
       if (category && product.categoryId !== category) return false;
       if (types.length && !types.includes(product.type)) return false;
       if (bestseller && !product.bestseller) return false;
@@ -83,7 +88,7 @@ export function ShopClient() {
       min={params.get("min") ?? ""}
       max={params.get("max") ?? ""}
       bestseller={bestseller}
-      categories={store.categories}
+      categories={shopCategories}
       onChange={write}
     />
   );
@@ -94,7 +99,7 @@ export function ShopClient() {
         <p className="eyebrow text-mute">The collection</p>
         <h1 className="mt-3 font-serif text-6xl md:text-7xl">{activeCategory?.name ?? (bestseller ? "Best sellers" : "Shop")}</h1>
         <p className="mt-4 max-w-xl text-mute">
-          {activeCategory?.description ?? "Body care, bath, aromatherapy, and the clothes that follow."}
+          {activeCategory?.description ?? "Body care, bath, soap, and aromatherapy for everyday rituals."}
         </p>
       </header>
 

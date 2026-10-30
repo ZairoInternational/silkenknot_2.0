@@ -479,10 +479,10 @@ function MegaMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
     "body-care": media.collectionBodyCare,
     "bath-soap": media.collectionBathSoap,
     aromatherapy: media.collectionAromatherapy,
-    lifestyle: media.collectionLifestyle,
   };
-  const [activeId, setActiveId] = useState(store.categories[0]?.id ?? "body-care");
-  const active = store.categories.find((category) => category.id === activeId) ?? store.categories[0];
+  const shopCategories = store.categories.filter((category) => category.id !== "lifestyle");
+  const [activeId, setActiveId] = useState(shopCategories[0]?.id ?? "body-care");
+  const active = shopCategories.find((category) => category.id === activeId) ?? shopCategories[0];
   const image = previews[activeId] ?? active?.image ?? media.collectionBodyCare;
 
   return (
@@ -524,7 +524,7 @@ function MegaMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
               </ul>
             </div>
             <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-              {store.categories.map((category) => (
+              {shopCategories.map((category) => (
                 <Link
                   key={category.id}
                   href={`/shop?category=${category.id}`}

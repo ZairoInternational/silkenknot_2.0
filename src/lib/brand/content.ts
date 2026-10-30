@@ -99,8 +99,14 @@ export const BRAND_SPACING_OPTIONS: { id: BrandSpacing; label: string }[] = [
   { id: "relaxed", label: "Relaxed" },
 ];
 
+/** Canonical storefront mark (also served as `/favicon.ico` via `src/app/favicon.ico`). */
+export const DEFAULT_BRAND_ICON_URL = "/favicon.ico";
+
+/** Retired temp mark — never serve this as the logo. */
+const RETIRED_TEMP_LOGO = "/silknknot/logo.png";
+
 export const DEFAULT_BRAND: BrandSettings = {
-  iconUrl: "/silknknot/logo.png",
+  iconUrl: DEFAULT_BRAND_ICON_URL,
   iconAlt: "Silken Knot",
   placements: DEFAULT_BRAND_PLACEMENTS,
 };
@@ -112,6 +118,15 @@ function asString(value: unknown, fallback: string, max = 500) {
   return trimmed.slice(0, max);
 }
 
+/** Map retired temp logo paths to the real brand mark. */
+export function resolveBrandIconUrl(url: string): string {
+  const trimmed = url.trim();
+  if (!trimmed || trimmed === RETIRED_TEMP_LOGO || trimmed.endsWith("/silknknot/logo.png")) {
+    return DEFAULT_BRAND_ICON_URL;
+  }
+  return trimmed;
+}
+
 function asIconUrl(value: unknown, fallback: string) {
   const url = asString(value, fallback, 800);
   if (
@@ -120,9 +135,9 @@ function asIconUrl(value: unknown, fallback: string) {
     url.startsWith("http://") ||
     url.startsWith("data:")
   ) {
-    return url;
+    return resolveBrandIconUrl(url);
   }
-  return fallback;
+  return resolveBrandIconUrl(fallback);
 }
 
 function asInt(value: unknown, fallback: number, min: number, max: number) {
@@ -153,7 +168,7 @@ function asOptionalIconUrl(value: unknown): string | undefined {
     trimmed.startsWith("http://") ||
     trimmed.startsWith("data:")
   ) {
-    return trimmed.slice(0, 800);
+    return resolveBrandIconUrl(trimmed.slice(0, 800));
   }
   return undefined;
 }
@@ -183,8 +198,8 @@ export function getBrandPlacement(
 export function getBrandPlacementIcon(brand: BrandSettings, placement: BrandPlacementId): string {
   const spot = getBrandPlacement(brand, placement);
   const custom = spot.iconUrl?.trim();
-  if (custom) return custom;
-  return brand.iconUrl || DEFAULT_BRAND.iconUrl;
+  if (custom) return resolveBrandIconUrl(custom);
+  return resolveBrandIconUrl(brand.iconUrl || DEFAULT_BRAND.iconUrl);
 }
 
 export function normalizeBrandSettings(input: unknown): BrandSettings {

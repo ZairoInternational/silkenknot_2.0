@@ -315,7 +315,6 @@ function CollectionsPreview({ media }: { media: SiteMediaSettings }) {
     { label: "Body Care", src: media.collectionBodyCare },
     { label: "Bath & Soap", src: media.collectionBathSoap },
     { label: "Aromatherapy", src: media.collectionAromatherapy },
-    { label: "Lifestyle", src: media.collectionLifestyle },
   ];
   return (
     <div className="grid grid-cols-2 gap-3">
