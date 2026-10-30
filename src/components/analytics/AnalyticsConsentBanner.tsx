@@ -13,7 +13,7 @@ import {
 /**
  * Minimal analytics opt-in. Shown only when GTM is configured and the customer
  * has not yet accepted or declined. Declining keeps Consent Mode denied and
- * blocks ecommerce dataLayer events. Stays fixed at the bottom until a choice.
+ * blocks ecommerce dataLayer events. Full-bleed bottom bar until a choice.
  */
 export function AnalyticsConsentBanner() {
   const [visible, setVisible] = useState(false);
@@ -34,11 +34,11 @@ export function AnalyticsConsentBanner() {
       aria-modal="true"
       aria-labelledby="cookie-consent-title"
       aria-describedby="cookie-consent-desc"
-      className="fixed inset-x-0 bottom-0 z-[9999] border-t border-[#e3dbd1] bg-[#f6f3ee] px-4 py-5 text-[#2c2926] shadow-[0_-16px_48px_-20px_rgba(0,0,0,0.4)] md:px-8"
+      className="fixed bottom-0 left-0 right-0 z-[9999] w-full border-t border-[#e3dbd1] bg-[#f6f3ee] text-[#2c2926] shadow-[0_-12px_40px_-18px_rgba(0,0,0,0.35)]"
     >
-      <div className="mx-auto flex max-w-5xl flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-8">
-        <div className="min-w-0 space-y-1.5">
-          <p id="cookie-consent-title" className="text-base font-medium text-[#2c2926]">
+      <div className="flex w-full flex-col gap-4 px-4 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6 sm:pt-5 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+        <div className="min-w-0 space-y-1">
+          <p id="cookie-consent-title" className="text-sm font-medium text-[#2c2926] sm:text-base">
             We respect your privacy
           </p>
           <p id="cookie-consent-desc" className="text-sm leading-relaxed text-[#4e4943]">
@@ -48,10 +48,10 @@ export function AnalyticsConsentBanner() {
             </Link>
           </p>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex w-full shrink-0 gap-2 sm:w-auto">
           <button
             type="button"
-            className="inline-flex h-10 items-center justify-center border border-[#CBAC7C] px-4 text-[11px] uppercase tracking-[0.14em] text-[#8a7350] hover:bg-[#CBAC7C] hover:text-white"
+            className="inline-flex h-11 flex-1 items-center justify-center border border-[#CBAC7C] px-4 text-[11px] uppercase tracking-[0.14em] text-[#8a7350] sm:h-10 sm:flex-none"
             onClick={() => {
               revokeAnalyticsConsent();
               setVisible(false);
@@ -61,7 +61,7 @@ export function AnalyticsConsentBanner() {
           </button>
           <button
             type="button"
-            className="inline-flex h-10 items-center justify-center bg-[#CBAC7C] px-4 text-[11px] uppercase tracking-[0.14em] text-white hover:bg-[#B39668]"
+            className="inline-flex h-11 flex-1 items-center justify-center bg-[#CBAC7C] px-4 text-[11px] uppercase tracking-[0.14em] text-white hover:bg-[#B39668] sm:h-10 sm:flex-none"
             onClick={() => {
               grantAnalyticsConsent();
               setVisible(false);

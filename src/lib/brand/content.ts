@@ -51,8 +51,8 @@ export const BRAND_PLACEMENT_META: Record<
   },
   footer: {
     title: "Footer",
-    hint: "Dark footer brand block at the bottom of the shop.",
-    surface: "dark",
+    hint: "Light footer brand block at the bottom of the shop.",
+    surface: "light",
   },
   checkout: {
     title: "Checkout",
@@ -73,7 +73,7 @@ export const BRAND_PLACEMENT_META: Record<
 
 export const DEFAULT_BRAND_PLACEMENTS: Record<BrandPlacementId, BrandPlacementSettings> = {
   header: { height: 56, maxWidth: 180, showWordmark: false, lightOnDark: false, align: "center", spacing: "default" },
-  footer: { height: 32, maxWidth: 120, showWordmark: true, lightOnDark: true, align: "left", spacing: "default" },
+  footer: { height: 32, maxWidth: 120, showWordmark: true, lightOnDark: false, align: "left", spacing: "default" },
   checkout: { height: 28, maxWidth: 120, showWordmark: true, lightOnDark: false, align: "left", spacing: "default" },
   auth: { height: 24, maxWidth: 96, showWordmark: true, lightOnDark: false, align: "left", spacing: "default" },
   welcome: { height: 40, maxWidth: 112, showWordmark: false, lightOnDark: false, align: "center", spacing: "default" },

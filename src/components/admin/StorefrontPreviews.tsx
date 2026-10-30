@@ -120,9 +120,9 @@ function BrandContextStage({
   }
   if (placement === "footer") {
     return (
-      <div className="overflow-hidden rounded-2xl border border-line bg-[#2c2926] px-5 py-6 text-[#f6f1ea] shadow-sm">
-        <BrandMarkSample brand={brand} placement={placement} wordmarkClassName="font-serif text-2xl text-[#f6f1ea]" />
-        <p className="mt-4 max-w-xs text-xs leading-5 text-white/55">
+      <div className="overflow-hidden rounded-2xl border border-line bg-white px-5 py-6 text-ink shadow-sm">
+        <BrandMarkSample brand={brand} placement={placement} wordmarkClassName="font-serif text-2xl text-[#2F6FED]" />
+        <p className="mt-4 max-w-xs text-xs leading-5 text-mute">
           Body care, bath, and scent for everyday rituals.
         </p>
       </div>

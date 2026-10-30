@@ -680,9 +680,28 @@ export function ProductIndex() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Link href={`/admin/products/${product.id}`} className="inline-flex h-8 items-center gap-1 border border-line px-2.5 text-xs">
-                          <Pencil size={12} /> Edit
-                        </Link>
+                        <div className="inline-flex items-center gap-1.5">
+                          <Link
+                            href={`/admin/products/${product.id}`}
+                            className="inline-flex h-8 w-8 items-center justify-center border border-line"
+                            aria-label={`Edit ${product.name}`}
+                            title="Edit"
+                          >
+                            <Pencil size={14} />
+                          </Link>
+                          <button
+                            type="button"
+                            className="inline-flex h-8 w-8 items-center justify-center border border-red-200 text-red-700"
+                            aria-label={`Delete ${product.name}`}
+                            title="Delete"
+                            onClick={async () => {
+                              if (!window.confirm(`Delete “${product.name}”? This cannot be undone.`)) return;
+                              await store.deleteProduct(product.id);
+                            }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

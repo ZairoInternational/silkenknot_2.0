@@ -165,18 +165,18 @@ function BrandPlacementStage({
   if (placement === "footer") {
     return (
       <div
-        className={`flex items-center gap-3 rounded-xl px-4 ${compact ? "min-h-[4.5rem] py-3" : "min-h-24 py-5"} ${align}`}
-        style={{ background: TEAL }}
+        className={`flex items-center gap-3 rounded-xl border px-4 ${compact ? "min-h-[4.5rem] py-3" : "min-h-24 py-5"} ${align}`}
+        style={{ background: CARD, borderColor: LINE }}
       >
         <div className="min-w-0 flex-1">
           <BrandMarkInline
             brand={brand}
             placement={placement}
             maxHeight={cap}
-            wordmarkClassName={compact ? "text-xs font-medium text-white" : "text-base font-medium text-white"}
+            wordmarkClassName={compact ? "text-xs font-medium text-[#2F6FED]" : "text-base font-medium text-[#2F6FED]"}
           />
         </div>
-        <SocialDots light />
+        <SocialDots />
       </div>
     );
   }
