@@ -36,17 +36,21 @@ test("support FAQ catalogue has unique ids, labels, answers, and policy sources"
   assert.equal(ids.size, SUPPORT_FAQ.length);
 });
 
-test("policy answers follow final-sale and shipping sources", () => {
+test("policy answers follow return policy and shipping sources", () => {
   const returns = faqById("returns");
   assert.ok(returns);
-  assert.match(returns.answer, /final sale/i);
-  assert.match(returns.answer, /cancel/i);
+  assert.match(returns.answer, /eligible claims/i);
+  assert.match(returns.answer, /Return, Refund and Replacement Policy/i);
   assert.equal(/replacement request has been approved/i.test(returns.answer), false);
 
   const eligible = faqById("returns_eligible");
   assert.ok(eligible);
-  assert.match(eligible.answer, /final sale/i);
-  assert.match(eligible.answer, /self-service replacement/i);
+  assert.match(eligible.answer, /unboxing video/i);
+  assert.match(eligible.answer, /48 hours/i);
+
+  const damaged = faqById("returns_damaged");
+  assert.ok(damaged);
+  assert.match(damaged.answer, /unboxing video/i);
 
   const shipping = faqById("shipping_how_long");
   assert.ok(shipping);

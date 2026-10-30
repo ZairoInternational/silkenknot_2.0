@@ -218,9 +218,10 @@ function ProductDetail({ product }: { product: Product }) {
         <section>
           <h2 className="font-serif text-4xl">Returns</h2>
           <p className="mt-4 leading-7 text-mute">
-            No returns or replacements once an order has shipped. A refund is only available if you paid online and cancel before the order ships.{" "}
+            Opened or used personal-care products are generally not returned. Claims for wrong, damaged, incomplete, or
+            defective items need a clear unboxing video, usually within 48 hours of delivery.{" "}
             <a href="/returns" className="underline underline-offset-4">
-              Cancellation & refunds
+              Return, Refund and Replacement Policy
             </a>
           </p>
         </section>

@@ -17,7 +17,7 @@ export function PaymentsPolicyPage() {
         { id: "security", label: "Security" },
       ]}
       related={[
-        { href: "/returns", label: "Cancellation & refunds" },
+        { href: "/returns", label: "Return, Refund and Replacement Policy" },
         { href: "/shipping", label: "Shipping" },
         { href: "/privacy", label: "Privacy" },
         { href: "/contact", label: "Contact & grievance" },
@@ -99,9 +99,9 @@ export function PaymentsPolicyPage() {
           ]}
         />
         <p>
-          For cancellations and refunds, see{" "}
+          For returns, replacements, and refunds, see{" "}
           <Link href="/returns" className="underline underline-offset-4">
-            Cancellation, returns & refunds
+            Return, Refund and Replacement Policy
           </Link>
           .
         </p>

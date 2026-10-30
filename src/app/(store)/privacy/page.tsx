@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { PrivacyPage } from "@/components/content/Pages";
+import { PrivacyPolicyPage } from "@/components/content/PrivacyPolicy";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Privacy",
-  description: "What Silken Knot asks for, why we ask for it, and how we look after your information.",
+  title: "Privacy Policy",
+  description:
+    "How Silken Knot collects, uses, stores and protects personal information when you visit our website, place orders or contact us.",
   path: "/privacy",
 });
 
 export default function Page() {
-  return <PrivacyPage />;
+  return <PrivacyPolicyPage />;
 }

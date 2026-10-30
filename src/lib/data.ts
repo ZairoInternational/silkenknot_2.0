@@ -777,7 +777,7 @@ export const sharedFaqs: Faq[] = [
   {
     question: "Can I return a product?",
     answer:
-      "No. We do not accept returns or replacements once an order has shipped. A refund is only available if you paid online and cancel before the order ships. Requests outside these terms are not accepted.",
+      "Opened, used, or compromised personal-care products are generally not returned or exchanged, except where required by law. You may raise a claim for wrong, damaged, incomplete, defective, or mismatched items — usually within 48 hours of delivery, with a clear unboxing video. Change of mind or fragrance preference does not automatically qualify. See our Return, Refund and Replacement Policy.",
   },
   {
     question: "Are the scents strong?",

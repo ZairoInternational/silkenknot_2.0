@@ -20,6 +20,10 @@ function bunnyHost() {
 
 const nextConfig: NextConfig = {
   agentRules: false,
+  // Keep OpenAPI YAML available to the /api/openapi route on serverless deploys.
+  outputFileTracingIncludes: {
+    "/api/openapi": ["./docs/api/openapi.yaml"],
+  },
   async redirects() {
     return [
       {

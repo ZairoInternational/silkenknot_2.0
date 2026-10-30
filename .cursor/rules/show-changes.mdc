@@ -1,8 +1,7 @@
 ---
 description: After each requested fix or feature, show the exact changes that were made
-alwaysApply: true
+alwaysApply: false
 ---
-
 # Show the change
 
 When the user asks for a fix or a feature, the reply must show what changed, what was the before and what fixed done on it. Do this in the same message that finishes the work. Do not wait to be asked.

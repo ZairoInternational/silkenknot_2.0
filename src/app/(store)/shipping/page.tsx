@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { ShippingPage } from "@/components/content/Pages";
+import { ShippingPolicyPage } from "@/components/content/ShippingPolicy";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Shipping",
-  description: "Delivery across India, free shipping thresholds, and how to follow your Silken Knot order.",
+  title: "Shipping & Delivery Policy",
+  description:
+    "Silken Knot order processing, delivery timelines across India, shipping charges, tracking, and delivery claims including the unboxing video requirement.",
   path: "/shipping",
 });
 
 export default function Page() {
-  return <ShippingPage />;
+  return <ShippingPolicyPage />;
 }

@@ -84,7 +84,7 @@ export function ContactForm() {
           <p>
             You may also find answers in{" "}
             <Link href="/returns" className="underline underline-offset-4">
-              Cancellation & refunds
+              Return, Refund and Replacement Policy
             </Link>
             ,{" "}
             <Link href="/payments" className="underline underline-offset-4">
@@ -212,7 +212,7 @@ export function ContactForm() {
           </li>
           <li>
             <Link href="/returns" className="underline-offset-4 hover:underline">
-              Cancellation & refunds
+              Return, Refund and Replacement Policy
             </Link>
           </li>
         </ul>

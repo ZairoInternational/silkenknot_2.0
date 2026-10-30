@@ -20,7 +20,7 @@ export function PolicyDoc({
   related?: { href: string; label: string }[];
 }) {
   return (
-    <article className="page-pad mx-auto max-w-3xl px-5 pb-24">
+    <article className="page-pad mx-auto w-full max-w-5xl px-5 pb-24">
       <p className="eyebrow text-mute">{eyebrow}</p>
       <h1 className="mt-4 font-serif text-5xl leading-[0.95] md:text-6xl">{title}</h1>
       <p className="mt-6 text-lg leading-8 text-mute">{lede}</p>

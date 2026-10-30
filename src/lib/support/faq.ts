@@ -44,7 +44,7 @@ const readShipping: SupportAction = {
 
 const readReturns: SupportAction = {
   id: "read_returns",
-  label: "Returns & refunds",
+  label: "Return policy",
   kind: "link",
   href: SUPPORT_LINKS.returns,
 };
@@ -65,8 +65,8 @@ const browseShop: SupportAction = {
 
 /**
  * Central FAQ catalogue. Answers are grounded in published Silken Knot policy pages
- * and FAQ copy (`sharedFaqs`, Shipping, Terms, Product returns). There is no
- * customer replacement workflow in this codebase — returns topic reflects final sale.
+ * and FAQ copy (`sharedFaqs`, Shipping, Terms, /returns). Returns follow the
+ * Return, Refund and Replacement Policy (eligible claims + unboxing video).
  * Copy speaks to the customer directly; avoid chatbot self-narration.
  */
 export const SUPPORT_FAQ: SupportFaqEntry[] = [
@@ -84,7 +84,7 @@ export const SUPPORT_FAQ: SupportFaqEntry[] = [
     label: "Shipping and delivery",
     answer:
       "Delivery timing depends on your PIN and the shipment. Your order page shows the latest estimate once it is available.",
-    policySource: "src/components/content/Pages.tsx ShippingPage; src/lib/data.ts sharedFaqs",
+    policySource: "src/components/content/ShippingPolicy.tsx; src/lib/data.ts sharedFaqs",
     followUps: ["shipping_how_long", "shipping_track", "shipping_delayed"],
     actions: [readShipping, viewOrders, backTopics],
   },
@@ -93,7 +93,7 @@ export const SUPPORT_FAQ: SupportFaqEntry[] = [
     label: "How long does delivery take?",
     answer:
       "At checkout you will see the delivery time for your PIN, and a faster option when it is available. Delivery is free on eligible orders of ₹999 and above; below that, the delivery price for your PIN appears at checkout. We currently deliver within India.",
-    policySource: "sharedFaqs delivery time + free shipping; ShippingPage; sharedFaqs outside India",
+    policySource: "sharedFaqs delivery time + free shipping; ShippingPolicy; sharedFaqs outside India",
     actions: [readShipping, backTopics],
   },
   {
@@ -110,7 +110,7 @@ export const SUPPORT_FAQ: SupportFaqEntry[] = [
     label: "My delivery is delayed",
     answer:
       "Estimates depend on your PIN and courier updates. Check your order for the current status. If updates have stalled or the shipment needs attention, contact support with your order number.",
-    policySource: "ShippingPage (PIN-based ETA); no guaranteed SLA beyond checkout estimate",
+    policySource: "ShippingPolicy (estimated timelines + PIN serviceability); no guaranteed SLA beyond checkout estimate",
     actions: [viewOrders, contactSupport, readShipping, backTopics],
     flow: "orders",
   },
@@ -118,35 +118,35 @@ export const SUPPORT_FAQ: SupportFaqEntry[] = [
     id: "returns",
     label: "Returns and replacements",
     answer:
-      "We do not accept returns or replacements once an order has shipped. A refund is only processed if you paid online and cancel before the order ships. Requests outside these terms are not accepted. If we cannot fulfil a prepaid item, that item is refunded.",
-    policySource: "sharedFaqs Can I return; /returns policy; TermsPage",
+      "Personal-care products that are opened, used, or whose packaging is compromised are generally not returned or exchanged, except where required by law. Eligible claims cover wrong, damaged, incomplete, defective, or mismatched products. Change of mind or fragrance preference does not automatically qualify. Full details are in our Return, Refund and Replacement Policy.",
+    policySource: "/returns Return, Refund and Replacement Policy; sharedFaqs Can I return",
     followUps: ["returns_eligible", "returns_how_cancel", "returns_damaged"],
     actions: [viewOrders, readReturns, { id: "read_faq", label: "Read FAQ", kind: "link", href: SUPPORT_LINKS.faq }, backTopics],
   },
   {
     id: "returns_eligible",
-    label: "What can I cancel or return?",
+    label: "What claims are eligible?",
     answer:
-      "You can cancel from your order page before the order ships. Returns and replacements are not accepted after shipping. A refund applies only to online payments cancelled before shipping — not to cash on delivery, and not after the order has shipped.",
-    policySource: "sharedFaqs + customerCanCancel (pre-ship only); /returns",
+      "You may raise a claim if the wrong product arrived, the product is physically damaged, the order is incomplete or missing items, there is a manufacturing defect, or the delivery does not match the confirmed order. Report within 48 hours of delivery where reasonably possible, with order number, unboxing video, photos if needed, and a short description.",
+    policySource: "/returns sections 1 and 3 Eligible Claims + Claim Submission Timeline",
     actions: [viewOrders, readReturns, contactSupport, backTopics],
   },
   {
     id: "returns_how_cancel",
     label: "How do I cancel an order?",
     answer:
-      "Open your order and cancel it before it ships. If you paid online and cancel in time, your order page will show refund status. If Cancel is gone, the order has already shipped and cannot be refunded under our terms.",
-    policySource: "customerCanCancel; POST /api/checkout/cancel; paymentState refund_pending",
-    actions: [viewOrders, backTopics],
+      "Open your order and cancel it before it ships. If you paid online and cancel in time, your order page will show refund status. If Cancel is gone, the order has already shipped — for damage, wrong, or missing items after delivery, use the claim process in our return policy instead.",
+    policySource: "customerCanCancel; POST /api/checkout/cancel; /returns claim process",
+    actions: [viewOrders, readReturns, backTopics],
     flow: "orders",
   },
   {
     id: "returns_damaged",
     label: "My order arrived damaged or incorrect",
     answer:
-      "Contact support with your order number and what went wrong. We only act within our stated terms — returns, replacements, and refunds outside those terms are not accepted.",
-    policySource: "/returns terms; ContactForm /contact — no replacement workflow outside terms",
-    actions: [contactSupport, viewOrders, backTopics],
+      "Contact support within 48 hours of delivery with your order number, a clear uninterrupted unboxing video (start before opening the package), photos if needed, and a short description. After verification we may offer replacement, refund, or another agreed resolution under our Return, Refund and Replacement Policy.",
+    policySource: "/returns sections 2–4 Unboxing Video, Timeline, Review and Resolution; ContactForm /contact",
+    actions: [contactSupport, viewOrders, readReturns, backTopics],
   },
   {
     id: "payments",
@@ -180,7 +180,7 @@ export const SUPPORT_FAQ: SupportFaqEntry[] = [
     label: "What payment methods are available?",
     answer:
       "At checkout you can pay online with UPI, cards, and wallets in a secure payment window, or choose cash on delivery when it is available for your PIN. Silken Knot does not store your full card number, CVV, or UPI PIN.",
-    policySource: "checkout/review payment options; /payments; PrivacyPage",
+    policySource: "checkout/review payment options; /payments; PrivacyPolicyPage",
     actions: [readPayments, backTopics],
   },
   {

@@ -16,7 +16,7 @@ This store uses the existing Next.js App Router checkout. The browser collects a
 
 Payment: `pending`, `authorized`, `captured`, `failed`, `cancelled`, `refund_pending`, `partially_refunded`, `refunded`.
 
-Order: `pending_payment`, `confirmed`, `processing`, `cancelled`, `completed`, plus status values `shipped`, `delivered`. All products are final sale. Customers may cancel before dispatch.
+Order: `pending_payment`, `confirmed`, `processing`, `cancelled`, `completed`, plus status values `shipped`, `delivered`. Customers may cancel before dispatch. After delivery, claims follow the Return, Refund and Replacement Policy (eligible issues + unboxing video); opened/used personal-care items are generally not returned except where law requires.
 
 Shipment: `not_created`, `pending`, `booked`, `pickup_scheduled`, `picked_up`, `in_transit`, `out_for_delivery`, `delivered`, `delivery_failed`, `cancelled`, `rto_initiated`, `rto_in_transit`, `rto_delivered`, `return_initiated`, `returned`, `exception`, `unknown`.
 

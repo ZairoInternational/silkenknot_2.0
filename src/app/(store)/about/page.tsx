@@ -4,7 +4,8 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Our story",
-  description: "Silken Knot makes body care, bath, soap, and aromatherapy for everyday rituals.",
+  description:
+    "Silken Knot was born from a love of little self-care moments — thoughtful bath and body creations, beautiful fragrances, and everyday rituals that feel like luxury.",
   path: "/about",
 });
 

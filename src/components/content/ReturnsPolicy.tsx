@@ -1,118 +1,97 @@
-import Link from "next/link";
-import { PolicyDoc, PolicyGlance, PolicyRows, PolicySection, PolicySteps } from "@/components/content/PolicyDoc";
-
 export function ReturnsPolicyPage() {
   return (
-    <PolicyDoc
-      eyebrow="Help"
-      title="Cancellation, returns & refunds"
-      lede="Please read this carefully. We only process returns, replacements, and refunds exactly as stated below—nothing outside these terms."
-      updated="30 Oct 2026"
-      nav={[
-        { id: "glance", label: "At a glance" },
-        { id: "cancel", label: "Cancellation & refunds" },
-        { id: "returns", label: "Returns & replacements" },
-        { id: "help", label: "Need help" },
-      ]}
-      related={[
-        { href: "/payments", label: "Payment & pricing" },
-        { href: "/shipping", label: "Shipping" },
-        { href: "/contact", label: "Contact & grievance" },
-        { href: "/terms", label: "Terms" },
-      ]}
-    >
-      <div id="glance">
-        <PolicyGlance
-          items={[
-            "No returns after an order has shipped.",
-            "No replacements for change of mind, unused products, or preference.",
-            "A refund is only available for orders paid online, and only if you cancel before the order ships.",
-            "Cash on delivery is not charged until delivery—cancelling early stops the order; there is no online refund.",
-            "We will not accept a return, replacement, or refund request that falls outside these terms.",
-          ]}
-        />
-      </div>
-
-      <PolicySection id="cancel" title="Cancellation & refunds">
+    <div className="bg-white text-black">
+      <article className="page-pad mx-auto w-full max-w-5xl space-y-5 px-5 pb-24 text-base leading-7 md:px-10">
+        <h1 className="text-2xl font-bold md:text-3xl">Return, Refund and Replacement Policy</h1>
         <p>
-          You may cancel an order from{" "}
-          <Link href="/account/orders" className="underline underline-offset-4">
-            your orders
-          </Link>{" "}
-          only while the order has not yet shipped. Once the order has shipped, cancellation is not available.
+          At Silken Knot, we take utmost care in preparing, packaging and dispatching every order. Customer satisfaction
+          and product quality remain our priorities.
         </p>
         <p>
-          <strong>Refunds:</strong> A refund is processed only when both of the following are true:
+          Considering the personal-care and hygiene-sensitive nature of our products, we generally do not accept returns
+          or exchanges of products that have been opened, used, tampered with or whose original packaging has been
+          compromised, except where required under applicable law.
+        </p>
+
+        <h2 className="pt-2 text-xl font-bold md:text-2xl">1 Eligible Claims</h2>
+        <p>Customers may raise a claim in the following circumstances:</p>
+        <ul className="list-disc space-y-2 pl-5">
+          <li>The wrong product has been delivered.</li>
+          <li>The product received is physically damaged.</li>
+          <li>The order is incomplete or contains missing items.</li>
+          <li>The product has a manufacturing defect.</li>
+          <li>The delivered product does not match the confirmed order.</li>
+        </ul>
+
+        <h2 className="pt-2 text-xl font-bold md:text-2xl">2 Mandatory Unboxing Video Requirement</h2>
+        <p className="font-bold">
+          To establish the authenticity and verify claims relating to damaged, missing, incorrect or defective products,
+          customers are required to provide a clear and uninterrupted unboxing video of the package.
+        </p>
+        <p>The following conditions apply:</p>
+        <ol className="list-decimal space-y-2 pl-5">
+          <li>The video must begin before opening the original shipping package.</li>
+          <li>The courier packaging, shipping label and package condition should be clearly visible.</li>
+          <li>The video must continuously show the opening of the package and the products received.</li>
+          <li>The video must not contain cuts, edits, pauses or interruptions that prevent proper verification.</li>
+          <li>Any visible damage, missing item or incorrect product must be clearly captured in the video.</li>
+          <li>The video should be submitted along with the relevant order number and a brief description of the issue.</li>
+        </ol>
+        <p className="font-bold">
+          Claims relating to transit damage, missing products, incorrect deliveries or other order-related discrepancies
+          will ordinarily be considered for approval only after submission and verification of a valid unboxing video.
+        </p>
+        <p>
+          Silken Knot reserves the right to examine the submitted evidence and request additional information where
+          necessary.
+        </p>
+        <p>
+          However, this evidence requirement will not override any mandatory consumer rights or remedies available under
+          applicable Indian law.
+        </p>
+
+        <h2 className="pt-2 text-xl font-bold md:text-2xl">3 Claim Submission Timeline</h2>
+        <p>
+          Customers are requested to report any delivery-related concerns within 48 hours of receiving their order,
+          wherever reasonably possible.
+        </p>
+        <p>The claim should include:</p>
+        <ul className="list-disc space-y-2 pl-5">
+          <li>Order number.</li>
+          <li>Complete unboxing video.</li>
+          <li>Clear photographs of the product and packaging, wherever required.</li>
+          <li>Description of the issue.</li>
+        </ul>
+
+        <h2 className="pt-2 text-xl font-bold md:text-2xl">4 Review and Resolution</h2>
+        <p>
+          Every claim will be reviewed individually. Following verification, Silken Knot may provide an appropriate
+          resolution, which may include:
         </p>
         <ul className="list-disc space-y-2 pl-5">
-          <li>You paid for the order online (UPI, card, or wallet—not cash on delivery).</li>
-          <li>You cancel the order before it ships.</li>
+          <li>Replacement of the affected product.</li>
+          <li>Refund of the applicable amount.</li>
+          <li>Another mutually agreed resolution.</li>
         </ul>
         <p>
-          If either condition is missing, we cannot process a refund under these terms.
+          Approval will depend on the nature of the issue, supporting evidence and applicable legal requirements.
         </p>
-        <PolicySteps
-          steps={[
-            {
-              title: "Open your order",
-              body: "Sign in, go to Orders, and open the order you want to stop.",
-            },
-            {
-              title: "Cancel before it ships",
-              body: "If Cancel is still available, use it. If the option is gone, the order has already shipped and cannot be cancelled or refunded under these terms.",
-            },
-            {
-              title: "Online payments only",
-              body: "For prepaid online orders cancelled in time, your refund status appears on the same order page. Your bank or UPI app may take extra time to show the credit. Refunds go back to the same payment method.",
-            },
-          ]}
-        />
-        <p>
-          If you chose cash on delivery and cancel before the order ships, the order is simply stopped. Nothing was charged online, so there is no refund to process.
-        </p>
-        <p>
-          If we cannot fulfil an item you already paid for online, we will refund that item to the same payment method.
-        </p>
-      </PolicySection>
 
-      <PolicySection id="returns" title="Returns & replacements">
+        <h2 className="pt-2 text-xl font-bold md:text-2xl">5 Refund Processing</h2>
         <p>
-          Silken Knot does not accept returns or replacements once an order has shipped. Body care, bath, soap, and scent products are personal-care items; for hygiene and safety we do not take them back.
+          Where a refund is approved, it will be processed within a reasonable timeframe through the original payment
+          method or another mutually agreed payment channel.
+        </p>
+        <p className="font-bold">
+          Please note that general preferences, changes of mind, fragrance preferences or dissatisfaction arising from
+          individual product expectations will not automatically qualify for a refund or replacement, subject to
+          applicable consumer protection laws.
         </p>
         <p>
-          That means: no returns for a change of mind, no returns of unused products, and no replacements or exchanges through your account—unless a remedy is expressly allowed in these terms (for example, a prepaid cancellation refund before shipping, or a refund when we cannot fulfil an item you paid for online).
+          Nothing in this policy is intended to restrict any statutory consumer rights or remedies available under
+          applicable Indian law.
         </p>
-        <PolicyRows
-          rows={[
-            { label: "Changed my mind", value: "Not accepted after the order has shipped. Cancel before shipping if you paid online to request a refund." },
-            { label: "Unused product", value: "Not accepted." },
-            { label: "Want a return", value: "Not accepted outside these terms." },
-            { label: "Want a replacement", value: "Not accepted outside these terms." },
-            { label: "Refund", value: "Only for online payment + cancel before the order ships (or if we cannot fulfil a prepaid item)." },
-          ]}
-        />
-        <p>
-          If your parcel arrives damaged, incomplete, or with the wrong item, please{" "}
-          <Link href="/contact" className="underline underline-offset-4">
-            write to us
-          </Link>{" "}
-          with your order number and what went wrong (photos help). We will only act within these terms—we do not accept returns, replacements, or refunds that fall outside what is stated here.
-        </p>
-      </PolicySection>
-
-      <PolicySection id="help" title="Need help">
-        <p>
-          Check{" "}
-          <Link href="/account/orders" className="underline underline-offset-4">
-            your orders
-          </Link>{" "}
-          for status first. For anything else, use{" "}
-          <Link href="/contact" className="underline underline-offset-4">
-            Contact & grievance
-          </Link>
-          .
-        </p>
-      </PolicySection>
-    </PolicyDoc>
+      </article>
+    </div>
   );
 }
