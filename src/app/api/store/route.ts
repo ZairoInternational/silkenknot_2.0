@@ -1,11 +1,14 @@
 import { seedCategories, seedCoupons, seedProducts } from "@/lib/data";
+import { getFullProducts, getSlimCatalog, invalidateCatalogCache } from "@/lib/catalog/server";
 import { databaseConfigured, getDb, publicUser } from "@/lib/mongo";
-import { readBag, saveBag } from "@/lib/auth/bag";
+import { saveBag } from "@/lib/auth/bag";
 import { csrfHeaderMatches, jsonError, sameOrigin } from "@/lib/auth/http";
 import { applyAdminStatus, CheckoutError, publicOrder, type StoredOrder } from "@/lib/payments/service";
 import { customerOrderVisible } from "@/lib/shipping/states";
 import { clearSession, currentSession, ensureCsrfCookie } from "@/lib/session";
 import type { Address, CartItem, Category, Coupon, Order, Product, Review } from "@/lib/types";
+
+const CUSTOMER_ORDER_LIMIT = 50;
 
 function clean<T>(doc: T) {
   if (!doc || typeof doc !== "object") return doc;
@@ -27,57 +30,95 @@ function offlineCatalog() {
   };
 }
 
+function bagFromUser(account: Record<string, unknown> | null) {
+  return {
+    cart: Array.isArray(account?.savedCart) ? (account.savedCart as CartItem[]) : [],
+    wishlist: Array.isArray(account?.savedWishlist) ? (account.savedWishlist as string[]) : [],
+    couponCode: typeof account?.savedCoupon === "string" ? account.savedCoupon : null,
+  };
+}
+
 export async function GET() {
   if (!databaseConfigured()) return Response.json(offlineCatalog());
   try {
     await ensureCsrfCookie();
     const db = await getDb();
-    // Session in parallel with catalog — admin path used to wait on products first.
-    const [products, categories, coupons, session] = await Promise.all([
-      db.collection("products").find().toArray(),
-      db.collection("categories").find().sort({ order: 1 }).toArray(),
-      db.collection("coupons").find().toArray(),
-      currentSession(),
-    ]);
+    const session = await currentSession();
+
     let user = null;
     let orders: Order[] = [];
     let customers: ReturnType<typeof publicUser>[] = [];
-    let admin = false;
     let bag = null;
-    if (session) {
-      if (session.role === "admin") {
-        admin = true;
-        const [found, customerRows, orderRows] = await Promise.all([
-          db.collection("users").findOne({ id: session.id }),
-          db.collection("users").find({ role: "customer" }).toArray(),
-          db.collection("orders").find().sort({ createdAt: -1 }).limit(250).toArray(),
-        ]);
-        if (found) user = publicUser(found);
-        customers = customerRows.map((item) => publicUser(item));
-        orders = orderRows.map((order) => publicOrder(order as unknown as StoredOrder));
-      } else {
-        const found = await db.collection("users").findOne({ id: session.id });
-        if (found) user = publicUser(found);
-        bag = await readBag(db, session.id);
-        if (found) {
-          const orderQuery = found.email
-            ? { $or: [{ userId: found.id }, { email: found.email }] }
-            : { userId: found.id };
-          orders = (await db.collection("orders").find(orderQuery).sort({ createdAt: -1 }).toArray())
-            .map((order) => publicOrder(order as unknown as StoredOrder))
-            .filter((order) => customerOrderVisible(order));
-        }
-      }
+
+    if (session?.role === "admin") {
+      const [products, categories, coupons, found, customerRows, orderRows] = await Promise.all([
+        getFullProducts(db),
+        db.collection("categories").find().sort({ order: 1 }).toArray(),
+        db.collection("coupons").find().toArray(),
+        db.collection("users").findOne({ id: session.id }),
+        db.collection("users").find({ role: "customer" }).toArray(),
+        db.collection("orders").find().sort({ createdAt: -1 }).limit(250).toArray(),
+      ]);
+      if (found) user = publicUser(found);
+      customers = customerRows.map((item) => publicUser(item));
+      orders = orderRows.map((order) => publicOrder(order as unknown as StoredOrder));
+      return Response.json({
+        configured: true,
+        products,
+        categories: categories.map((item) => clean(item)),
+        coupons: coupons.map((item) => clean(item)),
+        orders,
+        user,
+        customers,
+        admin: true,
+        bag: null,
+      });
     }
+
+    if (session) {
+      const [catalog, found] = await Promise.all([
+        getSlimCatalog(db),
+        db.collection("users").findOne({ id: session.id }),
+      ]);
+      if (found) {
+        user = publicUser(found);
+        bag = bagFromUser(found as Record<string, unknown>);
+        const orderQuery = found.email
+          ? { $or: [{ userId: found.id }, { email: found.email }] }
+          : { userId: found.id };
+        const orderRows = await db
+          .collection("orders")
+          .find(orderQuery)
+          .sort({ createdAt: -1 })
+          .limit(CUSTOMER_ORDER_LIMIT)
+          .toArray();
+        orders = orderRows
+          .map((order) => publicOrder(order as unknown as StoredOrder))
+          .filter((order) => customerOrderVisible(order));
+      }
+      return Response.json({
+        configured: true,
+        products: catalog.products,
+        categories: catalog.categories,
+        coupons: catalog.coupons,
+        orders,
+        user,
+        customers,
+        admin: false,
+        bag,
+      });
+    }
+
+    const catalog = await getSlimCatalog(db);
     return Response.json({
       configured: true,
-      products: products.map((item) => clean(item)),
-      categories: categories.map((item) => clean(item)),
-      coupons: coupons.map((item) => clean(item)),
+      products: catalog.products,
+      categories: catalog.categories,
+      coupons: catalog.coupons,
       orders,
       user,
       customers,
-      admin,
+      admin: false,
       bag,
     });
   } catch (error) {
@@ -135,6 +176,7 @@ export async function POST(request: Request) {
         { id: String(body.productId) },
         { $push: { reviews: { $each: [entry], $position: 0 } }, $inc: { reviewCount: 1 } },
       );
+      await invalidateCatalogCache();
       return Response.json({ ok: true });
     }
 
@@ -154,6 +196,7 @@ export async function POST(request: Request) {
       }
       const helpful = await votes.countDocuments({ productId, reviewId, vote: "yes" });
       await products.updateOne({ id: productId, "reviews.id": reviewId }, { $set: { "reviews.$.helpful": helpful } });
+      await invalidateCatalogCache();
       return Response.json({ ok: true, helpful, vote });
     }
 
@@ -253,17 +296,20 @@ export async function POST(request: Request) {
         return fail("Browse product photos so they upload to the image host. Paths already in the public folder can stay as they are.");
       }
       await products.updateOne({ id: product.id }, { $set: product }, { upsert: true });
+      await invalidateCatalogCache();
       return Response.json({ ok: true, message: body.isNew ? "Product created." : "Product saved.", product });
     }
 
     if (action === "delete-product") {
       await products.deleteOne({ id: String(body.id) });
+      await invalidateCatalogCache();
       return Response.json({ ok: true, message: "Product deleted." });
     }
 
     if (action === "save-category") {
       const category = clean(body.category) as Category;
       await categories.updateOne({ id: category.id }, { $set: { ...category, slug: category.id } }, { upsert: true });
+      await invalidateCatalogCache();
       return Response.json({ ok: true, message: "Category saved." });
     }
 
@@ -273,12 +319,14 @@ export async function POST(request: Request) {
         return fail("Move products out of this category before deleting it.");
       }
       await categories.deleteOne({ id });
+      await invalidateCatalogCache();
       return Response.json({ ok: true, message: "Category deleted." });
     }
 
     if (action === "move-category") {
       const list = (body.categories as Category[]) || [];
       await Promise.all(list.map((category) => categories.updateOne({ id: category.id }, { $set: { order: category.order } })));
+      await invalidateCatalogCache();
       return Response.json({ ok: true });
     }
 
@@ -295,11 +343,13 @@ export async function POST(request: Request) {
     if (action === "save-coupon") {
       const coupon = clean(body.coupon) as Coupon;
       await coupons.updateOne({ id: coupon.id }, { $set: coupon }, { upsert: true });
+      await invalidateCatalogCache();
       return Response.json({ ok: true, message: "Offer saved." });
     }
 
     if (action === "delete-coupon") {
       await coupons.deleteOne({ id: String(body.id) });
+      await invalidateCatalogCache();
       return Response.json({ ok: true });
     }
 

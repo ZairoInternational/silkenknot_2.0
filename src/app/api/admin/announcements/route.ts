@@ -1,7 +1,8 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { getAnnouncementSettings, saveAnnouncementSettings } from "@/lib/announcements/server";
 import { csrfHeaderMatches, sameOrigin } from "@/lib/auth/http";
+import { CACHE_TAGS } from "@/lib/cache/tags";
 import { databaseConfigured } from "@/lib/mongo";
 import { currentSession } from "@/lib/session";
 
@@ -40,6 +41,7 @@ export async function PUT(request: Request) {
 
   try {
     const announcements = await saveAnnouncementSettings(body.announcements);
+    revalidateTag(CACHE_TAGS.announcements, "max");
     revalidatePath("/");
     return NextResponse.json({ ok: true, announcements, message: "Announcements saved." });
   } catch (error) {

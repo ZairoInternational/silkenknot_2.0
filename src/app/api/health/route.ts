@@ -23,6 +23,7 @@
 import { databaseConfigured, getDb } from "@/lib/mongo";
 import { smtpConfigured } from "@/lib/mailer";
 import { bunnyReady } from "@/lib/media/bunny";
+import { cacheGet, cacheSet, redisConfigured } from "@/lib/cache/redis";
 import { policyFromEnv } from "@/lib/shipping/policy";
 import { readPaymentConfig, PaymentConfigError } from "@/lib/payments/config";
 import { authSecret } from "@/lib/auth/config";
@@ -282,6 +283,43 @@ async function checkDelhivery(): Promise<Check> {
 }
 
 /**
+ * 7b. Redis — shared catalog / site-content cache
+ * Optional. Without REDIS_URL the app falls back to in-process memory.
+ */
+async function checkRedis(): Promise<Check> {
+  if (!redisConfigured()) {
+    return warn(
+      "redis",
+      "REDIS_URL not set — using in-process memory cache (fine for a single instance; set Redis for multi-instance / serverless).",
+      ["GET /api/store catalog cache", "Brand / site-media / announcements"],
+    );
+  }
+  const probeKey = "health:ping";
+  const token = `ok-${Date.now()}`;
+  const probe = await timed(async () => {
+    await cacheSet(probeKey, token, 30);
+    return cacheGet(probeKey);
+  }).catch((error) => ({
+    result: null as string | null,
+    latencyMs: 0,
+    error: error instanceof Error ? error.message : "Unknown error",
+  }));
+
+  if (probe.result !== token) {
+    const detail = "error" in probe && probe.error ? ` (${probe.error})` : "";
+    return {
+      ...degrade(
+        "redis",
+        `REDIS_URL is set but cache round-trip failed${detail} — falling back to memory where possible.`,
+        ["Shared catalog cache across instances"],
+      ),
+      latencyMs: probe.latencyMs,
+    };
+  }
+  return { ...pass("redis", "Connected · SET/GET ok"), latencyMs: probe.latencyMs };
+}
+
+/**
  * 8. Bunny CDN — admin product image uploads
  */
 function checkBunny(): Check {
@@ -343,17 +381,19 @@ export async function GET(request: Request) {
   const startMs = Date.now();
 
   // Run every check (network checks run in parallel)
-  const [mongo, sessionStore, smtp, delhivery] = await Promise.all([
+  const [mongo, sessionStore, smtp, delhivery, redis] = await Promise.all([
     checkMongo(),
     checkSessionStore(),
     checkSmtp(),
     checkDelhivery(),
+    checkRedis(),
   ]);
 
   const checks: Check[] = [
     checkAuthSecret(),
     mongo,
     sessionStore,
+    redis,
     smtp,
     checkWhatsApp(),
     checkRazorpay(),

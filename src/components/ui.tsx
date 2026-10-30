@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion as useFramerReduced } from "framer-motion";
 import { Heart } from "lucide-react";
 import { useBrandSettings } from "@/lib/brand/client";
+import { getBrandPlacement, getBrandPlacementIcon, type BrandPlacementId } from "@/lib/brand/content";
 import { discountPercent, formatPrice } from "@/lib/format";
 import { useStore } from "@/lib/store";
 
@@ -109,9 +110,49 @@ export function Reveal({
 export function Mark({ className = "h-6 w-6" }: { className?: string }) {
   const brand = useBrandSettings();
   return (
-    // Brand mark is configured in Studio → Brand; keep a plain img so any CDN/local URL works.
+    // Brand mark is configured in Studio → Logo; keep a plain img so any CDN/local URL works.
     // eslint-disable-next-line @next/next/no-img-element
     <img src={brand.iconUrl} alt="" aria-hidden className={`object-contain ${className}`} />
+  );
+}
+
+/** Storefront logo for a configured placement (size, wordmark, dark-surface tone). */
+export function BrandLogo({
+  placement,
+  className = "",
+  wordmarkClassName = "",
+  decorative = false,
+}: {
+  placement: BrandPlacementId;
+  className?: string;
+  wordmarkClassName?: string;
+  /** When true, image is aria-hidden and alt is empty (parent supplies the label). */
+  decorative?: boolean;
+}) {
+  const brand = useBrandSettings();
+  const spot = getBrandPlacement(brand, placement);
+  const src = getBrandPlacementIcon(brand, placement);
+  const name = brand.iconAlt || "Silken Knot";
+  const gap = spot.spacing === "compact" ? "gap-1" : spot.spacing === "relaxed" ? "gap-3" : "gap-2";
+  const align =
+    spot.align === "left" ? "mr-auto" : spot.align === "right" ? "ml-auto" : "mx-auto";
+  return (
+    <span className={`inline-flex items-center ${gap} ${align} ${className}`}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={decorative || spot.showWordmark ? "" : name}
+        aria-hidden={decorative || spot.showWordmark || undefined}
+        style={{
+          height: spot.height,
+          width: "auto",
+          maxWidth: spot.maxWidth,
+          filter: spot.lightOnDark ? "brightness(0) invert(1)" : undefined,
+        }}
+        className="object-contain"
+      />
+      {spot.showWordmark ? <span className={wordmarkClassName}>{name}</span> : null}
+    </span>
   );
 }
 

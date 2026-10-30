@@ -136,30 +136,100 @@
   overflow-wrap: anywhere;
 }
 
-.sk-auth-tabs {
+.sk-auth-methods {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  margin-bottom: 17px;
-  padding: 4px;
-  border-radius: 7px;
-  background: var(--color-cream);
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
-.sk-auth-tabs button {
-  min-height: 34px;
-  border: 0;
-  border-radius: 5px;
-  background: transparent;
-  color: var(--mute);
-  font-size: 0.72rem;
-  font-weight: 500;
+.sk-auth-method {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--color-stone);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
   cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
 }
 
-.sk-auth-tabs button.active {
+.sk-auth-method:hover {
+  border-color: #d4ccc0;
+  background: #fcfbf9;
+}
+
+.sk-auth-method-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--color-cream);
+  color: var(--mute);
+}
+
+.sk-auth-method-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sk-auth-method-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.sk-auth-method-hint {
+  color: var(--mute);
+  font-size: 0.68rem;
+  line-height: 1.3;
+}
+
+.sk-auth-method.is-active {
+  border-color: #cbac7c;
+  background: #f8f3ea;
+  box-shadow: 0 0 0 3px rgba(203, 172, 124, 0.18);
+}
+
+.sk-auth-method.is-active .sk-auth-method-icon {
   background: #cbac7c;
-  color: white;
+  color: #fff;
+}
+
+.sk-auth-method.is-whatsapp.is-active .sk-auth-method-icon {
+  background: #25d366;
+  color: #fff;
+}
+
+.sk-auth-channel-form {
+  display: block;
+}
+
+.sk-auth-channel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(203, 172, 124, 0.16);
+  color: #8a7350;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
 }
 
 .sk-auth-phone-field,
@@ -168,10 +238,15 @@
   height: 47px;
   align-items: center;
   overflow: hidden;
-  border: 1px solid var(--color-stone);
+  border: 1.5px solid var(--color-stone);
   border-radius: 10px;
   background: white;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sk-auth-channel-form .sk-auth-phone-field,
+.sk-auth-channel-form .sk-auth-email-field {
+  border-color: rgba(203, 172, 124, 0.55);
 }
 
 .sk-auth-phone-field:focus-within,
@@ -211,7 +286,7 @@
 
 .sk-auth-email-field svg {
   flex-shrink: 0;
-  color: var(--mute);
+  color: #8a7350;
 }
 
 .sk-auth-primary {
@@ -222,13 +297,15 @@
   justify-content: center;
   margin-top: 16px;
   border: 0;
+  border-radius: 10px;
   background: #cbac7c;
   color: white;
   font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
 }
 
 .sk-auth-primary:hover {

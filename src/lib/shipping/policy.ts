@@ -17,6 +17,8 @@ export type ShippingPolicy = {
   codFeePaise: number;
   bookingMode: "auto" | "manual";
   defaultWeightGrams: number;
+  /** Fixed outer packing allowance added once per parcel (mailer, tissue, tape). */
+  packingWeightGrams: number;
   webhookToken: string;
   mode: "off" | "mock" | "live";
   liveReadsEnabled: boolean;
@@ -76,6 +78,7 @@ export function policyFromEnv(env: Record<string, string | undefined>): Shipping
     codFeePaise: whole(env.SHIPPING_COD_FEE_PAISE, 0),
     bookingMode: delhiveryEnabled ? booking : "manual",
     defaultWeightGrams: whole(env.SHIPPING_DEFAULT_WEIGHT_GRAMS, 500),
+    packingWeightGrams: whole(env.SHIPPING_PACKING_WEIGHT_GRAMS, 40),
     webhookToken: env.DELHIVERY_WEBHOOK_TOKEN?.trim() || "",
     mode,
     liveReadsEnabled,
@@ -129,6 +132,7 @@ export function publicPolicy(policy: ShippingPolicy) {
     codFeePaise: policy.codFeePaise,
     bookingMode: policy.bookingMode,
     defaultWeightGrams: policy.defaultWeightGrams,
+    packingWeightGrams: policy.packingWeightGrams,
     credentialsSet: Boolean(policy.token),
     webhookConfigured: Boolean(policy.webhookToken),
     gstConfigured: Boolean(policy.sellerGstTin && policy.hsnCode),

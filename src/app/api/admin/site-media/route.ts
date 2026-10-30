@@ -1,6 +1,7 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { csrfHeaderMatches, sameOrigin } from "@/lib/auth/http";
+import { CACHE_TAGS } from "@/lib/cache/tags";
 import { databaseConfigured } from "@/lib/mongo";
 import { currentSession } from "@/lib/session";
 import { getSiteMedia, saveSiteMedia } from "@/lib/site-media/server";
@@ -40,6 +41,7 @@ export async function PUT(request: Request) {
 
   try {
     const media = await saveSiteMedia(body.media);
+    revalidateTag(CACHE_TAGS.siteMedia, "max");
     revalidatePath("/", "layout");
     revalidatePath("/shop");
     revalidatePath("/wishlist");

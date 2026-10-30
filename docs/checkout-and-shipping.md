@@ -46,7 +46,7 @@ Push tracking is not authenticated by a published signature. `/api/delhivery/web
 - Register the pickup warehouse and set `DELHIVERY_PICKUP_LOCATION` to that name, including case.
 - Set `DELHIVERY_ORIGIN_PIN` to that warehouse’s 6-digit PIN. Expected TAT uses it as the origin.
 - Delhivery’s order-create notes require seller GST TIN and HSN. Set `DELHIVERY_SELLER_GST_TIN` and `DELHIVERY_HSN_CODE`, or leave booking manual.
-- Products in this catalog have no weight. Bookings use `SHIPPING_DEFAULT_WEIGHT_GRAMS` and record `packageData: store_default_weight` for review.
+- Parcel weight = sum of (variant weight if set, else product `weightGrams`, else `SHIPPING_DEFAULT_WEIGHT_GRAMS`) × quantity, plus `SHIPPING_PACKING_WEIGHT_GRAMS` once (default 40 g for outer packing). Set each size’s Weight (g) in Studio when a product has 250 g / 400 g options.
 - Enable COD in both the store setting and the PIN response before the checkout shows it.
 
 ## Local testing

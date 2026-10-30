@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Feather, HandHeart, Leaf, X } from "lucide-react";
 import { Media, ease, useDialog, usePrefersReducedMotion } from "@/components/ui";
-import { useBrandSettings } from "@/lib/brand/client";
+import { BrandLogo } from "@/components/ui";
 import { useStore } from "@/lib/store";
 
 const STORAGE_KEY = "sk-welcome-scratch";
@@ -47,7 +47,6 @@ function wantsPreview() {
 
 export function WelcomeScratchOffer() {
   const store = useStore();
-  const brand = useBrandSettings();
   const reduced = usePrefersReducedMotion();
   const titleId = useId();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -255,9 +254,13 @@ export function WelcomeScratchOffer() {
               type="button"
               aria-label="Close"
               onClick={dismiss}
-              className="absolute right-3 top-3 z-20 grid size-9 place-items-center rounded-full bg-[#f6f3ee]/85 text-[#2c2926] shadow-sm backdrop-blur-sm transition hover:bg-white md:right-4 md:top-4"
+              className="absolute right-3 top-3 z-20 inline-flex h-8 w-8 items-center justify-center group/close bg-black/10 hover:bg-black/16 rounded-full"
             >
-              <X size={16} strokeWidth={1.75} />
+              <X
+                size={16}
+                strokeWidth={1.75}
+                className="transition-transform duration-200 group-hover/close:rotate-90"
+              />
             </button>
 
             {/* Product panel */}
@@ -266,7 +269,10 @@ export function WelcomeScratchOffer() {
                 Soft formulas, quiet scents, and jars made in small batches.
               </p>
               <div className="relative mx-auto aspect-square w-[42%] max-w-[160px] md:mt-0 md:w-[min(86%,320px)] md:max-w-none">
-                <div className="absolute inset-[8%] rounded-full bg-[#f6f3ee]/55 blur-2xl" aria-hidden />
+                <div
+                  className="absolute inset-[8%] rounded-full bg-[#f6f3ee]/55 blur-2xl"
+                  aria-hidden
+                />
                 <Media
                   src="/silknknot/whipped_shop.jpg"
                   alt="Silken Knot whipped soap jar"
@@ -277,11 +283,16 @@ export function WelcomeScratchOffer() {
               </div>
               <ul className="mt-3 flex items-center justify-between gap-2 md:mt-6">
                 {claims.map((claim) => (
-                  <li key={claim.label} className="flex flex-1 flex-col items-center gap-1.5 text-center text-[#5c564e] md:gap-2">
+                  <li
+                    key={claim.label}
+                    className="flex flex-1 flex-col items-center gap-1.5 text-center text-[#5c564e] md:gap-2"
+                  >
                     <span className="grid size-9 place-items-center rounded-full border border-[#cfc4b6] bg-[#f6f3ee]/55 md:size-12">
                       <claim.icon size={17} strokeWidth={1.25} />
                     </span>
-                    <span className="text-[10px] font-medium uppercase tracking-[0.14em] md:text-[11px]">{claim.label}</span>
+                    <span className="text-[10px] font-medium uppercase tracking-[0.14em] md:text-[11px]">
+                      {claim.label}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -289,22 +300,32 @@ export function WelcomeScratchOffer() {
 
             {/* Scratch panel */}
             <div className="flex flex-1 flex-col items-center bg-[#fbf9f6] px-6 pb-8 pt-4 md:px-10 md:pb-10 md:pt-12">
-              <div className="relative mb-3 h-9 w-24 md:mb-5 md:h-10 md:w-28">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={brand.iconUrl} alt={brand.iconAlt || "Silken Knot"} className="h-full w-full object-contain" />
+              <div className="mb-3 md:mb-5">
+                <BrandLogo placement="welcome" />
               </div>
-              <h2 id={titleId} className="text-center text-[1.75rem] font-medium leading-none tracking-tight text-[#2c2926] md:text-[2.35rem]">
+              <h2
+                id={titleId}
+                className="text-center text-[1.75rem] font-medium leading-none tracking-tight text-[#2c2926] md:text-[2.35rem]"
+              >
                 A little something
               </h2>
               <p className="mt-2.5 text-center text-sm text-[#6f675d] md:mt-3 md:text-[15px]">
-                {showPrize ? "Your welcome offer is ready." : "Reveal below to see what we set aside for you."}
+                {showPrize
+                  ? "Your welcome offer is ready."
+                  : "Reveal below to see what we set aside for you."}
               </p>
 
               <div className="relative mt-5 w-full max-w-[320px] md:mt-6">
                 <div className="flex h-[120px] flex-col items-center justify-center rounded-2xl border border-[#e3dbd1] bg-white px-4 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] md:h-[148px]">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#8a7350]">Welcome offer</p>
-                  <p className="mt-2 text-2xl font-medium text-[#2c2926]">{PRIZE_LABEL}</p>
-                  <p className="mt-1 rounded-md bg-[#efeae3] px-3 py-1 text-sm tracking-[0.18em] text-[#5c564e]">{PRIZE_CODE}</p>
+                  <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#8a7350]">
+                    Welcome offer
+                  </p>
+                  <p className="mt-2 text-2xl font-medium text-[#2c2926]">
+                    {PRIZE_LABEL}
+                  </p>
+                  <p className="mt-1 rounded-md bg-[#efeae3] px-3 py-1 text-sm tracking-[0.18em] text-[#5c564e]">
+                    {PRIZE_CODE}
+                  </p>
                 </div>
 
                 {!reduced && phase === "open" ? (

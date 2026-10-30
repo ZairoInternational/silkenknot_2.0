@@ -9,8 +9,9 @@ import { DeliveryChoice } from "@/components/product/DeliveryChoice";
 import { ProductBreadcrumbs } from "@/components/seo/ProductBreadcrumbs";
 import { ProductPageSkeleton } from "@/components/storefront/PageSkeletons";
 import { trackViewItem } from "@/lib/analytics";
+import { useFullProductBySlug } from "@/lib/catalog/client";
 import { seedProducts } from "@/lib/data";
-import { FREE_SHIPPING_AT, formatPrice } from "@/lib/format";
+import { FREE_SHIPPING_AT, couponProductIds, formatPrice } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import type { Coupon, Product, Review } from "@/lib/types";
 import { productShowsSection } from "@/lib/types";
@@ -21,22 +22,31 @@ export default function ProductPageNew({ slug = "silk-veil-body-butter" }: { slu
   const catalog = store.activeProducts.length ? store.activeProducts : seedProducts.filter((product) => product.active);
   const stored = catalog.find((item) => item.slug === slug || item.id === slug);
   const seed = seedProducts.find((item) => item.id === stored?.id);
-  const seedReviews = seed?.reviews ?? [];
-  const liveById = new Map((stored?.reviews ?? []).map((review) => [review.id, review]));
-  const addedReviews = (stored?.reviews ?? []).filter((review) => !seedReviews.some((item) => item.id === review.id));
-  const product = stored
+  const base = stored
     ? {
         ...stored,
-        reviews: seedReviews.length
-          ? [...seedReviews.map((review) => ({ ...review, helpful: liveById.get(review.id)?.helpful ?? review.helpful })), ...addedReviews]
-          : stored.reviews,
         faqs: stored.faqs?.length ? stored.faqs : seed?.faqs ?? [],
+        reviews: stored.reviews?.length ? stored.reviews : [],
       }
     : stored;
+  const { product: fetched, loadingDetail } = useFullProductBySlug(slug, base);
+  const seedReviews = seed?.reviews ?? [];
+  const liveSource = fetched ?? base;
+  const liveById = new Map((liveSource?.reviews ?? []).map((review) => [review.id, review]));
+  const addedReviews = (liveSource?.reviews ?? []).filter((review) => !seedReviews.some((item) => item.id === review.id));
+  const product = liveSource
+    ? {
+        ...liveSource,
+        reviews: seedReviews.length
+          ? [...seedReviews.map((review) => ({ ...review, helpful: liveById.get(review.id)?.helpful ?? review.helpful })), ...addedReviews]
+          : liveSource.reviews,
+        faqs: liveSource.faqs?.length ? liveSource.faqs : seed?.faqs ?? [],
+      }
+    : liveSource;
   const categoryName = (store.categories.find((item) => item.id === product?.categoryId)?.name ?? "Body Care").toUpperCase();
 
   if (!product || !product.active) {
-    if (!store.ready) {
+    if (!store.ready || loadingDetail) {
       return <ProductPageSkeleton />;
     }
     return (
@@ -117,7 +127,7 @@ function ProductLayout({
     (coupon) =>
       coupon.active &&
       (coupon.scope === "order" ||
-        (coupon.scope === "product" && coupon.productId === product.id) ||
+        (coupon.scope === "product" && couponProductIds(coupon).includes(product.id)) ||
         (coupon.scope === "category" && coupon.categoryId === product.categoryId)),
   );
   const applied = offers.find((offer) => offer.id === offerId) ?? offers.find((offer) => offer.code === store.couponCode);

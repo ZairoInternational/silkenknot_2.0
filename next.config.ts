@@ -62,9 +62,11 @@ const nextConfig: NextConfig = {
       ...bunnyHost(),
     ],
   },
+  // Only process the Tailwind entry through @tailwindcss/turbopack.
+  // Applying it to every "*.css" file strips plain stylesheets (auth.css, checkout.css, etc.).
   turbopack: {
     rules: {
-      "*.css": {
+      "**/globals.css": {
         loaders: ["@tailwindcss/turbopack"],
         as: "*.css",
       },

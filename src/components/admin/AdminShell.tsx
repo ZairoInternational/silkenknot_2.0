@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 import { Mark } from "@/components/ui";
 import { AdminShellSkeleton } from "@/components/admin/AdminSkeletons";
 import { useStore } from "@/lib/store";
@@ -33,16 +34,16 @@ const navGroups: NavGroup[] = [
       { label: "Homepage hero", href: "/admin/hero", hint: "Sale slide and product slides" },
       { label: "Banners & Campaigns", href: "/admin/banners", hint: "Full-bleed hero and promo strip" },
       { label: "Website photos", href: "/admin/site-media", hint: "Banners, strip, login, checkout" },
-      { label: "Logo", href: "/admin/brand", hint: "Mark in header and checkout" },
-      { label: "Top banner", href: "/admin/announcements", hint: "Rotating bar at the top" },
+      { label: "Logo", href: "/admin/brand", hint: "File, size, and display per surface" },
+      { label: "Announcement", href: "/admin/announcements", hint: "Rotating bar at the top" },
     ],
   },
   {
     title: "Settings",
     items: [
       { label: "Account", href: "/admin/account", hint: "Studio password" },
-      { label: "Shipping", href: "/admin/shipping", hint: "Rates, Delhivery, COD" },
-      { label: "Payment fees", href: "/admin/fees", hint: "Checkout platform fee" },
+      { label: "Shipping / Delivery", href: "/admin/shipping", hint: "Rates, Delhivery, COD" },
+      { label: "Platform fee", href: "/admin/fees", hint: "Checkout platform fee" },
     ],
   },
 ];
@@ -69,6 +70,43 @@ export function AdminPageHeader({
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>
+  );
+}
+
+/** Expand/collapse section used across Studio editors. */
+export function AdminPanel({
+  title,
+  hint,
+  children,
+  defaultOpen = true,
+}: {
+  title: string;
+  hint?: string;
+  children: ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section className="overflow-hidden rounded-2xl border border-line bg-paper">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
+        aria-expanded={open}
+      >
+        <div className="min-w-0">
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-mute">{title}</p>
+          {hint ? <p className="mt-1 text-xs text-mute">{hint}</p> : null}
+        </div>
+        <ChevronDown
+          size={18}
+          strokeWidth={1.75}
+          className={`shrink-0 text-mute transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          aria-hidden
+        />
+      </button>
+      {open ? <div className="space-y-5 border-t border-line px-5 py-5">{children}</div> : null}
+    </section>
   );
 }
 

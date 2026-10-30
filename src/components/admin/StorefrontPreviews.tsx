@@ -6,7 +6,14 @@ import type { LucideIcon } from "lucide-react";
 import { Media } from "@/components/ui";
 import { DraftPreviewFrame } from "@/components/admin/DraftPreviewFrame";
 import type { AnnouncementIcon, AnnouncementSettings } from "@/lib/announcements/content";
-import { DEFAULT_BRAND, type BrandSettings } from "@/lib/brand/content";
+import {
+  BRAND_PLACEMENT_META,
+  BRAND_PLACEMENTS,
+  DEFAULT_BRAND,
+  getBrandPlacement,
+  getBrandPlacementIcon,
+  type BrandSettings,
+} from "@/lib/brand/content";
 import { formatPrice } from "@/lib/format";
 import type { SiteMediaSettings } from "@/lib/site-media/content";
 import type { Category, Product } from "@/lib/types";
@@ -35,7 +42,7 @@ export function AnnouncementDraftPreview({ settings }: { settings: AnnouncementS
   }, [active.length]);
 
   return (
-    <DraftPreviewFrame title="Top banner preview" hint="Matches the black bar at the top of the store." bodyClassName="bg-black">
+    <DraftPreviewFrame title="Announcement preview" hint="Matches the black bar at the top of the store." bodyClassName="bg-black">
       {!settings.enabled ? (
         <p className="px-4 py-8 text-center text-sm text-white/70">Bar is off — nothing shows on the site.</p>
       ) : !note ? (
@@ -58,33 +65,155 @@ export function AnnouncementDraftPreview({ settings }: { settings: AnnouncementS
   );
 }
 
-export function BrandDraftPreview({ brand }: { brand: BrandSettings }) {
+function BrandMarkSample({
+  brand,
+  placement,
+  wordmarkClassName = "text-sm",
+}: {
+  brand: BrandSettings;
+  placement: (typeof BRAND_PLACEMENTS)[number];
+  wordmarkClassName?: string;
+}) {
+  const spot = getBrandPlacement(brand, placement);
+  const src = getBrandPlacementIcon(brand, placement);
+  const name = brand.iconAlt || DEFAULT_BRAND.iconAlt;
   return (
-    <DraftPreviewFrame title="Logo preview" hint="Header and footer mark as shoppers see it." bodyClassName="bg-[#f7f3ee]">
-      <div className="space-y-4 p-4">
-        <div className="overflow-hidden rounded-xl border border-line bg-white/80">
-          <div className="flex h-9 items-center justify-center bg-black text-[10px] uppercase tracking-[0.14em] text-white/80">
-            Announcement bar
-          </div>
-          <div className="flex h-16 items-center justify-between px-4">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-mute">Menu</span>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={brand.iconUrl || DEFAULT_BRAND.iconUrl}
-              alt={brand.iconAlt || DEFAULT_BRAND.iconAlt}
-              className="h-11 w-auto max-w-[9rem] object-contain"
-            />
-            <span className="text-[10px] uppercase tracking-[0.14em] text-mute">Bag</span>
-          </div>
+    <span className="inline-flex items-center gap-2">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt=""
+        aria-hidden
+        style={{
+          height: spot.height,
+          width: "auto",
+          maxWidth: spot.maxWidth,
+          filter: spot.lightOnDark ? "brightness(0) invert(1)" : undefined,
+        }}
+        className="object-contain"
+      />
+      {spot.showWordmark ? <span className={wordmarkClassName}>{name}</span> : null}
+    </span>
+  );
+}
+
+function BrandContextStage({
+  brand,
+  placement,
+}: {
+  brand: BrandSettings;
+  placement: (typeof BRAND_PLACEMENTS)[number];
+}) {
+  if (placement === "header") {
+    return (
+      <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
+        <div className="flex h-8 items-center justify-center bg-black text-[9px] uppercase tracking-[0.16em] text-white/70">
+          Free shipping over ₹999
         </div>
-        <div className="rounded-xl border border-line bg-[#2c2926] px-4 py-5 text-[#f6f1ea]">
-          <p className="text-xs uppercase tracking-[0.16em] text-white/60">Footer</p>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={brand.iconUrl || DEFAULT_BRAND.iconUrl}
-            alt={brand.iconAlt || DEFAULT_BRAND.iconAlt}
-            className="mt-3 h-10 w-auto max-w-[12rem] object-contain object-left"
-          />
+        <div className="flex h-[4.5rem] items-center justify-between px-5">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-mute">Menu</span>
+          <BrandMarkSample brand={brand} placement={placement} wordmarkClassName="font-serif text-lg" />
+          <span className="text-[10px] uppercase tracking-[0.14em] text-mute">Bag</span>
+        </div>
+      </div>
+    );
+  }
+  if (placement === "footer") {
+    return (
+      <div className="overflow-hidden rounded-2xl border border-line bg-[#2c2926] px-5 py-6 text-[#f6f1ea] shadow-sm">
+        <BrandMarkSample brand={brand} placement={placement} wordmarkClassName="font-serif text-2xl text-[#f6f1ea]" />
+        <p className="mt-4 max-w-xs text-xs leading-5 text-white/55">
+          Body care, bath, and scent for everyday rituals.
+        </p>
+      </div>
+    );
+  }
+  if (placement === "checkout") {
+    return (
+      <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
+        <div className="flex h-16 items-center justify-between px-5">
+          <BrandMarkSample brand={brand} placement={placement} wordmarkClassName="text-base text-ink" />
+          <span className="text-xs text-mute">Back to shop</span>
+        </div>
+        <div className="border-t border-line bg-[#faf7f2] px-5 py-8 text-center text-xs text-mute">
+          Checkout steps
+        </div>
+      </div>
+    );
+  }
+  if (placement === "auth") {
+    return (
+      <div className="overflow-hidden rounded-2xl border border-line shadow-sm">
+        <div className="bg-[#3d3832] px-5 py-6 text-[#f6f1ea]">
+          <BrandMarkSample brand={brand} placement={placement} wordmarkClassName="text-sm text-[#f6f1ea]" />
+          <p className="mt-4 font-serif text-2xl leading-tight">Self care is a beautiful habit.</p>
+        </div>
+        <div className="bg-white px-5 py-6 text-xs text-mute">Sign-in form</div>
+      </div>
+    );
+  }
+  return (
+    <div className="overflow-hidden rounded-2xl border border-line bg-[#fbf9f6] px-5 py-8 text-center shadow-sm">
+      <div className="flex justify-center">
+        <BrandMarkSample brand={brand} placement={placement} />
+      </div>
+      <p className="mt-4 font-serif text-xl text-ink">A little something</p>
+      <p className="mt-1 text-xs text-mute">Welcome offer scratch card</p>
+    </div>
+  );
+}
+
+export function BrandDraftPreview({
+  brand,
+  activePlacement = "header",
+  onSelectPlacement,
+}: {
+  brand: BrandSettings;
+  activePlacement?: (typeof BRAND_PLACEMENTS)[number];
+  onSelectPlacement?: (placement: (typeof BRAND_PLACEMENTS)[number]) => void;
+}) {
+  const meta = BRAND_PLACEMENT_META[activePlacement];
+  const spot = getBrandPlacement(brand, activePlacement);
+  return (
+    <DraftPreviewFrame
+      title="Live preview"
+      hint={`${meta.title} · ${spot.height}×${spot.maxWidth}px`}
+      bodyClassName="bg-[#f3eee6]"
+    >
+      <div className="space-y-4 p-4">
+        <BrandContextStage brand={brand} placement={activePlacement} />
+        <div>
+          <p className="mb-2 text-[10px] uppercase tracking-[0.14em] text-mute">All surfaces</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {BRAND_PLACEMENTS.map((placement) => {
+              const item = BRAND_PLACEMENT_META[placement];
+              const active = placement === activePlacement;
+              const dark = item.surface === "dark";
+              return (
+                <button
+                  key={placement}
+                  type="button"
+                  onClick={() => onSelectPlacement?.(placement)}
+                  className={`rounded-xl border px-3 py-3 text-left transition ${
+                    active
+                      ? "border-ink ring-1 ring-ink"
+                      : "border-line hover:border-[#d6cfc4]"
+                  } ${dark ? "bg-[#2c2926] text-[#f6f1ea]" : "bg-white/90"}`}
+                >
+                  <p className={`text-[10px] uppercase tracking-[0.12em] ${dark ? "text-white/55" : "text-mute"}`}>
+                    {item.title}
+                  </p>
+                  <div className="mt-2 flex min-h-8 items-center">
+                    <BrandMarkSample
+                      brand={brand}
+                      placement={placement}
+                      wordmarkClassName={`text-xs ${dark ? "text-[#f6f1ea]" : "text-ink"}`}
+                    />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </DraftPreviewFrame>

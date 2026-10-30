@@ -1,6 +1,6 @@
-import { BrandManager } from "@/components/admin/Studio";
+import { BrandManager } from "@/components/admin/BrandManager";
 
-export const metadata = { title: "Brand" };
+export const metadata = { title: "Brand Logo & Identity" };
 
 export default function Page() {
   return <BrandManager />;

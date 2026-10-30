@@ -1,4 +1,5 @@
 import type { CartItem, Coupon, Product } from "../types";
+import { couponProductIds } from "../format";
 import { percentOfPaise, rupeesToPaise } from "./money";
 
 export const FREE_SHIPPING_PAISE = 999 * 100;
@@ -146,7 +147,8 @@ export function quoteCart(products: Product[], coupons: Coupon[], items: Request
 
 function eligiblePaise(lines: QuoteLine[], coupon: Coupon) {
   if (coupon.scope === "product") {
-    return lines.filter((line) => line.productId === coupon.productId).reduce((sum, line) => sum + line.linePaise, 0);
+    const ids = new Set(couponProductIds(coupon));
+    return lines.filter((line) => ids.has(line.productId)).reduce((sum, line) => sum + line.linePaise, 0);
   }
   if (coupon.scope === "category") {
     return lines.filter((line) => line.categoryId === coupon.categoryId).reduce((sum, line) => sum + line.linePaise, 0);

@@ -6,6 +6,8 @@ export type Variant = {
   price: number;
   compareAtPrice?: number;
   stock: number;
+  /** Parcel weight for this size/option (grams). Preferred over product.weightGrams when set. */
+  weightGrams?: number;
 };
 
 export type Review = {
@@ -246,7 +248,10 @@ export type Coupon = {
   type: "percent" | "fixed";
   value: number;
   scope: "order" | "product" | "category";
+  /** @deprecated Prefer productIds — kept for older single-product coupons. */
   productId?: string;
+  /** Product-scope coupons may apply to one or many products. */
+  productIds?: string[];
   categoryId?: string;
   active: boolean;
   label: string;

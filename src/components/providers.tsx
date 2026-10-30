@@ -13,6 +13,8 @@ import { RoutePending } from "@/components/RoutePending";
 import { Toast } from "@/components/ui";
 import { primeBrandCache } from "@/lib/brand/client";
 import type { BrandSettings } from "@/lib/brand/content";
+import { primeSiteMediaCache } from "@/lib/site-media/client";
+import type { SiteMediaSettings } from "@/lib/site-media/content";
 
 const SupportChat = dynamic(
   () => import("@/components/support/SupportChat").then((mod) => mod.SupportChat),
@@ -22,12 +24,16 @@ const SupportChat = dynamic(
 export function Providers({
   children,
   initialBrand,
+  initialSiteMedia,
 }: {
   children: React.ReactNode;
   /** Server-fetched brand so header/footer never flash the default SK mark. */
   initialBrand?: BrandSettings;
+  /** Server-fetched site media so home strips skip a client round-trip. */
+  initialSiteMedia?: SiteMediaSettings;
 }) {
   if (initialBrand) primeBrandCache(initialBrand);
+  if (initialSiteMedia) primeSiteMediaCache(initialSiteMedia);
 
   return (
     <MotionConfig reducedMotion="user">

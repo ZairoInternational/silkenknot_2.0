@@ -5,20 +5,23 @@ import { DEFAULT_SITE_MEDIA, type SiteMediaSettings } from "@/lib/site-media/con
 
 let cached: SiteMediaSettings | null = null;
 let inflight: Promise<SiteMediaSettings> | null = null;
+/** True once RSC layout or admin has seeded real media — skip a redundant client fetch. */
+let seededFromServer = false;
 
 async function loadSiteMedia(): Promise<SiteMediaSettings> {
-  if (cached) return cached;
+  if (cached && seededFromServer) return cached;
   if (!inflight) {
     inflight = fetch("/api/site-media")
       .then(async (response) => {
         const body = (await response.json()) as { media?: SiteMediaSettings };
         const next = body.media || DEFAULT_SITE_MEDIA;
         cached = next;
+        seededFromServer = true;
         return next;
       })
       .catch(() => {
-        cached = DEFAULT_SITE_MEDIA;
-        return DEFAULT_SITE_MEDIA;
+        if (!cached) cached = DEFAULT_SITE_MEDIA;
+        return cached || DEFAULT_SITE_MEDIA;
       })
       .finally(() => {
         inflight = null;
@@ -31,10 +34,12 @@ const SITE_MEDIA_EVENT = "silkknot:site-media";
 
 export function clearSiteMediaCache() {
   cached = null;
+  seededFromServer = false;
 }
 
 export function primeSiteMediaCache(media: SiteMediaSettings) {
   cached = media;
+  seededFromServer = true;
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(SITE_MEDIA_EVENT, { detail: media }));
   }

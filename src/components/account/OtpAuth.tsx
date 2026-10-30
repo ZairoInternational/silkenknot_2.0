@@ -8,13 +8,31 @@ import { afterAuthPath, needsName, safeNext } from "@/lib/auth/browser";
 import { normalizeEmail, normalizePhone } from "@/lib/auth/contact";
 import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
-import { Mark } from "@/components/ui";
+import { BrandLogo } from "@/components/ui";
 import "./auth.css";
 
 function clock(total: number) {
   const minutes = Math.floor(total / 60);
   const seconds = total % 60;
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function WhatsAppIcon({ size = 16, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      role="img"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      className={className}
+      aria-hidden
+      fill="currentColor"
+    >
+      <title>WhatsApp</title>
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+    </svg>
+  );
 }
 
 export function OtpAuth({
@@ -164,7 +182,7 @@ export function OtpAuth({
           style={{ backgroundImage: authBackground }}
         >
           <Link className="sk-auth-visual-brand" href="/" aria-label="Silken Knot home">
-            <Mark className="h-5 w-5" /> Silken Knot
+            <BrandLogo placement="auth" wordmarkClassName="text-inherit" />
           </Link>
           <div className="sk-auth-visual-copy">
             <span>A MOMENT FOR YOURSELF</span>
@@ -201,14 +219,50 @@ export function OtpAuth({
             {screen === "login" ? (
               <>
                 <h1>{heading}</h1>
-                <p className="sk-auth-subtitle">{purpose === "login" ? "We’ll send a WhatsApp or email code to sign you in." : activeChannel === "whatsapp" ? "We’ll send a WhatsApp code to verify this number." : "We’ll send a code to verify this email."}</p>
+                <p className="sk-auth-subtitle">
+                  {purpose === "login"
+                    ? activeChannel === "whatsapp"
+                      ? "We’ll send a one-time code on WhatsApp."
+                      : "We’ll send a one-time code to your email."
+                    : activeChannel === "whatsapp"
+                      ? "We’ll send a WhatsApp code to verify this number."
+                      : "We’ll send a code to verify this email."}
+                </p>
                 {locked ? null : (
-                  <div className="sk-auth-tabs" role="tablist" aria-label="Choose a verification method">
-                    <button type="button" role="tab" aria-selected={activeChannel === "whatsapp"} className={activeChannel === "whatsapp" ? "active" : ""} onClick={() => { setChannel("whatsapp"); setError(""); }}>WhatsApp</button>
-                    <button type="button" role="tab" aria-selected={activeChannel === "email"} className={activeChannel === "email" ? "active" : ""} onClick={() => { setChannel("email"); setError(""); }}>Email</button>
+                  <div className="sk-auth-methods" role="tablist" aria-label="Choose a verification method">
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={activeChannel === "whatsapp"}
+                      className={`sk-auth-method is-whatsapp${activeChannel === "whatsapp" ? " is-active" : ""}`}
+                      onClick={() => { setChannel("whatsapp"); setError(""); }}
+                    >
+                      <span className="sk-auth-method-icon" aria-hidden>
+                        <WhatsAppIcon size={18} />
+                      </span>
+                      <span className="sk-auth-method-copy">
+                        <span className="sk-auth-method-title">WhatsApp</span>
+
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={activeChannel === "email"}
+                      className={`sk-auth-method is-email${activeChannel === "email" ? " is-active" : ""}`}
+                      onClick={() => { setChannel("email"); setError(""); }}
+                    >
+                      <span className="sk-auth-method-icon" aria-hidden>
+                        <Mail size={18} strokeWidth={1.75} />
+                      </span>
+                      <span className="sk-auth-method-copy">
+                        <span className="sk-auth-method-title">Email</span>
+                       
+                      </span>
+                    </button>
                   </div>
                 )}
-                <form onSubmit={requestCode}>
+                <form onSubmit={requestCode} className={`sk-auth-channel-form is-${activeChannel}`}>
                   {activeChannel === "whatsapp" ? (
                     <div className="sk-auth-phone-field">
                       <span className="sk-auth-country" aria-hidden>+91</span>
@@ -229,7 +283,13 @@ export function OtpAuth({
                     </label>
                   ) : null}
                   {error ? <p className="sk-auth-error" role="alert">{error}</p> : null}
-                  <button className="sk-auth-primary" type="submit" disabled={busy}>{busy ? "Checking…" : "Continue"}</button>
+                  <button className={`sk-auth-primary is-${activeChannel}`} type="submit" disabled={busy}>
+                    {busy
+                      ? "Checking…"
+                      : activeChannel === "whatsapp"
+                        ? "Send WhatsApp code"
+                        : "Send email code"}
+                  </button>
                 </form>
               </>
             ) : (

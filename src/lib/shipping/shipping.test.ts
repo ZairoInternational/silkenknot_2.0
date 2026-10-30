@@ -55,6 +55,30 @@ test("a parcel weight is the sum of product weights, with the store fallback onl
   assert.equal(parcelWeight([{ productId: "missing", quantity: 1 }], products, 500).grams, 500);
 });
 
+test("parcel weight prefers variant weight for size options and adds packing once", () => {
+  const products = [{
+    id: "butter",
+    weightGrams: 200,
+    variants: [
+      { label: "250 g", weightGrams: 280 },
+      { label: "400 g", weightGrams: 450 },
+    ],
+  }];
+  assert.deepEqual(
+    parcelWeight([{ productId: "butter", quantity: 1, variantLabel: "250 g" }], products, 500, 40),
+    { grams: 320, packageData: "product_weights" },
+  );
+  assert.deepEqual(
+    parcelWeight([{ productId: "butter", quantity: 2, variantLabel: "400 g" }], products, 500, 40),
+    { grams: 940, packageData: "product_weights" },
+  );
+  // Unknown size falls back to product weight, then still adds packing.
+  assert.deepEqual(
+    parcelWeight([{ productId: "butter", quantity: 1, variantLabel: "Travel" }], products, 500, 40),
+    { grams: 240, packageData: "product_weights" },
+  );
+});
+
 test("a duplicate Delhivery remark can recover a waybill without booking twice", () => {
   const parsed = parseManifest(200, JSON.stringify({ packages: [{ status: "Fail", remarks: ["Duplicate order id 1234567890123"] }] }));
   assert.deepEqual(parsed, { waybill: "1234567890123", reference: "" });

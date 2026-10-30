@@ -66,7 +66,12 @@ export async function prepareShippingQuote(db: Db, input: { userId: string; item
   }
   const effectiveCoupon = priced.couponCode || "";
   const netPaise = priced.subtotalPaise - priced.discountPaise;
-  const parcel = parcelWeight(Array.isArray(input.items) ? input.items as { productId?: string; quantity?: number }[] : [], products, policy.defaultWeightGrams);
+  const parcel = parcelWeight(
+    Array.isArray(input.items) ? (input.items as { productId?: string; quantity?: number; variantLabel?: string }[]) : [],
+    products,
+    policy.defaultWeightGrams,
+    policy.packingWeightGrams,
+  );
   let serviceability: Serviceability;
   if (!policy.liveReadsEnabled) {
     serviceability = { status: "not_configured" };
@@ -170,7 +175,12 @@ export async function revalidateShipping(db: Db, input: {
   const coupons = (await db.collection("coupons").find({ active: true }).toArray()) as unknown as Coupon[];
   const priced = quoteCart(products, coupons, Array.isArray(input.items) ? input.items : [], input.couponCode);
   const netPaise = priced.subtotalPaise - priced.discountPaise;
-  const parcel = parcelWeight(Array.isArray(input.items) ? input.items as { productId?: string; quantity?: number }[] : [], products, policy.defaultWeightGrams);
+  const parcel = parcelWeight(
+    Array.isArray(input.items) ? (input.items as { productId?: string; quantity?: number; variantLabel?: string }[]) : [],
+    products,
+    policy.defaultWeightGrams,
+    policy.packingWeightGrams,
+  );
   if (!policy.liveReadsEnabled || !/^\d{6}$/.test(policy.originPin)) {
     throw new ShippingQuoteError("config", "Delivery options are not available right now.");
   }

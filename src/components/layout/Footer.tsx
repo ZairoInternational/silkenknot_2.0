@@ -15,7 +15,7 @@ import {
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
-import { Mark } from "@/components/ui";
+import { BrandLogo } from "@/components/ui";
 
 type FooterLink = {
   label: string;
@@ -136,9 +136,8 @@ export function Footer() {
     <footer className="bg-ink text-paper">
       <div className="mx-auto grid max-w-[1440px] grid-cols-2 gap-x-6 gap-y-8 px-5 py-10 md:grid-cols-[1.3fr_1fr_1fr_1.2fr] md:gap-10 md:px-10 md:py-14">
         <div className="col-span-2 md:col-span-1">
-          <p className="inline-flex items-center gap-2 font-serif text-3xl">
-            <Mark className="h-8 w-15" />
-            Silken Knot
+          <p className="font-serif text-3xl">
+            <BrandLogo placement="footer" wordmarkClassName="font-serif text-3xl text-paper" />
           </p>
           <p className="mt-4 max-w-xs text-sm leading-6 text-paper/70">
             Body care, bath, wellness, and aromatherapy for everyday rituals.

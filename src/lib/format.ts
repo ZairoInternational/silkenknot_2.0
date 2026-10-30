@@ -48,9 +48,17 @@ export function shippingCost(amount: number, method: "standard" | "express") {
   return amount >= FREE_SHIPPING_AT ? 0 : 79;
 }
 
+/** Product IDs a product-scope coupon applies to (supports legacy single productId). */
+export function couponProductIds(coupon: Coupon): string[] {
+  if (coupon.productIds?.length) return [...new Set(coupon.productIds.filter(Boolean))];
+  if (coupon.productId) return [coupon.productId];
+  return [];
+}
+
 export function eligibleAmount(items: CartItem[], coupon: Coupon) {
   if (coupon.scope === "product") {
-    return subtotal(items.filter((item) => item.productId === coupon.productId));
+    const ids = new Set(couponProductIds(coupon));
+    return subtotal(items.filter((item) => ids.has(item.productId)));
   }
   if (coupon.scope === "category") {
     return subtotal(items.filter((item) => item.categoryId === coupon.categoryId));

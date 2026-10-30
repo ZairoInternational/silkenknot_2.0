@@ -16,7 +16,7 @@ import {
   User,
   X,
 } from "lucide-react";
-import { useBrandSettings } from "@/lib/brand/client";
+import { BrandLogo } from "@/components/ui";
 import { itemCount } from "@/lib/format";
 import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
@@ -79,21 +79,13 @@ const searchHints = [
 ];
 
 function Logo({ className = "" }: { className?: string }) {
-  const brand = useBrandSettings();
   return (
     <Link
       href="/"
       aria-label="Silken Knot home"
       className={`inline-flex items-center ${className}`}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={brand.iconUrl}
-        alt={brand.iconAlt || "Silken Knot"}
-        width={160}
-        height={160}
-        className="h-11 w-auto object-contain md:h-14"
-      />
+      <BrandLogo placement="header" decorative wordmarkClassName="font-serif text-xl md:text-2xl" />
     </Link>
   );
 }
@@ -353,12 +345,6 @@ export function SiteHeader() {
           className={`pointer-events-auto relative mx-auto flex h-16 items-center border-b px-4 transition-colors duration-300 md:px-8 ${tone === "text-white" ? "border-white/45" : "border-black/10"}`}
         >
           <div className="relative z-20 flex min-w-0 items-center gap-5">
-            <Link
-              href="/"
-              className="whitespace-nowrap font-serif text-[1.2rem] leading-none tracking-tight md:hidden"
-            >
-              Silken Knot
-            </Link>
             <nav aria-label="Primary" className="hidden md:block">
               <ul className="flex items-center gap-8 xl:gap-10">
                 {links.map((link) => (

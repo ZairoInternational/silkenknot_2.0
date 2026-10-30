@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductPageSkeleton } from "@/components/storefront/PageSkeletons";
 import { Media, PriceTag, Quantity, Reveal, Stars, usePrefersReducedMotion, WishlistButton } from "@/components/ui";
+import { useFullProductBySlug } from "@/lib/catalog/client";
 import { getSeedProduct } from "@/lib/data";
 import { categoryName, formatDate } from "@/lib/format";
 import { useStore } from "@/lib/store";
@@ -15,10 +16,11 @@ import { productShowsSection } from "@/lib/types";
 
 export function ProductView({ slug }: { slug: string }) {
   const store = useStore();
-  const product = store.ready ? store.productBySlug(slug) : getSeedProduct(slug);
+  const base = store.ready ? store.productBySlug(slug) : getSeedProduct(slug);
+  const { product, loadingDetail } = useFullProductBySlug(slug, base ?? null);
 
   if (!product || !product.active) {
-    if (!store.ready) {
+    if (!store.ready || loadingDetail) {
       return <ProductPageSkeleton />;
     }
     return (

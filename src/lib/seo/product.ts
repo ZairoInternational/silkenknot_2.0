@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { findProduct, listCategories } from "@/lib/repository";
 import { databaseConfigured, getDb } from "@/lib/mongo";
 import type { Category, Product, Review } from "@/lib/types";
@@ -13,7 +14,8 @@ function stripMongoId<T extends Record<string, unknown>>(doc: T): Omit<T, "_id">
   return rest;
 }
 
-export async function getActiveProductBySlug(slug: string): Promise<Product | null> {
+/** Deduped per request so metadata + page share one Mongo read. */
+export const getActiveProductBySlug = cache(async (slug: string): Promise<Product | null> => {
   const normalized = slug.trim();
   if (!normalized) return null;
 
@@ -28,7 +30,7 @@ export async function getActiveProductBySlug(slug: string): Promise<Product | nu
     }
   }
   return findProduct(normalized) ?? null;
-}
+});
 
 /** Lightweight fields for sitemap generation. */
 export type SitemapProductRow = {
@@ -66,7 +68,7 @@ export async function listActiveProductsForSitemap(): Promise<SitemapProductRow[
   }));
 }
 
-export async function getCategoryById(categoryId: string): Promise<Category | undefined> {
+export const getCategoryById = cache(async (categoryId: string): Promise<Category | undefined> => {
   if (databaseConfigured()) {
     try {
       const db = await getDb();
@@ -79,7 +81,7 @@ export async function getCategoryById(categoryId: string): Promise<Category | un
     }
   }
   return listCategories().find((category) => category.id === categoryId);
-}
+});
 
 /** In stock when any variant has stock > 0, or when there are no variants and product is active. */
 export function productAvailability(product: Product): "InStock" | "OutOfStock" {

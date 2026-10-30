@@ -6,6 +6,7 @@ import { Providers } from "@/components/providers";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { parseGtmId } from "@/lib/analytics/config";
 import { getBrandSettings } from "@/lib/brand/server";
+import { getSiteMedia } from "@/lib/site-media/server";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/jsonLd";
 import { buildRootMetadata, DEFAULT_DESCRIPTION, SITE_NAME } from "@/lib/seo/metadata";
 import { absoluteAssetUrl, absoluteUrl } from "@/lib/seo/site";
@@ -26,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const brand = await getBrandSettings();
+  const [brand, siteMedia] = await Promise.all([getBrandSettings(), getSiteMedia()]);
   const origin = absoluteUrl("/");
   const logoUrl = absoluteAssetUrl(brand.iconUrl);
   const org = organizationJsonLd({
@@ -69,7 +70,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </noscript>
         ) : null}
         <GoogleTagManager containerId={gtmId} />
-        <Providers initialBrand={brand}>{children}</Providers>
+        <Providers initialBrand={brand} initialSiteMedia={siteMedia}>
+          {children}
+        </Providers>
         <AnalyticsConsentBanner />
       </body>
     </html>

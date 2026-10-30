@@ -1,7 +1,8 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { csrfHeaderMatches, sameOrigin } from "@/lib/auth/http";
 import { getBrandSettings, saveBrandSettings } from "@/lib/brand/server";
+import { CACHE_TAGS } from "@/lib/cache/tags";
 import { databaseConfigured } from "@/lib/mongo";
 import { currentSession } from "@/lib/session";
 
@@ -40,6 +41,7 @@ export async function PUT(request: Request) {
 
   try {
     const brand = await saveBrandSettings(body.brand);
+    revalidateTag(CACHE_TAGS.brand, "max");
     revalidatePath("/", "layout");
     revalidatePath("/admin/brand");
     return NextResponse.json({ ok: true, brand, message: "Brand icon saved." });

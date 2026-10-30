@@ -43,10 +43,7 @@ export function clearBrandCache() {
  * Call synchronously during Providers render so the first logo paint is already correct.
  */
 export function primeBrandCache(brand: BrandSettings) {
-  const unchanged =
-    cached &&
-    cached.iconUrl === brand.iconUrl &&
-    cached.iconAlt === brand.iconAlt;
+  const unchanged = cached && JSON.stringify(cached) === JSON.stringify(brand);
   cached = brand;
   seededFromServer = true;
   if (!unchanged && typeof window !== "undefined") {
