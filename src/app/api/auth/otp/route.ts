@@ -16,6 +16,7 @@ function purposeOf(value: unknown): OtpPurpose {
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return jsonError("Request blocked.", 403);
   await ensureCsrfCookie();
+  if (!csrfHeaderMatches(request)) return jsonError("Request blocked.", 403);
   if (!databaseConfigured()) return jsonError("Add MONGODB_URI to .env.local, then restart the app.", 503);
   const body = await request.json().catch(() => null) as Record<string, unknown> | null;
   if (!body) return jsonError("Request could not be read.");
@@ -32,7 +33,6 @@ export async function POST(request: Request) {
   const db = await getDb();
   let userId: string | undefined;
   if (purpose !== "login") {
-    if (!csrfHeaderMatches(request)) return jsonError("Request blocked.", 403);
     const session = await currentSession();
     if (!session || session.role !== "customer") return jsonError("Log in to continue.", 401);
     userId = session.id;

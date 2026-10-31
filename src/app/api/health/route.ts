@@ -10,16 +10,18 @@
  *   WARNING   — missing optional config or a best-practice gap
  *   OK        — fully configured and reachable
  *
- * Optional guard:  set HEALTH_CHECK_SECRET in env and send:
- *   Authorization: Bearer <secret>
- * Without the secret var the endpoint is open (fine on a private Vercel URL).
+ * Guard: set HEALTH_CHECK_SECRET and send Authorization: Bearer <secret>.
+ * In production the secret is required (missing secret → 404). Locally the
+ * endpoint stays open when the secret is unset.
  *
  * HTTP status codes:
  *   200 – all checks OK or WARNING only
  *   503 – at least one CRITICAL or DEGRADED check
  *   401 – missing / wrong bearer token
+ *   404 – production without HEALTH_CHECK_SECRET
  */
 
+import { timingSafeEqual } from "node:crypto";
 import { databaseConfigured, getDb } from "@/lib/mongo";
 import { smtpConfigured } from "@/lib/mailer";
 import { bunnyReady } from "@/lib/media/bunny";
@@ -27,6 +29,13 @@ import { cacheGet, cacheSet, redisConfigured } from "@/lib/cache/redis";
 import { policyFromEnv } from "@/lib/shipping/policy";
 import { readPaymentConfig, PaymentConfigError } from "@/lib/payments/config";
 import { authSecret } from "@/lib/auth/config";
+
+function bearerMatches(authHeader: string, secret: string) {
+  const expected = Buffer.from(`Bearer ${secret}`);
+  const received = Buffer.from(authHeader);
+  if (expected.length === 0 || expected.length !== received.length) return false;
+  return timingSafeEqual(expected, received);
+}
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -369,11 +378,13 @@ function checkMiddleware(): Check {
 // ─── main handler ─────────────────────────────────────────────────────────────
 
 export async function GET(request: Request) {
-  // Optional bearer guard
   const guardSecret = process.env.HEALTH_CHECK_SECRET?.trim();
+  if (process.env.NODE_ENV === "production" && !guardSecret) {
+    return Response.json({ ok: false, message: "Not found." }, { status: 404 });
+  }
   if (guardSecret) {
     const auth = request.headers.get("authorization") || "";
-    if (auth !== `Bearer ${guardSecret}`) {
+    if (!bearerMatches(auth, guardSecret)) {
       return Response.json({ ok: false, message: "Unauthorised." }, { status: 401 });
     }
   }
