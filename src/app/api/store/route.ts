@@ -83,12 +83,9 @@ export async function GET() {
       if (found) {
         user = publicUser(found);
         bag = bagFromUser(found as Record<string, unknown>);
-        const orderQuery = found.email
-          ? { $or: [{ userId: found.id }, { email: found.email }] }
-          : { userId: found.id };
         const orderRows = await db
           .collection("orders")
-          .find(orderQuery)
+          .find({ userId: found.id })
           .sort({ createdAt: -1 })
           .limit(CUSTOMER_ORDER_LIMIT)
           .toArray();
