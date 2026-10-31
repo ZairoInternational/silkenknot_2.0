@@ -1,4 +1,7 @@
 import type { Address } from "@/lib/types";
+import { SHIPPING_QUOTE_CACHE_KEY } from "@/lib/checkout/shippingQuoteCache";
+
+export { SHIPPING_QUOTE_CACHE_KEY };
 
 export type ShippingAddress = {
   fullName: string;
@@ -72,6 +75,7 @@ const CHECKOUT_DRAFT_KEYS = [
   IDEMPOTENCY_STORAGE_KEY,
   CONTACT_STORAGE_KEY,
   CHECKOUT_OWNER_KEY,
+  SHIPPING_QUOTE_CACHE_KEY,
 ];
 
 export function noteCheckoutOwner(userId: string | null) {

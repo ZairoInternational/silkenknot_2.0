@@ -55,10 +55,12 @@
 .silk-checkout .trustRow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 22px 0 0; padding: 0; list-style: none; }
 .silk-checkout .trustRow li { display: flex; align-items: flex-start; gap: 8px; color: #8a7350; font-size: 12px; line-height: 1.35; }
 .silk-checkout .trustRow strong { display: block; color: #2c2926; font-size: 13px; font-weight: 600; }
-.silk-checkout .addressCard { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid #e7dfd4; border-radius: 12px; background: #fbf9f6; }
-.silk-checkout .addressCard svg { flex-shrink: 0; margin-top: 2px; color: #8a7350; }
-.silk-checkout .addressCard strong { display: block; font-size: 14px; }
-.silk-checkout .addressCard p { margin: 4px 0 0; font-size: 13px; line-height: 1.45; color: #6f675d; }
+.silk-checkout .addressCard { display: flex; gap: 12px; align-items: flex-start; padding: 16px; border: 1px solid #e7dfd4; border-radius: 14px; background: #fbf9f6; }
+.silk-checkout .addressCheck { display: grid; place-items: center; width: 28px; height: 28px; margin-top: 1px; border-radius: 999px; background: #e8f3ec; color: #2f7a4f; flex-shrink: 0; }
+.silk-checkout .addressCard strong { display: block; font-size: 15px; font-weight: 600; color: var(--ink); }
+.silk-checkout .addressCard p { margin: 4px 0 0; font-size: 13px; line-height: 1.5; color: #6f675d; }
+.silk-checkout .addressActions { display: flex; flex-wrap: wrap; gap: 14px; }
+.silk-checkout .addressActions button { border: 0; background: none; color: #8a7350; text-decoration: underline; text-underline-offset: 2px; font-size: 13px; cursor: pointer; padding: 0; }
 .silk-checkout .shipChoice { align-items: center; }
 .silk-checkout .shipPrice { margin-left: auto; font-size: 14px; font-weight: 600; color: #2c2926; white-space: nowrap; }
 .silk-checkout .shipPrice.free { color: #8a7350; }
@@ -191,7 +193,7 @@
 .silk-checkout .summaryFoot { text-align: center; color: #89897d; font-size: 13px; margin: 18px 0 0; }
 .silk-checkout .checkoutFooter { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 28px 0 5px; margin-top: 26px; border-top: 1px solid var(--line); font-size: 12px; color: #88887e; }
 .silk-checkout .checkoutFooter div { display: flex; gap: 18px; }
-.silk-checkout .paymentOptions { display: grid; gap: 12px; }
+.silk-checkout .paymentOptions { display: grid; gap: 12px; margin-top: 18px; }
 .silk-checkout .paymentOptions.isRefreshing { opacity: 0.72; }
 .silk-checkout .shipSkeleton {
   height: 72px;
@@ -249,15 +251,32 @@
 .silk-checkout .buttonRow .primaryButton { flex: 1; }
 .silk-checkout .buttonRow .secondaryButton { min-width: 100px; }
 .silk-checkout .reviewBlock { padding: 0 0 22px; margin-bottom: 22px; border-bottom: 1px solid var(--line); min-width: 0; }
-.silk-checkout .pinLookup { margin-top: 16px; max-width: 100%; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--cream); }
-.silk-checkout .pinLookup > p { margin: 0; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #8a7350; font-weight: 600; }
-.silk-checkout .pinLookup div { display: flex; gap: 8px; margin-top: 10px; min-width: 0; }
-.silk-checkout .pinLookup input { min-width: 0; flex: 1; height: 44px; border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 0 12px; color: var(--ink); font-size: 14px; }
-.silk-checkout .pinLookup button { flex-shrink: 0; height: 44px; border: 0; border-radius: 8px; background: #cbac7c; color: #fff; padding: 0 16px; font-size: 13px; }
-.silk-checkout .pinLookup button:hover { background: #b39668; }
-.silk-checkout .pinLookup button:disabled { opacity: 0.6; }
-.silk-checkout .pinLookup .pinResult { margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: var(--ink); }
-.silk-checkout .pinLookup .pinNote { margin: 4px 0 0; font-size: 12px; line-height: 1.5; color: #8a7350; }
+.silk-checkout .pinLookup { margin-top: 0; padding: 0; border: 0; background: transparent; max-width: 100%; }
+.silk-checkout .pinLookup h3 { margin: 0; font-size: 16px; font-weight: 600; color: var(--ink); }
+.silk-checkout .pinLookupLead { margin: 6px 0 0; font-size: 13px; line-height: 1.45; color: #6f675d; }
+.silk-checkout .pinLookupRow { display: flex; gap: 8px; margin-top: 14px; max-width: min(50%, 280px); min-width: 0; }
+.silk-checkout .pinLookupRow input { min-width: 0; flex: 1; height: 44px; border: 1px solid var(--line); border-radius: 10px; background: #fff; padding: 0 12px; color: var(--ink); font-size: 14px; }
+.silk-checkout .pinLookupRow button { flex-shrink: 0; height: 44px; border: 0; border-radius: 10px; background: #cbac7c; color: #fff; padding: 0 16px; font-size: 13px; font-weight: 500; cursor: pointer; }
+.silk-checkout .pinLookupRow button:hover { background: #b39668; }
+.silk-checkout .pinLookupRow button:disabled { opacity: 0.6; cursor: not-allowed; }
+.silk-checkout .pinResult { display: flex; align-items: flex-start; gap: 8px; margin: 10px 0 0; padding: 12px 14px; border-radius: 12px; font-size: 13px; line-height: 1.5; }
+.silk-checkout .pinResult svg { flex-shrink: 0; margin-top: 1px; }
+.silk-checkout .pinResult.is-ok { background: #eef7f1; color: #2f7a4f; border: 1px solid #cfe5d7; }
+.silk-checkout .pinResult.is-bad { background: #fbf1ef; color: #9a4b3a; border: 1px solid #edd5cf; }
+.silk-checkout .pinResult.is-warn { background: #fbf9f6; color: #6f5638; border: 1px solid #eadfce; }
+.silk-checkout .pinHint { display: flex; align-items: flex-start; gap: 8px; margin: 10px 0 0; font-size: 12px; line-height: 1.45; color: #8a847c; }
+.silk-checkout .pinHint svg { flex-shrink: 0; margin-top: 1px; color: #8a7350; }
+.silk-checkout .reviewBlock .pinResult,
+.silk-checkout .reviewBlock .pinHint { margin-top: 10px; }
+.silk-checkout .addressEmpty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 28px 20px 24px; border: 1px solid #e7dfd4; border-radius: 16px; background: linear-gradient(180deg, #fbf9f6 0%, #f6f3ee 100%); }
+.silk-checkout .addressEmptyIcon { position: relative; display: grid; place-items: center; width: 72px; height: 72px; margin-bottom: 4px; border-radius: 999px; background: #f1ebe3; color: #8a7350; }
+.silk-checkout .addressLeaf { position: absolute; color: #a58b63; }
+.silk-checkout .addressLeafLeft { left: 10px; top: 14px; transform: rotate(-28deg); }
+.silk-checkout .addressLeafRight { right: 10px; bottom: 14px; transform: rotate(150deg); }
+.silk-checkout .addressEmpty strong { display: block; font-size: 18px; font-weight: 600; color: var(--ink); }
+.silk-checkout .addressEmpty > p { margin: 0; max-width: 280px; font-size: 14px; line-height: 1.5; color: #6f675d; }
+.silk-checkout .addressEmptyCta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 320px; margin-top: 6px; border: 0; border-radius: 10px; background: #cbac7c; color: #fff; padding: 13px 18px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.silk-checkout .addressEmptyCta:hover { background: #b39668; }
 .silk-checkout .reviewHeading { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
 .silk-checkout .paymentCopy { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
 .silk-checkout .paymentCopy small { overflow-wrap: anywhere; }
@@ -377,7 +396,9 @@
   .silk-checkout .field.full { grid-column: auto; }
   .silk-checkout .thankActions { flex-direction: column; }
   .silk-checkout .thankActions > * { width: 100%; }
-  .silk-checkout .pinLookup div { flex-direction: row; align-items: center; }
-  .silk-checkout .pinLookup input { height: 48px; padding: 0 14px; font-size: 18px; letter-spacing: 0.06em; }
-  .silk-checkout .pinLookup button { width: auto; height: 48px; font-size: 15px; }
+  .silk-checkout .pinLookupRow { max-width: 100%; }
+  .silk-checkout .pinLookupRow input { height: 48px; padding: 0 14px; font-size: 18px; letter-spacing: 0.06em; }
+  .silk-checkout .pinLookupRow button { width: auto; height: 48px; font-size: 15px; }
+  .silk-checkout .addressEmptyCta { max-width: none; }
+  .silk-checkout .addressActions { width: 100%; justify-content: flex-start; }
 }

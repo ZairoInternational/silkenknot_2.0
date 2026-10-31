@@ -13,6 +13,7 @@ import { AccountDrawer } from "@/components/layout/AccountDrawer";
 import { AccountPageSkeleton } from "@/components/storefront/PageSkeletons";
 import { Field, Media } from "@/components/ui";
 import { afterAuthPath, needsName, profileCompletion, safeNext } from "@/lib/auth/browser";
+import { prefetchShippingQuote } from "@/lib/checkout/shippingQuoteCache";
 import { waybillListLabel } from "@/lib/shipping/states";
 
 const shell = "page-pad mx-auto w-full max-w-lg px-5 pb-24 md:max-w-xl md:px-8";
@@ -682,6 +683,19 @@ function AddressBook() {
   const [picking, setPicking] = useState("");
   const fromShipping = back.startsWith("/checkout");
 
+  function warmShippingQuote(postal: string) {
+    if (!fromShipping || !/^\d{6}$/.test(postal) || !store.cart.length) return;
+    void prefetchShippingQuote({
+      postalCode: postal,
+      couponCode: store.couponCode,
+      items: store.cart.map((item) => ({
+        productId: item.productId,
+        variantLabel: item.variantLabel,
+        quantity: item.quantity,
+      })),
+    });
+  }
+
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get("next");
     setBack(safeNext(requested || "/account"));
@@ -737,7 +751,16 @@ function AddressBook() {
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 {address.isDefault && fromShipping ? (
-                  <button type="button" className="inline-flex h-9 items-center rounded-full bg-[#c6a15e] px-4 text-sm text-white" onClick={() => router.push(back)}>Use this address</button>
+                  <button
+                    type="button"
+                    className="inline-flex h-9 items-center rounded-full bg-[#c6a15e] px-4 text-sm text-white"
+                    onClick={() => {
+                      warmShippingQuote(address.postal);
+                      router.push(back);
+                    }}
+                  >
+                    Use this address
+                  </button>
                 ) : null}
                 {!address.isDefault ? (
                   <button
@@ -747,7 +770,10 @@ function AddressBook() {
                     onClick={async () => {
                       setPicking(address.id);
                       await store.saveAddress({ ...address, isDefault: true });
-                      if (fromShipping) router.push(back);
+                      if (fromShipping) {
+                        warmShippingQuote(address.postal);
+                        router.push(back);
+                      }
                       setPicking("");
                     }}
                   >
@@ -774,7 +800,9 @@ function AddressBook() {
           className="mt-6 grid gap-4 rounded-[24px] border border-[#efe6d8] bg-white p-5 md:grid-cols-2"
           onSubmit={async (event) => {
             event.preventDefault();
-            await store.saveAddress({ ...editing, label: normalizeAddressLabel(editing.label), country: "India" });
+            const next = { ...editing, label: normalizeAddressLabel(editing.label), country: "India" };
+            await store.saveAddress(next);
+            if (fromShipping && (next.isDefault || user.addresses.length === 0)) warmShippingQuote(next.postal);
             setEditing(null);
           }}
         >

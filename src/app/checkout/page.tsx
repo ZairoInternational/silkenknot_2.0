@@ -7,6 +7,7 @@ import CheckoutShell from "@/components/checkout/CheckoutShell";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { trackBeginCheckout } from "@/lib/analytics";
 import { CONTACT_STORAGE_KEY, noteCheckoutOwner, retainCheckoutDraft, type CheckoutContact } from "@/lib/checkout";
+import { prefetchShippingQuote } from "@/lib/checkout/shippingQuoteCache";
 import { useStore } from "@/lib/store";
 
 function localPhone(value: string) {
@@ -76,6 +77,19 @@ export default function CheckoutContactPage() {
     }
     noteCheckoutOwner(user?.id ?? null);
     sessionStorage.setItem(CONTACT_STORAGE_KEY, JSON.stringify(contact));
+    const home = user?.addresses.find((item) => item.isDefault && item.line1 && /^\d{6}$/.test(item.postal))
+      ?? user?.addresses.find((item) => item.line1 && /^\d{6}$/.test(item.postal));
+    if (home && store.cart.length) {
+      void prefetchShippingQuote({
+        postalCode: home.postal,
+        couponCode: store.couponCode,
+        items: store.cart.map((item) => ({
+          productId: item.productId,
+          variantLabel: item.variantLabel,
+          quantity: item.quantity,
+        })),
+      });
+    }
     router.push("/checkout/shipping");
   }
 
