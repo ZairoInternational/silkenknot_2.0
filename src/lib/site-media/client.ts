@@ -40,8 +40,11 @@ export function clearSiteMediaCache() {
 export function primeSiteMediaCache(media: SiteMediaSettings) {
   cached = media;
   seededFromServer = true;
+  // Defer notify — sync dispatch during Providers render triggers setState-in-render (MegaMenu).
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent(SITE_MEDIA_EVENT, { detail: media }));
+    queueMicrotask(() => {
+      window.dispatchEvent(new CustomEvent(SITE_MEDIA_EVENT, { detail: media }));
+    });
   }
 }
 

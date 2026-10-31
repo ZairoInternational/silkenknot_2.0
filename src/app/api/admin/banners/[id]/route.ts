@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { csrfHeaderMatches, sameOrigin } from "@/lib/auth/http";
 import { isBannerStatus, type BannerStatus } from "@/lib/banners/content";
@@ -9,8 +9,15 @@ import {
   setBannerStatus,
   updateBanner,
 } from "@/lib/banners/server";
+import { CACHE_TAGS } from "@/lib/cache/tags";
 import { databaseConfigured } from "@/lib/mongo";
 import { currentSession } from "@/lib/session";
+
+function revalidateHomeBanners() {
+  revalidateTag(CACHE_TAGS.banners, "max");
+  revalidatePath("/");
+  revalidatePath("/shop");
+}
 
 export const runtime = "nodejs";
 
@@ -86,8 +93,7 @@ export async function PUT(request: Request, context: RouteContext) {
         endsAt: body.endsAt,
       });
       if (!banner) return NextResponse.json({ error: "Not found." }, { status: 404 });
-      revalidatePath("/");
-      revalidatePath("/shop");
+      revalidateHomeBanners();
       return NextResponse.json({
         ok: true,
         banner,
@@ -111,8 +117,7 @@ export async function PUT(request: Request, context: RouteContext) {
   try {
     const banner = await updateBanner(id, body, gate.session.id);
     if (!banner) return NextResponse.json({ error: "Not found." }, { status: 404 });
-    revalidatePath("/");
-    revalidatePath("/shop");
+    revalidateHomeBanners();
     return NextResponse.json({ ok: true, banner, message: "Banner saved." });
   } catch (error) {
     const status = (error as { status?: number }).status || 503;
@@ -149,8 +154,7 @@ export async function DELETE(request: Request, context: RouteContext) {
   try {
     const result = await deleteBanner(id, body.confirm === true);
     if (!result) return NextResponse.json({ error: "Not found." }, { status: 404 });
-    revalidatePath("/");
-    revalidatePath("/shop");
+    revalidateHomeBanners();
     return NextResponse.json({ ok: true, message: "Banner deleted.", id: result.id });
   } catch (error) {
     const status = (error as { status?: number }).status || 503;

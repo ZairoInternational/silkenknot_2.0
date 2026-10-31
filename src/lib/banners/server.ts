@@ -1,4 +1,6 @@
 import { randomBytes } from "crypto";
+import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import type { Db, Document } from "mongodb";
 import {
   activityLabel,
@@ -16,9 +18,15 @@ import {
   type PublicBanner,
 } from "@/lib/banners/content";
 import { ensureBannerIndexes } from "@/lib/banners/indexes";
+import { SITE_CACHE_KEYS, invalidateSiteCache, readThroughSiteCache } from "@/lib/cache/site";
+import { CACHE_TAGS } from "@/lib/cache/tags";
 import { isManagedCdnUrl, removeFromBunny } from "@/lib/media/bunny";
 import { mediaCorrelationId } from "@/lib/media/errors";
 import { databaseConfigured, getDb } from "@/lib/mongo";
+
+async function invalidateHomeBannerCache() {
+  await invalidateSiteCache(SITE_CACHE_KEYS.homeBanners);
+}
 
 const BANNER_ID = /^[a-zA-Z0-9_-]{8,64}$/;
 let indexesReady: Promise<void> | null = null;
@@ -166,6 +174,7 @@ export async function createBanner(input: BannerWriteInput, actorId: string) {
 
   const collection = await bannersCollection();
   await collection.insertOne({ ...record });
+  await invalidateHomeBannerCache();
   return adminBannerView(record);
 }
 
@@ -231,6 +240,7 @@ export async function updateBanner(id: string, input: BannerWriteInput, actorId:
     previousMobile !== nextImage.mobileUrl ? previousMobile : "",
   ], id);
 
+  await invalidateHomeBannerCache();
   return adminBannerView(updated);
 }
 
@@ -275,6 +285,7 @@ export async function setBannerStatus(
         },
       },
     );
+    await invalidateHomeBannerCache();
     return getBannerById(id);
   }
 
@@ -284,6 +295,7 @@ export async function setBannerStatus(
       { id },
       { $set: { status: nextStatus, updatedAt, updatedBy: actorId || "admin" } },
     );
+    await invalidateHomeBannerCache();
     return getBannerById(id);
   }
 
@@ -308,6 +320,7 @@ export async function reorderBanners(placement: BannerPlacement, orderedIds: str
     ),
   );
   await Promise.all(ops);
+  await invalidateHomeBannerCache();
   return listBanners({ placement, pageSize: 50 });
 }
 
@@ -323,6 +336,7 @@ export async function deleteBanner(id: string, confirm: boolean) {
 
   await collection.deleteOne({ id });
   await maybeCleanupOrphanedUrls([existing.image.desktopUrl, existing.image.mobileUrl], id);
+  await invalidateHomeBannerCache();
   return { ok: true as const, id };
 }
 
@@ -403,12 +417,28 @@ export async function listPublicBanners(query: PublicBannersQuery): Promise<Publ
     .map(toPublicBanner);
 }
 
-export async function getPublicBannersForHome(now: Date = new Date()) {
+async function loadPublicBannersForHome() {
+  const now = new Date();
   const [hero, strip] = await Promise.all([
     listPublicBanners({ placement: "homepage-hero", now, limit: 5 }),
     listPublicBanners({ placement: "promotional-strip", now, limit: 3 }),
   ]);
   return { hero, strip };
 }
+
+const cachedPublicBannersForHome = unstable_cache(loadPublicBannersForHome, ["site-home-banners"], {
+  revalidate: 60,
+  tags: [CACHE_TAGS.banners],
+});
+
+/** Request-deduped + Redis/Next cached homepage banners (eligibility snapshot ~60s). */
+export const getPublicBannersForHome = cache(async () => {
+  if (!databaseConfigured()) return { hero: [] as PublicBanner[], strip: [] as PublicBanner[] };
+  try {
+    return await readThroughSiteCache(SITE_CACHE_KEYS.homeBanners, () => cachedPublicBannersForHome());
+  } catch {
+    return { hero: [] as PublicBanner[], strip: [] as PublicBanner[] };
+  }
+});
 
 export { activityLabel, bannerHasRequiredImage, isBannerPubliclyEligible };

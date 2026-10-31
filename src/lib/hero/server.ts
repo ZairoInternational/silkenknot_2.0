@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import type { Db } from "mongodb";
 import {
   DEFAULT_HERO_CONTENT,
@@ -8,23 +10,35 @@ import {
   type HeroContent,
   type HeroOffer,
 } from "@/lib/hero/content";
+import { SITE_CACHE_KEYS, invalidateSiteCache, readThroughSiteCache } from "@/lib/cache/site";
+import { CACHE_TAGS } from "@/lib/cache/tags";
 import { databaseConfigured, getDb } from "@/lib/mongo";
 
-export async function getHeroContent(): Promise<HeroContent> {
+async function loadHeroContent(): Promise<HeroContent> {
+  const db = await getDb();
+  const row = await db.collection("siteContent").findOne({ id: HERO_CONTENT_ID });
+  if (!row) return DEFAULT_HERO_CONTENT;
+  return normalizeHeroContent({
+    offer: row.offer,
+    evergreen: row.evergreen,
+    ...(row.offer ? {} : row),
+  });
+}
+
+const cachedHeroContent = unstable_cache(loadHeroContent, ["site-hero"], {
+  revalidate: 60,
+  tags: [CACHE_TAGS.hero],
+});
+
+/** Request-deduped + Redis/Next cached homepage hero. */
+export const getHeroContent = cache(async (): Promise<HeroContent> => {
   if (!databaseConfigured()) return DEFAULT_HERO_CONTENT;
   try {
-    const db = await getDb();
-    const row = await db.collection("siteContent").findOne({ id: HERO_CONTENT_ID });
-    if (!row) return DEFAULT_HERO_CONTENT;
-    return normalizeHeroContent({
-      offer: row.offer,
-      evergreen: row.evergreen,
-      ...(row.offer ? {} : row),
-    });
+    return await readThroughSiteCache(SITE_CACHE_KEYS.hero, () => cachedHeroContent());
   } catch {
     return DEFAULT_HERO_CONTENT;
   }
-}
+});
 
 export async function getHeroOffer(): Promise<HeroOffer> {
   const content = await getHeroContent();
@@ -49,6 +63,7 @@ export async function saveHeroContent(input: unknown): Promise<HeroContent> {
     },
     { upsert: true },
   );
+  await invalidateSiteCache(SITE_CACHE_KEYS.hero);
   return content;
 }
 

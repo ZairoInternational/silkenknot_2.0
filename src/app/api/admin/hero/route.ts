@@ -1,6 +1,7 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { csrfHeaderMatches, sameOrigin } from "@/lib/auth/http";
+import { CACHE_TAGS } from "@/lib/cache/tags";
 import { getHeroContent, saveHeroContent } from "@/lib/hero/server";
 import { databaseConfigured } from "@/lib/mongo";
 import { currentSession } from "@/lib/session";
@@ -42,6 +43,7 @@ export async function PUT(request: Request) {
   try {
     const payload = body.content ?? { offer: body.offer, evergreen: body.evergreen };
     const content = await saveHeroContent(payload);
+    revalidateTag(CACHE_TAGS.hero, "max");
     revalidatePath("/");
     return NextResponse.json({
       ok: true,

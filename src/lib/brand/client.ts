@@ -46,8 +46,11 @@ export function primeBrandCache(brand: BrandSettings) {
   const unchanged = cached && JSON.stringify(cached) === JSON.stringify(brand);
   cached = brand;
   seededFromServer = true;
+  // Defer notify — sync dispatch during Providers render triggers setState-in-render.
   if (!unchanged && typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent(BRAND_EVENT, { detail: brand }));
+    queueMicrotask(() => {
+      window.dispatchEvent(new CustomEvent(BRAND_EVENT, { detail: brand }));
+    });
   }
 }
 

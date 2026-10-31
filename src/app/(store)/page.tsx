@@ -9,14 +9,15 @@ import { NewLaunches } from "@/components/home/NewLaunches";
 import { BrandStory, Newsletter } from "@/components/home/Flow";
 import Reviews from "@/components/home/Reviews";
 import { PromotionalStrip } from "@/components/home/PromotionalStrip";
-import { WelcomeScratchOffer } from "@/components/offers/WelcomeScratchOffer";
+import { WelcomeScratchOfferLazy } from "@/components/offers/WelcomeScratchOfferLazy";
 import { getPublicBannersForHome } from "@/lib/banners/server";
 import { getHeroContent } from "@/lib/hero/server";
 import { buildPageMetadata, DEFAULT_DESCRIPTION, SITE_NAME } from "@/lib/seo/metadata";
 // import { GiftSets } from "@/components/home/GiftSets";
 // import { BuildYourRitual } from "@/components/home/Buildyourrituals";
 
-export const dynamic = "force-dynamic";
+/** Public homepage — ISR; hero/banners also use Redis/Next data cache. */
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   ...buildPageMetadata({
@@ -47,7 +48,7 @@ export default async function HomePage() {
       {/* <GiftSets/> */}
       {/* <BuildYourRitual/> */}
       <Newsletter />
-      <WelcomeScratchOffer />
+      <WelcomeScratchOfferLazy />
     </>
   );
 }

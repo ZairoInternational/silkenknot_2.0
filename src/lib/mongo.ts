@@ -13,6 +13,7 @@ import { parsePhoneNumberFromString } from "libphonenumber-js";
 const uri = process.env.MONGODB_URI;
 const dbName = process.env.MONGODB_DB || "silkknot";
 const MIGRATION_META_ID = "db-migrations-v1";
+const BOOTSTRAP_META_ID = "db-bootstrap-v1";
 
 let client: MongoClient | null = null;
 let connecting: Promise<MongoClient> | null = null;
@@ -93,6 +94,24 @@ async function ensureAuthIndexes(db: Db) {
 
 /** Empty-collection seeds + content docs + indexes. Heavy backfills run in the background. */
 async function seedIfEmpty(db: Db) {
+  const bootstrap = await db.collection("siteContent").findOne(
+    { id: BOOTSTRAP_META_ID },
+    { projection: { ready: 1 } },
+  );
+  if (bootstrap?.ready) {
+    // Indexes are idempotent; refresh in background so first request stays cheap.
+    void Promise.all([ensureAuthIndexes(db), ensureStorefrontIndexes(db), ensurePaymentIndexes(db)]);
+    if (!heavyMigrations) {
+      heavyMigrations = runHeavyMigrations(db).catch((error) => {
+        heavyMigrations = null;
+        console.warn("[mongo] background migration failed", {
+          name: error instanceof Error ? error.name : "unknown",
+        });
+      });
+    }
+    return;
+  }
+
   const products = db.collection("products");
   if (!(await products.findOne({}, { projection: { _id: 1 } }))) {
     await products.insertMany(seedProducts.map((product) => ({ ...product })));
@@ -153,6 +172,13 @@ async function seedIfEmpty(db: Db) {
   ]);
 
   await Promise.all([ensureAuthIndexes(db), ensureStorefrontIndexes(db), ensurePaymentIndexes(db)]);
+
+  const now = new Date().toISOString();
+  await db.collection("siteContent").updateOne(
+    { id: BOOTSTRAP_META_ID },
+    { $set: { id: BOOTSTRAP_META_ID, ready: true, updatedAt: now }, $setOnInsert: { createdAt: now } },
+    { upsert: true },
+  );
 
   if (!heavyMigrations) {
     heavyMigrations = runHeavyMigrations(db).catch((error) => {

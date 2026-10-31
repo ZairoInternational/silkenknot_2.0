@@ -4,4 +4,6 @@ export const CACHE_TAGS = {
   siteMedia: "site-media",
   announcements: "announcements",
   catalog: "catalog",
+  hero: "hero",
+  banners: "banners",
 } as const;

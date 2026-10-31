@@ -4,6 +4,8 @@ export const SITE_CACHE_KEYS = {
   brand: "site:brand",
   siteMedia: "site:media",
   announcements: "site:announcements",
+  hero: "site:hero",
+  homeBanners: "site:home-banners",
 } as const;
 
 const SITE_TTL_SECONDS = 60;
