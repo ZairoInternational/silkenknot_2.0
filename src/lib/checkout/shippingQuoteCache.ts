@@ -54,7 +54,7 @@ export function shippingQuoteCartKey(items: ShippingQuoteItem[]) {
   return items.map((item) => `${item.productId}:${item.variantLabel}:${item.quantity}`).join("|");
 }
 
-export function shippingQuoteCacheKey(postalCode: string, cartKey: string, couponCode = "") {
+export function shippingQuoteCacheKey(postalCode: string, cartKey: string, couponCode: string | null | undefined = "") {
   return `${postalCode.trim()}|${cartKey}|${String(couponCode || "").trim().toLowerCase()}`;
 }
 
@@ -106,7 +106,7 @@ export function clearShippingQuoteCache() {
 export async function prefetchShippingQuote(input: {
   postalCode: string;
   items: ShippingQuoteItem[];
-  couponCode?: string;
+  couponCode?: string | null;
   signal?: AbortSignal;
   force?: boolean;
 }): Promise<ShippingQuoteBody | null> {
