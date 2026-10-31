@@ -5,25 +5,53 @@ const HTML = `<!DOCTYPE html>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex,nofollow" />
     <title>API Reference · SilkKnot</title>
-    <style>html, body { margin: 0; height: 100%; }</style>
+    <style>
+      html, body { margin: 0; height: 100%; }
+      #boot-error {
+        font-family: system-ui, sans-serif;
+        max-width: 40rem;
+        margin: 3rem auto;
+        padding: 0 1.25rem;
+        line-height: 1.5;
+        color: #3a2f28;
+      }
+      #boot-error code { font-size: 0.95em; }
+    </style>
   </head>
   <body>
-    <script
-      id="api-reference"
-      data-url="/openapi.yaml"
-      data-configuration='{"theme":"default","layout":"modern","hideClientButton":true}'
-    ></script>
+    <div id="app"></div>
     <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+    <script>
+      (function () {
+        var target = document.getElementById("app");
+        function fail(msg) {
+          target.innerHTML =
+            '<div id="boot-error"><h1>API docs failed to load</h1><p>' +
+            msg +
+            '</p><p>Raw contract: <a href="/openapi.yaml"><code>/openapi.yaml</code></a></p></div>';
+        }
+        if (!window.Scalar || typeof window.Scalar.createApiReference !== "function") {
+          fail("Scalar CDN script did not load. Check network access to cdn.jsdelivr.net.");
+          return;
+        }
+        try {
+          window.Scalar.createApiReference("#app", {
+            url: "/openapi.json",
+            hideClientButton: true,
+          });
+        } catch (err) {
+          fail(String(err && err.message ? err.message : err));
+        }
+      })();
+    </script>
   </body>
 </html>`;
-
-export const dynamic = "force-static";
 
 export async function GET() {
   return new Response(HTML, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "public, max-age=60",
+      "Cache-Control": "no-store",
     },
   });
 }

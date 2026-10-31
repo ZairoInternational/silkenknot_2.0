@@ -1,0 +1,3654 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SilkKnot API",
+    "version": "0.1.0",
+    "description": "Reference contract for SilkKnot (Next.js App Router) HTTP APIs.\n\n**Doc sections (sidebar)**\n- **Common user** — storefront, customer auth, checkout, shipping, support.\n- **Admin** — studio auth, CMS, media, fees/fulfilment, plus health/webhooks for integrators.\n\n**Auth model**\n- Session cookie: `silkknot_session` (roles `customer` | `admin`).\n- CSRF: cookie `silkknot_csrf` must match header `x-silkknot-csrf` on browser state-changing calls.\n- Same-origin: `sec-fetch-site` same-origin/none, or Origin host matches Host / x-forwarded-host.\n- Admin REST that uses `requireAdmin()` returns **404** (not 403) when unauthenticated.\n- Webhooks and reconcile use dedicated secrets/signatures (not session).\n\n**Docs access (production)**\n- Interactive docs and OpenAPI files are gated by `DOCS_ACCESS_SECRET` (not admin session).\n- Unlock at `/docs/login` → httpOnly `silkknot_docs` cookie (12h). Override: `DOCS_PUBLIC=1`.\n\n**Error shapes** vary by route: `{ ok: false, message }`, `{ error }`, or `{ verified: false, error }`.\n",
+    "contact": {
+      "name": "SilkKnot"
+    }
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Same origin as the Next.js app"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Catalog",
+      "description": "Public product and category APIs for the shop."
+    },
+    {
+      "name": "Content",
+      "description": "Public brand, banners, announcements, site media, and contact form."
+    },
+    {
+      "name": "Customer Auth",
+      "description": "Customer OTP login / logout. Not studio admin."
+    },
+    {
+      "name": "Store",
+      "description": "Storefront bootstrap (GET) and customer bag/account/review actions (POST). Some POST actions are admin-only — see action list."
+    },
+    {
+      "name": "Checkout",
+      "description": "Customer checkout, payment verify, order read/cancel/tracking."
+    },
+    {
+      "name": "Shipping",
+      "description": "PIN serviceability for customers."
+    },
+    {
+      "name": "Support",
+      "description": "Support chatbot product and order helpers."
+    },
+    {
+      "name": "Admin Auth",
+      "description": "Studio login, MFA, password reset — for admin panel integration."
+    },
+    {
+      "name": "Admin Content",
+      "description": "Announcements, brand, hero, site media, banners."
+    },
+    {
+      "name": "Admin Media",
+      "description": "Media upload and delete for studio."
+    },
+    {
+      "name": "Admin Commerce",
+      "description": "Platform fees and fulfilment / shipping settings and order shipping actions."
+    },
+    {
+      "name": "Health",
+      "description": "Ops dependency probe. Not used by storefront UI."
+    },
+    {
+      "name": "Webhooks",
+      "description": "Razorpay / Delhivery webhooks and checkout reconcile job."
+    }
+  ],
+  "security": [],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Dependency health probe",
+        "description": "Bearer required when HEALTH_CHECK_SECRET is set.\nProduction without that secret returns 404.\n",
+        "security": [
+          {
+            "HealthBearer": []
+          },
+          {}
+        ],
+        "responses": {
+          "200": {
+            "description": "Healthy or degraded with body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid bearer when secret configured"
+          },
+          "404": {
+            "description": "Production without HEALTH_CHECK_SECRET"
+          },
+          "503": {
+            "description": "Critical or degraded checks failed"
+          }
+        }
+      }
+    },
+    "/api/store": {
+      "get": {
+        "tags": [
+          "Store"
+        ],
+        "summary": "Bootstrap storefront payload",
+        "description": "Sets CSRF cookie. Payload depends on session (guest / customer / admin).",
+        "responses": {
+          "200": {
+            "description": "Store bootstrap JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreBootstrap"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "DB error with offline fallback"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Store"
+        ],
+        "summary": "Legacy action multiplexer",
+        "description": "Requires same-origin + CSRF. Body always includes `action`.\nDeprecated password login actions return 410.\n",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Action success (shape depends on action)"
+          },
+          "400": {
+            "description": "Validation / unknown action / DB not configured"
+          },
+          "401": {
+            "description": "Customer session required"
+          },
+          "403": {
+            "description": "Admin required or origin/CSRF failure"
+          },
+          "409": {
+            "description": "Order status conflict"
+          },
+          "410": {
+            "description": "Removed auth actions"
+          }
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List active products",
+        "responses": {
+          "200": {
+            "description": "Active products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "products"
+                  ],
+                  "properties": {
+                    "products": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Product"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{slug}": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Product by slug",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Slug"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "product"
+                  ],
+                  "properties": {
+                    "product": {
+                      "$ref": "#/components/schemas/Product"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorMessage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/search": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "Search / filter products",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "min",
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "max",
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "rating",
+            "in": "query",
+            "description": "3 or 4 (minimum rating filter)",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                3,
+                4
+              ]
+            }
+          },
+          {
+            "name": "bestseller",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "featured",
+                "newest",
+                "rating",
+                "price-low",
+                "price-high",
+                "relevance",
+                "price-asc",
+                "price-desc"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 48,
+              "default": 8
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search page",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query / price range"
+          },
+          "503": {
+            "description": "Search unavailable"
+          }
+        }
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "List categories",
+        "responses": {
+          "200": {
+            "description": "Categories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "categories"
+                  ],
+                  "properties": {
+                    "categories": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Category"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/banners": {
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "summary": "Public banners by placement",
+        "parameters": [
+          {
+            "name": "placement",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/BannerPlacement"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Banners",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "banners"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "banners": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PublicBanner"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid placement"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Content"
+        ],
+        "summary": "Not allowed",
+        "responses": {
+          "405": {
+            "description": "Method not allowed"
+          }
+        }
+      }
+    },
+    "/api/brand": {
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "summary": "Public brand settings",
+        "responses": {
+          "200": {
+            "description": "Brand payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "brand"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "brand": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/announcements": {
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "summary": "Public announcement notes",
+        "responses": {
+          "200": {
+            "description": "Notes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "notes"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "notes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/site-media": {
+      "get": {
+        "tags": [
+          "Content"
+        ],
+        "summary": "Public site media map",
+        "responses": {
+          "200": {
+            "description": "Media",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "media"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "media": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contact": {
+      "post": {
+        "tags": [
+          "Content"
+        ],
+        "summary": "Contact form email",
+        "description": "Same-origin required. Rate limit 5/hour/IP. No CSRF.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "email",
+                  "message"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkTrue"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation"
+          },
+          "403": {
+            "description": "Origin rejected"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "502": {
+            "description": "Send failure"
+          },
+          "503": {
+            "description": "SMTP unavailable"
+          }
+        }
+      }
+    },
+    "/api/auth/otp": {
+      "post": {
+        "tags": [
+          "Customer Auth"
+        ],
+        "summary": "Start OTP challenge",
+        "description": "Same-origin + CSRF for every purpose (including login).\nLink purposes also need a customer session.\n",
+        "security": [
+          {
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "channel",
+                  "destination"
+                ],
+                "properties": {
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "email",
+                      "whatsapp"
+                    ]
+                  },
+                  "destination": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string",
+                    "default": "IN"
+                  },
+                  "purpose": {
+                    "type": "string",
+                    "enum": [
+                      "login",
+                      "link-email",
+                      "link-phone"
+                    ],
+                    "default": "login"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Challenge created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "challengeId",
+                    "expiresAt",
+                    "resendAt"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "challengeId": {
+                      "type": "string"
+                    },
+                    "expiresAt": {
+                      "type": "string"
+                    },
+                    "resendAt": {
+                      "type": "string"
+                    },
+                    "devCode": {
+                      "type": "string",
+                      "description": "Present only when OTP_DEV_SINK=1 in non-production"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Auth required for link purposes"
+          },
+          "403": {
+            "description": "Origin/CSRF"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Delivery unavailable"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Customer Auth"
+        ],
+        "summary": "Verify OTP",
+        "description": "Same-origin + CSRF.",
+        "security": [
+          {
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "challengeId",
+                  "code"
+                ],
+                "properties": {
+                  "challengeId": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[0-9]{6}$"
+                  },
+                  "cart": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/CartItem"
+                    }
+                  },
+                  "wishlist": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "couponCode": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login or link success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/PublicUser"
+                    },
+                    "cart": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CartItem"
+                      }
+                    },
+                    "wishlist": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "couponCode": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid code / payload"
+          },
+          "401": {
+            "description": "Challenge failed"
+          },
+          "403": {
+            "description": "Origin/CSRF"
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "Customer Auth"
+        ],
+        "summary": "Clear session",
+        "description": "Same-origin.",
+        "responses": {
+          "200": {
+            "description": "Logged out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkTrue"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/auth": {
+      "post": {
+        "tags": [
+          "Admin Auth"
+        ],
+        "summary": "Admin auth actions",
+        "description": "Same-origin + CSRF. Body includes `action`.",
+        "security": [
+          {
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminAuthRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Action success"
+          },
+          "400": {
+            "description": "Validation / unknown action"
+          },
+          "401": {
+            "description": "Bad credentials / MFA"
+          },
+          "404": {
+            "description": "Not admin (change-password)"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "MFA channels / SMTP missing"
+          }
+        }
+      }
+    },
+    "/api/checkout/shipping-options": {
+      "post": {
+        "tags": [
+          "Checkout"
+        ],
+        "summary": "Quote shipping options",
+        "description": "Customer session + same-origin + CSRF. Inserts shippingQuotes.",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "items",
+                  "postalCode"
+                ],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/CartItem"
+                    }
+                  },
+                  "couponCode": {
+                    "type": "string"
+                  },
+                  "postalCode": {
+                    "type": "string",
+                    "pattern": "^[0-9]{6}$"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Quote",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShippingQuoteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Quote error"
+          },
+          "503": {
+            "description": "Shipping unavailable"
+          }
+        }
+      }
+    },
+    "/api/checkout/create-order": {
+      "post": {
+        "tags": [
+          "Checkout"
+        ],
+        "summary": "Create checkout order",
+        "description": "Customer + same-origin + CSRF. Reserves stock / holds coupon / may call Razorpay.",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Razorpay order, COD placed, or already verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CreateOrderRazorpay"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CreateOrderCod"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CreateOrderVerified"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "500": {
+            "description": "Server error"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/checkout/verify": {
+      "post": {
+        "tags": [
+          "Checkout"
+        ],
+        "summary": "Verify Razorpay payment",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "razorpay_order_id",
+                  "razorpay_payment_id",
+                  "razorpay_signature",
+                  "checkoutOrderId"
+                ],
+                "properties": {
+                  "razorpay_order_id": {
+                    "type": "string"
+                  },
+                  "razorpay_payment_id": {
+                    "type": "string"
+                  },
+                  "razorpay_signature": {
+                    "type": "string"
+                  },
+                  "checkoutOrderId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment confirmed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "verified",
+                    "order"
+                  ],
+                  "properties": {
+                    "verified": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "order": {
+                      "$ref": "#/components/schemas/PublicOrder"
+                    },
+                    "duplicate": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Unavailable"
+          }
+        }
+      }
+    },
+    "/api/checkout/order": {
+      "get": {
+        "tags": [
+          "Checkout"
+        ],
+        "summary": "Load order for session",
+        "description": "Any session; admin may load any order. Sensitive fields stripped.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{6,80}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "order"
+                  ],
+                  "properties": {
+                    "order": {
+                      "$ref": "#/components/schemas/PublicOrder"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No session"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "503": {
+            "description": "Unavailable"
+          }
+        }
+      }
+    },
+    "/api/checkout/cancel": {
+      "post": {
+        "tags": [
+          "Checkout"
+        ],
+        "summary": "Cancel order",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "orderId"
+                ],
+                "properties": {
+                  "orderId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "order",
+                    "refunded"
+                  ],
+                  "properties": {
+                    "order": {
+                      "$ref": "#/components/schemas/PublicOrder"
+                    },
+                    "refunded": {
+                      "type": "boolean",
+                      "const": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Already dispatched / carrier cancel failed"
+          }
+        }
+      }
+    },
+    "/api/checkout/tracking": {
+      "post": {
+        "tags": [
+          "Checkout"
+        ],
+        "summary": "Refresh tracking for order",
+        "description": "30s cache throttle may return cached:true in the body.",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "orderId"
+                ],
+                "properties": {
+                  "orderId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated order"
+          },
+          "404": {
+            "description": "No AWB"
+          },
+          "503": {
+            "description": "Carrier refresh failed"
+          }
+        }
+      }
+    },
+    "/api/checkout/reconcile": {
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Internal checkout reconcile job",
+        "description": "Header `x-silkknot-reconcile` must equal `CHECKOUT_RECONCILE_SECRET`. Wrong secret returns 404.",
+        "security": [
+          {
+            "ReconcileSecret": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reconcile pass",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "expired": {
+                      "type": "integer"
+                    },
+                    "events": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Secret missing/wrong"
+          }
+        }
+      }
+    },
+    "/api/shipping/serviceability": {
+      "get": {
+        "tags": [
+          "Shipping"
+        ],
+        "summary": "PIN serviceability check",
+        "parameters": [
+          {
+            "name": "pin",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{6}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Serviceability",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Serviceability"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad PIN"
+          },
+          "503": {
+            "description": "Upstream unavailable"
+          }
+        }
+      }
+    },
+    "/api/support/orders": {
+      "get": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Support chatbot order list",
+        "description": "Session required. Rate limit 40/min per sessionId:ip.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Summaries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "orders",
+                    "hasMore",
+                    "ordersPath"
+                  ],
+                  "properties": {
+                    "orders": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    "hasMore": {
+                      "type": "boolean"
+                    },
+                    "ordersPath": {
+                      "type": "string",
+                      "const": "/account/orders"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated (code: unauthenticated)"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Unavailable"
+          }
+        }
+      }
+    },
+    "/api/support/orders/{orderId}": {
+      "get": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Support order detail",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OrderId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail + payment note"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Unavailable"
+          }
+        }
+      }
+    },
+    "/api/support/orders/{orderId}/refresh": {
+      "post": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Refresh support order tracking",
+        "description": "Session + same-origin + CSRF. Rate limit 20/min.",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OrderId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Refreshed"
+          },
+          "401": {
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "description": "Not found / no AWB (may still include partial order)"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        }
+      }
+    },
+    "/api/support/products": {
+      "get": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Support product summaries",
+        "description": "Public. IP rate limit 60/min.",
+        "responses": {
+          "200": {
+            "description": "Products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "products",
+                    "shopPath"
+                  ],
+                  "properties": {
+                    "products": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    },
+                    "shopPath": {
+                      "type": "string",
+                      "const": "/shop"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/support/products/{productId}": {
+      "get": {
+        "tags": [
+          "Support"
+        ],
+        "summary": "Support product detail section",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Product id or slug"
+          },
+          {
+            "name": "section",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ingredients",
+                "howToUse"
+              ],
+              "default": "ingredients"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail"
+          },
+          "400": {
+            "description": "Bad section"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "429": {
+            "description": "Rate limited"
+          },
+          "503": {
+            "description": "Unavailable"
+          }
+        }
+      }
+    },
+    "/api/admin/announcements": {
+      "get": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "Get announcements (admin)",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Announcements"
+          },
+          "404": {
+            "description": "Not admin"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "Save announcements",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "announcements"
+                ],
+                "properties": {
+                  "announcements": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved"
+          },
+          "404": {
+            "description": "Not admin"
+          }
+        }
+      }
+    },
+    "/api/admin/site-media": {
+      "get": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "Get site media (admin)",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Media"
+          },
+          "404": {
+            "description": "Not admin"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "Save site media",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "media"
+                ],
+                "properties": {
+                  "media": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved"
+          },
+          "404": {
+            "description": "Not admin"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "Reserved / unused create",
+        "responses": {
+          "405": {
+            "description": "Often not used for create"
+          }
+        }
+      }
+    },
+    "/api/admin/brand": {
+      "get": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "Get brand settings (admin)",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Brand"
+          },
+          "404": {
+            "description": "Not admin"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "Save brand settings",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "brand"
+                ],
+                "properties": {
+                  "brand": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved"
+          },
+          "404": {
+            "description": "Not admin"
+          }
+        }
+      }
+    },
+    "/api/admin/hero": {
+      "get": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "Get hero / offer content",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "content, offer, evergreen"
+          },
+          "404": {
+            "description": "Not admin"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "Save hero / offer",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "offer": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "evergreen": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved"
+          },
+          "404": {
+            "description": "Not admin"
+          }
+        }
+      }
+    },
+    "/api/admin/banners": {
+      "get": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "List banners (admin)",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "placement",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/BannerPlacement"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Banner list page"
+          },
+          "404": {
+            "description": "Not admin"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "Create banner or reorder",
+        "description": "Create fields, or action reorder with placement and orderedIds.",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reordered"
+          },
+          "201": {
+            "description": "Created"
+          },
+          "404": {
+            "description": "Not admin"
+          }
+        }
+      }
+    },
+    "/api/admin/banners/{id}": {
+      "get": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "Get banner by id",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BannerId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Banner"
+          },
+          "404": {
+            "description": "Not found / not admin"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "Update / publish / schedule banner",
+        "description": "Supports `action` publish|unpublish|schedule|archive plus optional startsAt/endsAt, or full update.",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BannerId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated"
+          },
+          "404": {
+            "description": "Not found / not admin"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin Content"
+        ],
+        "summary": "Delete banner",
+        "description": "Body must include confirm: true.",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BannerId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "confirm"
+                ],
+                "properties": {
+                  "confirm": {
+                    "type": "boolean",
+                    "const": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Deleted"
+          },
+          "404": {
+            "description": "Not found / not admin"
+          }
+        }
+      }
+    },
+    "/api/admin/media": {
+      "get": {
+        "tags": [
+          "Admin Media"
+        ],
+        "summary": "Media GET stub",
+        "responses": {
+          "405": {
+            "description": "Not used for listing in current handlers"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin Media"
+        ],
+        "summary": "Upload media (multipart)",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file",
+                  "role"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "gallery",
+                      "main",
+                      "variant",
+                      "banner",
+                      "brand",
+                      "category"
+                    ]
+                  },
+                  "productId": {
+                    "type": "string"
+                  },
+                  "variantId": {
+                    "type": "string"
+                  },
+                  "categoryId": {
+                    "type": "string"
+                  },
+                  "scope": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Uploaded asset metadata"
+          },
+          "404": {
+            "description": "Not admin"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Admin Media"
+        ],
+        "summary": "Delete media by URL",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Deleted"
+          },
+          "404": {
+            "description": "Not admin"
+          },
+          "409": {
+            "description": "URL still referenced by product/banner"
+          }
+        }
+      }
+    },
+    "/api/admin/fees": {
+      "get": {
+        "tags": [
+          "Admin Commerce"
+        ],
+        "summary": "Platform fee policy",
+        "description": "Admin + same-origin for read.",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Policy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "policy"
+                  ],
+                  "properties": {
+                    "policy": {
+                      "type": "object",
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not admin"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin Commerce"
+        ],
+        "summary": "Save platform fee settings",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "action"
+                ],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "const": "save-settings"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "feePaise": {
+                    "type": "integer"
+                  },
+                  "waiveAbovePaise": {
+                    "type": "integer"
+                  },
+                  "waiveFirstOrder": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated policy"
+          },
+          "404": {
+            "description": "Not admin"
+          }
+        }
+      }
+    },
+    "/api/admin/fulfilment": {
+      "get": {
+        "tags": [
+          "Admin Commerce"
+        ],
+        "summary": "Shipping fulfilment policy",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Policy"
+          },
+          "404": {
+            "description": "Not admin"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin Commerce"
+        ],
+        "summary": "Fulfilment actions",
+        "description": "Actions include `save-settings`, `refresh`, `retry-booking` (needs `acknowledgeAbsent: true`),\n`shipping-label`, `pickup`, `cancel-shipment` (`confirm: true`), `manual`, `refund`.\n",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "action"
+                ],
+                "additionalProperties": true,
+                "properties": {
+                  "action": {
+                    "type": "string"
+                  },
+                  "orderId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Action result"
+          },
+          "404": {
+            "description": "Not admin"
+          },
+          "409": {
+            "description": "Carrier rejected / missing confirm"
+          }
+        }
+      }
+    },
+    "/api/checkout/webhook": {
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Razorpay webhook",
+        "security": [
+          {
+            "RazorpaySignature": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-razorpay-event-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Received",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "received"
+                  ],
+                  "properties": {
+                    "received": {
+                      "type": "boolean",
+                      "const": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad signature / JSON"
+          },
+          "503": {
+            "description": "Not configured / retry later"
+          }
+        }
+      }
+    },
+    "/api/delhivery/webhook": {
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Delhivery webhook",
+        "security": [
+          {
+            "DelhiveryToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Received",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "received"
+                  ],
+                  "properties": {
+                    "received": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "duplicate": {
+                      "type": "boolean"
+                    },
+                    "ignored": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad token"
+          },
+          "503": {
+            "description": "Token/DB missing"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "silkknot_session"
+      },
+      "CsrfHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-silkknot-csrf",
+        "description": "Must match `silkknot_csrf` cookie value."
+      },
+      "HealthBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Optional when HEALTH_CHECK_SECRET is set."
+      },
+      "ReconcileSecret": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-silkknot-reconcile"
+      },
+      "RazorpaySignature": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-razorpay-signature"
+      },
+      "DelhiveryToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "Format: Token <DELHIVERY_WEBHOOK_TOKEN>"
+      }
+    },
+    "parameters": {
+      "Slug": {
+        "name": "slug",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "OrderId": {
+        "name": "orderId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "BannerId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "OkTrue": {
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          }
+        }
+      },
+      "ErrorMessage": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean",
+            "const": false
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "status",
+          "summary",
+          "checks",
+          "meta"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "healthy",
+              "degraded",
+              "down"
+            ]
+          },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer"
+              },
+              "critical": {
+                "type": "integer"
+              },
+              "degraded": {
+                "type": "integer"
+              },
+              "warnings": {
+                "type": "integer"
+              },
+              "ok": {
+                "type": "integer"
+              }
+            }
+          },
+          "checks": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "meta": {
+            "type": "object",
+            "properties": {
+              "env": {
+                "type": "string"
+              },
+              "elapsedMs": {
+                "type": "number"
+              },
+              "ts": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "Variant": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "price",
+          "stock"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "compareAtPrice": {
+            "type": "number"
+          },
+          "stock": {
+            "type": "integer"
+          },
+          "weightGrams": {
+            "type": "number"
+          }
+        }
+      },
+      "Review": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "rating",
+          "title",
+          "body",
+          "date"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "helpful": {
+            "type": "integer"
+          }
+        }
+      },
+      "Faq": {
+        "type": "object",
+        "required": [
+          "question",
+          "answer"
+        ],
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          }
+        }
+      },
+      "Product": {
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "categoryId",
+          "type",
+          "scent",
+          "price",
+          "rating",
+          "reviewCount",
+          "shortDescription",
+          "description",
+          "benefits",
+          "ingredients",
+          "howToUse",
+          "images",
+          "variants",
+          "featured",
+          "bestseller",
+          "newArrival",
+          "active",
+          "createdAt",
+          "reviews",
+          "faqs"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "scent": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "compareAtPrice": {
+            "type": "number"
+          },
+          "rating": {
+            "type": "number"
+          },
+          "reviewCount": {
+            "type": "integer"
+          },
+          "shortDescription": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "benefits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ingredients": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "howToUse": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "showDescription": {
+            "type": "boolean"
+          },
+          "showIngredients": {
+            "type": "boolean"
+          },
+          "showHowToUse": {
+            "type": "boolean"
+          },
+          "showBenefits": {
+            "type": "boolean"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Variant"
+            }
+          },
+          "featured": {
+            "type": "boolean"
+          },
+          "bestseller": {
+            "type": "boolean"
+          },
+          "newArrival": {
+            "type": "boolean"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "weightGrams": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Review"
+            }
+          },
+          "faqs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Faq"
+            }
+          }
+        }
+      },
+      "SearchProduct": {
+        "type": "object",
+        "description": "Listing shape without heavy detail arrays",
+        "additionalProperties": true
+      },
+      "SearchResponse": {
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit",
+          "totalPages",
+          "query",
+          "correctedQuery"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchProduct"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "query": {
+            "type": "string"
+          },
+          "correctedQuery": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "image",
+          "imageAlt",
+          "order"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "imageAlt": {
+            "type": "string"
+          },
+          "order": {
+            "type": "integer"
+          }
+        }
+      },
+      "CartItem": {
+        "type": "object",
+        "required": [
+          "id",
+          "productId",
+          "slug",
+          "name",
+          "image",
+          "categoryId",
+          "variantLabel",
+          "price",
+          "quantity"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "variantLabel": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "compareAtPrice": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "integer"
+          }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "name",
+          "line1",
+          "line2",
+          "city",
+          "postal",
+          "country",
+          "phone",
+          "isDefault"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "line1": {
+            "type": "string"
+          },
+          "line2": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "postal": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PublicUser": {
+        "type": "object",
+        "description": "Session-safe user fields (password omitted in API responses)",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "customer",
+              "admin"
+            ]
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Address"
+            }
+          }
+        }
+      },
+      "Coupon": {
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "type",
+          "value",
+          "scope",
+          "active",
+          "label"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "percent",
+              "fixed"
+            ]
+          },
+          "value": {
+            "type": "number"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "order",
+              "product",
+              "category"
+            ]
+          },
+          "productId": {
+            "type": "string"
+          },
+          "productIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "string"
+          },
+          "maxRedemptions": {
+            "type": "integer"
+          },
+          "redeemed": {
+            "type": "integer"
+          }
+        }
+      },
+      "OrderStatus": {
+        "type": "string",
+        "enum": [
+          "pending_payment",
+          "placed",
+          "confirmed",
+          "packed",
+          "shipped",
+          "delivered",
+          "cancelled"
+        ]
+      },
+      "PublicOrder": {
+        "type": "object",
+        "description": "Order with fingerprint/idempotency/audit/providerState stripped",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "total": {
+            "type": "number"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItem"
+            }
+          }
+        }
+      },
+      "BannerPlacement": {
+        "type": "string",
+        "enum": [
+          "homepage-hero",
+          "promotional-strip"
+        ]
+      },
+      "PublicBanner": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "StoreBootstrap": {
+        "type": "object",
+        "required": [
+          "configured",
+          "products",
+          "categories",
+          "coupons",
+          "orders",
+          "admin"
+        ],
+        "properties": {
+          "configured": {
+            "type": "boolean"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            }
+          },
+          "coupons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Coupon"
+            }
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicOrder"
+            }
+          },
+          "user": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PublicUser"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "customers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "admin": {
+            "type": "boolean"
+          },
+          "bag": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "cart": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/CartItem"
+                    }
+                  },
+                  "wishlist": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "couponCode": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "StoreActionRequest": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Customer: review, review-vote, review-report, my-review-votes, sync-bag, profile,\nsave-address, delete-address, logout.\nAdmin: save-product, delete-product, save-category, delete-category, move-category,\norder-status, save-coupon, delete-coupon, admin-logout.\nRemoved (410): lookup, register, login, reset-password, admin-login, place-order.\n",
+            "enum": [
+              "review",
+              "review-vote",
+              "review-report",
+              "my-review-votes",
+              "sync-bag",
+              "profile",
+              "save-address",
+              "delete-address",
+              "logout",
+              "admin-logout",
+              "save-product",
+              "delete-product",
+              "save-category",
+              "delete-category",
+              "move-category",
+              "order-status",
+              "save-coupon",
+              "delete-coupon"
+            ]
+          },
+          "productId": {
+            "type": "string"
+          },
+          "review": {
+            "$ref": "#/components/schemas/Review"
+          },
+          "reviewId": {
+            "type": "string"
+          },
+          "vote": {
+            "type": "string",
+            "enum": [
+              "yes",
+              "no"
+            ]
+          },
+          "cart": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItem"
+            }
+          },
+          "wishlist": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "couponCode": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "id": {
+            "type": "string"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "isNew": {
+            "type": "boolean"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "order"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "order": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "coupon": {
+            "$ref": "#/components/schemas/Coupon"
+          }
+        }
+      },
+      "AdminAuthRequest": {
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "login",
+              "mfa-send",
+              "mfa-verify",
+              "forgot-request",
+              "forgot-resend",
+              "forgot-verify",
+              "change-password"
+            ]
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "currentPassword": {
+            "type": "string"
+          },
+          "ticketId": {
+            "type": "string"
+          },
+          "ticketToken": {
+            "type": "string"
+          },
+          "channel": {
+            "type": "string"
+          },
+          "challengeId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        }
+      },
+      "CheckoutAddress": {
+        "type": "object",
+        "required": [
+          "fullName",
+          "email",
+          "phone",
+          "address1",
+          "city",
+          "postalCode",
+          "country"
+        ],
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "address1": {
+            "type": "string"
+          },
+          "address2": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "postalCode": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$"
+          },
+          "country": {
+            "type": "string",
+            "const": "India"
+          }
+        }
+      },
+      "CreateOrderRequest": {
+        "type": "object",
+        "required": [
+          "items",
+          "address",
+          "idempotencyKey",
+          "paymentMethod",
+          "shippingQuoteId",
+          "shippingOptionId",
+          "expectedAmountPaise"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItem"
+            }
+          },
+          "couponCode": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "#/components/schemas/CheckoutAddress"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 80,
+            "pattern": "^[A-Za-z0-9]+$"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "card",
+              "razorpay",
+              "cod"
+            ]
+          },
+          "shippingQuoteId": {
+            "type": "string"
+          },
+          "shippingOptionId": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "express"
+            ]
+          },
+          "expectedAmountPaise": {
+            "type": "integer",
+            "minimum": 100
+          }
+        }
+      },
+      "CreateOrderRazorpay": {
+        "type": "object",
+        "required": [
+          "demo",
+          "orderId",
+          "amount",
+          "currency",
+          "razorpayOrderId",
+          "keyId"
+        ],
+        "properties": {
+          "demo": {
+            "type": "boolean",
+            "const": false
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "razorpayOrderId": {
+            "type": "string"
+          },
+          "keyId": {
+            "type": "string"
+          },
+          "subtotal": {
+            "type": "number"
+          },
+          "discount": {
+            "type": "number"
+          },
+          "shipping": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "couponCode": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateOrderCod": {
+        "type": "object",
+        "required": [
+          "placed",
+          "order"
+        ],
+        "properties": {
+          "placed": {
+            "type": "boolean",
+            "const": true
+          },
+          "order": {
+            "$ref": "#/components/schemas/PublicOrder"
+          }
+        }
+      },
+      "CreateOrderVerified": {
+        "type": "object",
+        "required": [
+          "verified",
+          "order"
+        ],
+        "properties": {
+          "verified": {
+            "type": "boolean",
+            "const": true
+          },
+          "order": {
+            "$ref": "#/components/schemas/PublicOrder"
+          }
+        }
+      },
+      "ShippingQuoteResponse": {
+        "type": "object",
+        "required": [
+          "quoteId",
+          "expiresAt",
+          "options",
+          "currency"
+        ],
+        "properties": {
+          "quoteId": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          },
+          "serviceability": {
+            "$ref": "#/components/schemas/Serviceability"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "codEligible": {
+            "type": "boolean"
+          },
+          "codFeePaise": {
+            "type": "integer"
+          },
+          "subtotalPaise": {
+            "type": "integer"
+          },
+          "discountPaise": {
+            "type": "integer"
+          },
+          "couponCode": {
+            "type": "string"
+          },
+          "couponRemoved": {
+            "type": "boolean"
+          },
+          "couponNotice": {
+            "type": "string"
+          },
+          "freeShippingPaise": {
+            "type": "integer"
+          },
+          "platformFeePaise": {
+            "type": "integer"
+          },
+          "platformFeeListPaise": {
+            "type": "integer"
+          },
+          "platformFeeWaiveAbovePaise": {
+            "type": "integer"
+          },
+          "platformFeeWaiveFirstOrder": {
+            "type": "boolean"
+          },
+          "platformFeeFirstOrderEnabled": {
+            "type": "boolean"
+          },
+          "platformFeeWaiveReason": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          }
+        }
+      },
+      "Serviceability": {
+        "type": "object",
+        "properties": {
+          "pin": {
+            "type": "string"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "checked": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "prepaid": {
+            "type": "boolean"
+          },
+          "cod": {
+            "type": "boolean"
+          },
+          "pickup": {
+            "type": "boolean"
+          },
+          "by": {
+            "type": "string"
+          },
+          "estimate": {
+            "type": "string"
+          },
+          "estimateSource": {
+            "type": "string"
+          },
+          "expressEstimate": {
+            "type": "string"
+          },
+          "expressEstimateSource": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "x-tagGroups": [
+    {
+      "name": "Common user",
+      "tags": [
+        "Catalog",
+        "Content",
+        "Customer Auth",
+        "Store",
+        "Checkout",
+        "Shipping",
+        "Support"
+      ]
+    },
+    {
+      "name": "Admin",
+      "tags": [
+        "Admin Auth",
+        "Admin Content",
+        "Admin Media",
+        "Admin Commerce",
+        "Health",
+        "Webhooks"
+      ]
+    }
+  ]
+}

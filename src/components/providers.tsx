@@ -48,7 +48,7 @@ export function Providers({
 
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const bare = pathname === "/account/login";
+  const bare = pathname === "/account/login" || pathname.startsWith("/docs/");
   const accountBar = accountBarPath(pathname);
   return (
     <>
