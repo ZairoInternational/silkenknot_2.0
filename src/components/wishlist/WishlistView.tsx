@@ -20,6 +20,7 @@ import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 import { Media, WishlistButton } from "@/components/ui";
+import { SHOW_STORE_REVIEWS } from "@/lib/storefront-reviews";
 
 const notes = [
   {
@@ -396,12 +397,14 @@ function WishlistCard({ product }: { product: Product }) {
           {formatPrice(product.price)}
         </p>
 
-        <p className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] text-[#888176] sm:text-xs">
-          <span className="tracking-[0.08em] text-[#8c784c]">★★★★★</span>
-          <span>
-            {product.rating.toFixed(1)} ({product.reviewCount})
-          </span>
-        </p>
+        {SHOW_STORE_REVIEWS ? (
+          <p className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] text-[#888176] sm:text-xs">
+            <span className="tracking-[0.08em] text-[#8c784c]">★★★★★</span>
+            <span>
+              {product.rating.toFixed(1)} ({product.reviewCount})
+            </span>
+          </p>
+        ) : null}
 
         <div className="mt-auto flex items-center gap-2 pt-4">
           <button

@@ -11,7 +11,7 @@ import { checkoutSignatureValid } from "@/lib/payments/signature";
 import { reserveFilter } from "@/lib/payments/inventory";
 import { canRelease, fulfillmentTransition, paymentTransition } from "@/lib/payments/states";
 import { getMongo } from "@/lib/mongo";
-import { queueOrderConfirmation } from "@/lib/mail/notify";
+import { notifyOrderDelivered, queueOrderConfirmation } from "@/lib/mail/notify";
 import { enqueueShipment, processShipmentTasks } from "@/lib/shipping/booking";
 import { ShippingQuoteError, revalidateShipping } from "@/lib/shipping/quotes";
 
@@ -121,6 +121,7 @@ export function publicOrder(order: StoredOrder | Order): Order {
   delete (copy as { audit?: unknown }).audit;
   delete (copy as { _id?: unknown })._id;
   delete (copy as { providerState?: unknown }).providerState;
+  delete (copy as { notices?: unknown }).notices;
   return copy;
 }
 
@@ -796,7 +797,8 @@ export async function applyAdminStatus(db: Db, orderId: string, status: OrderSta
     if (!["placed", "confirmed", "packed", "shipped", "delivered", "cancelled"].includes(status)) {
       throw new CheckoutError("invalid", "That status is not available.");
     }
-    await orders.updateOne({ id: orderId }, { $set: { status } });
+    const updated = await orders.updateOne({ id: orderId }, { $set: { status } });
+    if (updated.modifiedCount === 1 && status === "delivered" && order.status !== "delivered") await notifyOrderDelivered(db, order);
     const saved = await orders.findOne({ id: orderId });
     return saved ? publicOrder(saved) : publicOrder(order);
   }
@@ -829,13 +831,14 @@ export async function applyAdminStatus(db: Db, orderId: string, status: OrderSta
   const from = order.fulfillmentState || "unfulfilled";
   if (!fulfillmentTransition(from, nextFulfillment)) throw new CheckoutError("conflict", "That fulfilment step is out of order.");
   const orderState = nextFulfillment === "delivered" ? "completed" : "processing";
-  await orders.updateOne(
+  const updated = await orders.updateOne(
     { id: orderId, paymentState: "captured", fulfillmentState: from },
     {
       $set: { fulfillmentState: nextFulfillment, status, orderState, updatedAt: new Date().toISOString() },
       $push: { audit: { at: new Date().toISOString(), event: `fulfillment:${nextFulfillment}` } },
     },
   );
+  if (updated.modifiedCount === 1 && nextFulfillment === "delivered") await notifyOrderDelivered(db, order);
   const saved = await orders.findOne({ id: orderId });
   return saved ? publicOrder(saved) : publicOrder(order);
 }

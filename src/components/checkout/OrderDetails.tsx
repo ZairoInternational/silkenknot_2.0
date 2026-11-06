@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
@@ -261,6 +262,7 @@ function CopyAwb({ awb }: { awb: string }) {
 }
 
 export function OrderDetails({ id }: { id: string }) {
+  const router = useRouter();
   const [order, setOrder] = useState<CheckoutDraft | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<"missing" | "failed" | null>(null);
@@ -292,7 +294,11 @@ export function OrderDetails({ id }: { id: string }) {
     fetch(`/api/checkout/order?id=${encodeURIComponent(id)}`, { headers: csrfHeaders(false) })
       .then(async (response) => {
         if (cancelled) return;
-        if (response.status === 401 || response.status === 404) {
+        if (response.status === 401) {
+          router.replace(`/account/login?next=${encodeURIComponent(`/orders/${id}`)}`);
+          return;
+        }
+        if (response.status === 404) {
           setLoadError("missing");
           return;
         }
@@ -370,7 +376,7 @@ export function OrderDetails({ id }: { id: string }) {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, router]);
 
   const progress = deliveryProgress(serverOrder);
   const dates = stepDates(serverOrder, order?.createdAt || "", progress.index);

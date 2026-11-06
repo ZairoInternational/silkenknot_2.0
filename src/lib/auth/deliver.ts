@@ -20,13 +20,28 @@ export async function sendEmailOtp(email: string, code: string, minutes: number,
   return { ok: false, status: "unconfigured" };
 }
 
-export async function sendWhatsAppOtp(phone: string, code: string): Promise<Delivery> {
+type TemplateComponent = { type: "text"; value: string; subtype?: "url" };
+
+export function whatsAppTemplateReady(templateName: string | undefined) {
+  return Boolean(
+    templateName?.trim()
+    && process.env.MSG91_AUTH_KEY?.trim()
+    && process.env.MSG91_WHATSAPP_INTEGRATED_NUMBER?.trim()
+    && process.env.MSG91_WHATSAPP_TEMPLATE_NAMESPACE?.trim()
+    && process.env.MSG91_WHATSAPP_TEMPLATE_LANGUAGE?.trim(),
+  );
+}
+
+export async function sendWhatsAppTemplate(
+  phone: string,
+  templateName: string,
+  components: Record<string, TemplateComponent>,
+): Promise<Delivery> {
   const key = process.env.MSG91_AUTH_KEY?.trim();
   const integratedNumber = process.env.MSG91_WHATSAPP_INTEGRATED_NUMBER?.trim();
-  const templateName = process.env.MSG91_WHATSAPP_TEMPLATE_NAME?.trim();
   const namespace = process.env.MSG91_WHATSAPP_TEMPLATE_NAMESPACE?.trim();
   const language = process.env.MSG91_WHATSAPP_TEMPLATE_LANGUAGE?.trim();
-  if (key && integratedNumber && templateName && namespace && language) {
+  if (key && integratedNumber && templateName.trim() && namespace && language) {
     const mobile = phone.replace(/^\+/, "");
     const sent = await postJson("https://api.msg91.com/api/v5/whatsapp/whatsapp-outbound-message/bulk/", {
       method: "POST",
@@ -41,15 +56,7 @@ export async function sendWhatsAppOtp(phone: string, code: string): Promise<Deli
             name: templateName,
             language: { code: language, policy: "deterministic" },
             namespace,
-            to_and_components: [
-              {
-                to: [mobile],
-                components: {
-                  body_1: { type: "text", value: code },
-                  button_1: { subtype: "url", type: "text", value: code },
-                },
-              },
-            ],
+            to_and_components: [{ to: [mobile], components }],
           },
         },
       }),
@@ -58,4 +65,16 @@ export async function sendWhatsAppOtp(phone: string, code: string): Promise<Deli
   }
   if (devOtpSinkEnabled()) return { ok: true, status: "dev-sink" };
   return { ok: false, status: "unconfigured" };
+}
+
+export async function sendWhatsAppOtp(phone: string, code: string): Promise<Delivery> {
+  const templateName = process.env.MSG91_WHATSAPP_TEMPLATE_NAME?.trim();
+  if (!templateName) {
+    if (devOtpSinkEnabled()) return { ok: true, status: "dev-sink" };
+    return { ok: false, status: "unconfigured" };
+  }
+  return sendWhatsAppTemplate(phone, templateName, {
+    body_1: { type: "text", value: code },
+    button_1: { subtype: "url", type: "text", value: code },
+  });
 }

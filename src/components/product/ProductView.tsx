@@ -13,6 +13,7 @@ import { categoryName, formatDate } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 import { productShowsSection } from "@/lib/types";
+import { SHOW_STORE_REVIEWS } from "@/lib/storefront-reviews";
 
 export function ProductView({ slug }: { slug: string }) {
   const store = useStore();
@@ -125,10 +126,12 @@ function ProductDetail({ product }: { product: Product }) {
           <Reveal>
             <p className="eyebrow text-mute">{categoryName(product.categoryId)} · {product.type}</p>
             <h1 className="mt-3 font-serif text-5xl md:text-6xl">{product.name}</h1>
-            <a href="#reviews" className="mt-4 inline-flex items-center gap-3">
-              <Stars rating={product.rating} />
-              <span className="text-sm text-mute">{product.reviewCount + (reviews.length - product.reviews.length)} reviews</span>
-            </a>
+            {SHOW_STORE_REVIEWS ? (
+              <a href="#reviews" className="mt-4 inline-flex items-center gap-3">
+                <Stars rating={product.rating} />
+                <span className="text-sm text-mute">{product.reviewCount + (reviews.length - product.reviews.length)} reviews</span>
+              </a>
+            ) : null}
             <div className="mt-6 text-lg">
               <PriceTag price={variant?.price ?? product.price} compare={variant?.compareAtPrice ?? product.compareAtPrice} />
             </div>
@@ -225,6 +228,7 @@ function ProductDetail({ product }: { product: Product }) {
             </a>
           </p>
         </section>
+        {SHOW_STORE_REVIEWS ? (
         <section id="reviews">
           <h2 className="font-serif text-4xl">Reviews</h2>
           <ul className="mt-6 space-y-6">
@@ -273,6 +277,7 @@ function ProductDetail({ product }: { product: Product }) {
             {reviewNote ? <p role="status" className="text-sm text-mute">{reviewNote}</p> : null}
           </form>
         </section>
+        ) : null}
         <section>
           <h2 className="font-serif text-4xl">FAQs</h2>
           <div className="mt-4 divide-y divide-line">

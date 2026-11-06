@@ -6,6 +6,7 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { BottomSheet } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
+import { SHOW_STORE_REVIEWS } from "@/lib/storefront-reviews";
 
 const PAGE_SIZE = 9;
 
@@ -25,7 +26,8 @@ export function ShopClient() {
 
   const category = params.get("category") ?? "";
   const type = params.get("type") ?? "";
-  const sort = params.get("sort") ?? "featured";
+  const sortParam = params.get("sort") ?? "featured";
+  const sort = !SHOW_STORE_REVIEWS && sortParam === "rating" ? "featured" : sortParam;
   const min = Number(params.get("min") || 0);
   const max = Number(params.get("max") || 0);
   const bestseller = params.get("bestseller") === "1";
@@ -255,7 +257,7 @@ function FilterFields({
           <option value="newest">New arrivals</option>
           <option value="price-asc">Price, low to high</option>
           <option value="price-desc">Price, high to low</option>
-          <option value="rating">Rating</option>
+          {SHOW_STORE_REVIEWS ? <option value="rating">Rating</option> : null}
         </select>
       </label>
       <button

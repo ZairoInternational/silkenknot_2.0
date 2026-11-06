@@ -9,6 +9,7 @@ import { formatPrice } from "@/lib/format";
 import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import { Media, PriceTag, Reveal, Stars } from "@/components/ui";
+import { SHOW_STORE_REVIEWS } from "@/lib/storefront-reviews";
 import { ProductCard } from "@/components/product/ProductCard";
 
 const showcaseIds = ["silk-veil-body-butter", "atelier-milk-soap", "quiet-hour-candle"];
@@ -111,7 +112,7 @@ function ShowcaseCopy({ product }: { product: (typeof seedProducts)[number] }) {
       <p className="mt-4 max-w-sm text-lg text-mute">{product.shortDescription}</p>
       <div className="mt-6 flex items-center gap-4">
         <PriceTag price={product.price} compare={product.compareAtPrice} />
-        <Stars rating={product.rating} />
+        {SHOW_STORE_REVIEWS ? <Stars rating={product.rating} /> : null}
       </div>
       <button
         type="button"

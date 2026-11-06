@@ -219,6 +219,19 @@ function checkWhatsApp(): Check {
   return pass("whatsapp_otp", "MSG91 WhatsApp keys set");
 }
 
+function checkWhatsAppOrders(): Check {
+  const orderName = process.env.MSG91_WHATSAPP_ORDER_TEMPLATE_NAME?.trim();
+  const deliveredName = process.env.MSG91_WHATSAPP_DELIVERED_TEMPLATE_NAME?.trim();
+  if (!orderName || !deliveredName) {
+    return warn(
+      "whatsapp_orders",
+      "Order confirmation or delivered WhatsApp template name is not set.",
+      ["Order confirmation WhatsApp", "Delivered WhatsApp"],
+    );
+  }
+  return pass("whatsapp_orders", "Order WhatsApp template names set");
+}
+
 /**
  * 6. Razorpay — payments
  */
@@ -407,6 +420,7 @@ export async function GET(request: Request) {
     redis,
     smtp,
     checkWhatsApp(),
+    checkWhatsAppOrders(),
     checkRazorpay(),
     delhivery,
     checkBunny(),

@@ -10,6 +10,7 @@ import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 import { Media, Stars, WishlistButton } from "@/components/ui";
+import { SHOW_STORE_REVIEWS } from "@/lib/storefront-reviews";
 
 export function BestSeller1() {
   const store = useStore();
@@ -113,12 +114,14 @@ function ShelfCard({ product, image, className }: { product: Product; image: str
         <WishlistButton productId={product.id} name={product.name} className="-mr-2 -mt-1" />
       </div>
       <p className="mt-1 text-sm text-[#8a8178]">{product.scent}</p>
-      <p className="mt-2 flex items-center gap-2 text-xs text-[#8a8178]">
-        <Stars rating={product.rating} />
-        <span>
-          {product.rating.toFixed(1)} ({product.reviewCount})
-        </span>
-      </p>
+      {SHOW_STORE_REVIEWS ? (
+        <p className="mt-2 flex items-center gap-2 text-xs text-[#8a8178]">
+          <Stars rating={product.rating} />
+          <span>
+            {product.rating.toFixed(1)} ({product.reviewCount})
+          </span>
+        </p>
+      ) : null}
       <p className="mt-2 text-sm font-medium text-[#2c2926]">{formatPrice(product.price)}</p>
       {line ? (
         <button

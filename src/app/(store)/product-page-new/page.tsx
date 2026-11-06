@@ -15,6 +15,7 @@ import { FREE_SHIPPING_AT, couponProductIds, formatPrice } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import type { Coupon, Product, Review } from "@/lib/types";
 import { productShowsSection } from "@/lib/types";
+import { SHOW_STORE_REVIEWS } from "@/lib/storefront-reviews";
 
 export default function ProductPageNew({ slug = "silk-veil-body-butter" }: { slug?: string }) {
   const store = useStore();
@@ -301,11 +302,13 @@ function ProductLayout({
             <WishlistButton productId={product.id} name={product.name} />
           </div>
           <p className="mt-1 hidden text-lg capitalize text-[#4e4943] md:block">{product.scent}</p>
-          <p className="mt-3 text-base text-[#8a7350]">
-            {"★".repeat(full)}
-            <span className="text-[#cfc4b6]">{"★".repeat(Math.max(0, 5 - full))}</span>
-            <span className="ml-2 text-[#4e4943]">{product.rating.toFixed(1)} ({product.reviewCount} reviews)</span>
-          </p>
+          {SHOW_STORE_REVIEWS ? (
+            <p className="mt-3 text-base text-[#8a7350]">
+              {"★".repeat(full)}
+              <span className="text-[#cfc4b6]">{"★".repeat(Math.max(0, 5 - full))}</span>
+              <span className="ml-2 text-[#4e4943]">{product.rating.toFixed(1)} ({product.reviewCount} reviews)</span>
+            </p>
+          ) : null}
           <p className="mt-4 hidden max-w-md text-base leading-7 text-[#4e4943] md:block">{product.shortDescription}</p>
 
           {product.variants.length ? (
@@ -482,6 +485,7 @@ function ProductLayout({
       </section>
       ) : null}
 
+      {SHOW_STORE_REVIEWS ? (
       <section id="customer-reviews" className="mx-auto max-w-[1200px] px-4 pb-14 md:px-8">
         <h2 className="text-lg font-medium md:text-3xl">Reviews and rating</h2>
         <div className="mt-4 grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-b border-[#e6e0d6] pb-6 md:max-w-xl md:gap-10">
@@ -606,6 +610,7 @@ function ProductLayout({
           </button>
         ) : null}
       </section>
+      ) : null}
 
       {product.faqs.length ? (
         <section className="mx-auto max-w-[1200px] px-4 pb-14 md:px-8">
@@ -659,11 +664,13 @@ function ProductLayout({
                     <WishlistButton productId={item.id} name={item.name} className="-mr-2 -mt-1" />
                   </div>
                   <p className="mt-1 truncate text-sm capitalize text-[#6f675d]">{item.scent}</p>
-                  <p className="mt-2 text-sm text-[#8a7350]">
-                    {"★".repeat(full)}
-                    <span className="text-[#cfc4b6]">{"★".repeat(Math.max(0, 5 - full))}</span>
-                    <span className="ml-2 text-[#4e4943]">({item.reviewCount})</span>
-                  </p>
+                  {SHOW_STORE_REVIEWS ? (
+                    <p className="mt-2 text-sm text-[#8a7350]">
+                      {"★".repeat(full)}
+                      <span className="text-[#cfc4b6]">{"★".repeat(Math.max(0, 5 - full))}</span>
+                      <span className="ml-2 text-[#4e4943]">({item.reviewCount})</span>
+                    </p>
+                  ) : null}
                   <p className="mt-2 text-sm">{formatPrice(item.price)}</p>
                   <button type="button" onClick={inCart ? store.openCart : addRelated} className={`mt-3 h-11 w-full rounded-full text-sm ${inCart ? "border border-[#CBAC7C] bg-white text-[#2c2926]" : "bg-[#CBAC7C] text-white hover:bg-[#B39668]"}`}>
                     {inCart ? "Go to cart" : "Add to cart"}

@@ -29,18 +29,21 @@ import {
 } from "@/lib/search/client";
 import type { SearchProduct } from "@/lib/search/types";
 import type { Product } from "@/lib/types";
+import { SHOW_STORE_REVIEWS } from "@/lib/storefront-reviews";
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const PAGE_SIZE = 8;
 
-const SORT_OPTIONS = [
-  ["featured", "Featured"],
-  ["newest", "New arrivals"],
-  ["rating", "Top rated"],
-  ["price-low", "Price, low to high"],
-  ["price-high", "Price, high to low"],
-] as const;
+const SORT_OPTIONS = (
+  [
+    ["featured", "Featured"],
+    ["newest", "New arrivals"],
+    ["rating", "Top rated"],
+    ["price-low", "Price, low to high"],
+    ["price-high", "Price, high to low"],
+  ] as const
+).filter((option) => SHOW_STORE_REVIEWS || option[0] !== "rating");
 
 const DEBOUNCE_MS = 250;
 
@@ -59,7 +62,8 @@ const IDLE: ApiState = { status: "idle" };
 function normalizeSort(value: string | null) {
   if (value === "price-asc" || value === "price-low") return "price-low";
   if (value === "price-desc" || value === "price-high") return "price-high";
-  if (value === "newest" || value === "rating") return value;
+  if (value === "rating") return SHOW_STORE_REVIEWS ? "rating" : "featured";
+  if (value === "newest") return value;
   return "featured";
 }
 
@@ -177,7 +181,7 @@ export function ShopCatalog() {
 
     const minP = minPrice > priceFloor ? minPrice : undefined;
     const maxP = maxPrice < priceCeil ? maxPrice : undefined;
-    const ratingP = minRating >= 3 ? minRating : undefined;
+    const ratingP = SHOW_STORE_REVIEWS && minRating >= 3 ? minRating : undefined;
 
     searchProducts(
       {
@@ -287,7 +291,7 @@ export function ShopCatalog() {
     <ActiveFilters
       categoryName={category !== "all" ? categoryName : undefined}
       priceLabel={priceActive ? `${formatPrice(minPrice)} – ${formatPrice(maxPrice)}` : undefined}
-      ratingLabel={ratingChoice ? `${ratingChoice}★ and above` : undefined}
+      ratingLabel={SHOW_STORE_REVIEWS && ratingChoice ? `${ratingChoice}★ and above` : undefined}
       bestseller={bestseller}
       types={typeParam ? [typeParam] : []}
       query={urlQuery.trim()}
@@ -812,12 +816,16 @@ function FilterFields({
       <p className="text-base font-medium md:text-lg">Price</p>
       <PriceRange floor={priceFloor} ceil={priceCeil} low={minPrice} high={maxPrice} onChange={onPrice} />
 
-      <div className="my-6 h-px bg-[#e6e0d6]" />
-      <p className="text-base font-medium md:text-lg">Rating</p>
-      <div className="mt-3 space-y-1" role="radiogroup" aria-label="Minimum rating">
-        <Choice checked={ratingChoice === 4} onSelect={() => onRating(ratingChoice === 4 ? 0 : 4)} label="4★ and above" />
-        <Choice checked={ratingChoice === 3} onSelect={() => onRating(ratingChoice === 3 ? 0 : 3)} label="3★ and above" />
-      </div>
+      {SHOW_STORE_REVIEWS ? (
+        <>
+          <div className="my-6 h-px bg-[#e6e0d6]" />
+          <p className="text-base font-medium md:text-lg">Rating</p>
+          <div className="mt-3 space-y-1" role="radiogroup" aria-label="Minimum rating">
+            <Choice checked={ratingChoice === 4} onSelect={() => onRating(ratingChoice === 4 ? 0 : 4)} label="4★ and above" />
+            <Choice checked={ratingChoice === 3} onSelect={() => onRating(ratingChoice === 3 ? 0 : 3)} label="3★ and above" />
+          </div>
+        </>
+      ) : null}
 
       <div className="my-6 h-px bg-[#e6e0d6]" />
       <Choice checked={bestseller} onSelect={() => onBestseller(!bestseller)} label="Bestsellers only" role="checkbox" />

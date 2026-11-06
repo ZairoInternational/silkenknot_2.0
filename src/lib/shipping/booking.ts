@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import type { Db } from "mongodb";
 import type { Order, ShipmentRecord, TrackingEvent } from "@/lib/types";
 import { paiseToRupees } from "@/lib/payments/money";
+import { notifyOrderDelivered } from "@/lib/mail/notify";
 import { paymentLog } from "@/lib/payments/log";
 import { getMongo } from "@/lib/mongo";
 import { cancelWaybill, createManifest, DelhiveryError, fetchPackingSlip, requestPickup, trackWaybill, type LabelSize } from "./delhivery";
@@ -260,6 +261,14 @@ async function advanceMockShipment(db: Db, orderId: string) {
       orderState,
     },
   });
+  if (step.state === "delivered" && shipment.state !== "delivered") {
+    await notifyOrderDelivered(db, {
+      id: orderId,
+      phone: String(order.phone || ""),
+      number: String(order.number || ""),
+      customerName: String(order.customerName || ""),
+    });
+  }
   paymentLog("mock_shipment_advanced", { orderId, state: step.state });
   return db.collection("orders").findOne({ id: orderId });
 }
@@ -299,6 +308,14 @@ export async function refreshTracking(db: Db, orderId: string) {
       orderState,
     },
   });
+  if (state === "delivered" && shipment.state !== "delivered") {
+    await notifyOrderDelivered(db, {
+      id: orderId,
+      phone: String(order.phone || ""),
+      number: String(order.number || ""),
+      customerName: String(order.customerName || ""),
+    });
+  }
   return db.collection("orders").findOne({ id: orderId });
 }
 

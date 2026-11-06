@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 import { Media } from "@/components/ui";
+import { SHOW_STORE_REVIEWS } from "@/lib/storefront-reviews";
 
 const wipeEase = "duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]";
 
@@ -142,7 +143,7 @@ export function CardMobileAdd({
 
 /** Compact gold rating line for listing cards. */
 export function CardGoldRating({ rating, count }: { rating: number; count?: number }) {
-  if (!rating) return null;
+  if (!SHOW_STORE_REVIEWS || !rating) return null;
   const full = Math.min(5, Math.max(0, Math.round(rating)));
   return (
     <p className="mt-2 flex items-center gap-2 leading-none text-[#8a7350]" aria-label={`${rating} out of 5 stars`}>

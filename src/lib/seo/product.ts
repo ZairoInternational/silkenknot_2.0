@@ -7,6 +7,7 @@ import { absoluteAssetUrl, absoluteUrl } from "@/lib/seo/site";
 import { buildPageMetadata, truncateMeta } from "@/lib/seo/metadata";
 import { breadcrumbJsonLd, productJsonLd, type JsonLd, type JsonLdNode } from "@/lib/seo/jsonLd";
 import { photo } from "@/lib/format";
+import { SHOW_STORE_REVIEWS } from "@/lib/storefront-reviews";
 
 function stripMongoId<T extends Record<string, unknown>>(doc: T): Omit<T, "_id"> {
   const rest = { ...doc };
@@ -146,16 +147,18 @@ export function buildProductJsonLd(product: Product, categoryName?: string): Jso
       sku: product.id,
     },
     aggregateRating:
-      reviewCount > 0 && ratingValue > 0
+      SHOW_STORE_REVIEWS && reviewCount > 0 && ratingValue > 0
         ? { ratingValue, reviewCount }
         : undefined,
-    reviews: reviews.map((review) => ({
-      authorName: review.name,
-      rating: review.rating,
-      body: review.body,
-      datePublished: review.date,
-      title: review.title,
-    })),
+    reviews: SHOW_STORE_REVIEWS
+      ? reviews.map((review) => ({
+          authorName: review.name,
+          rating: review.rating,
+          body: review.body,
+          datePublished: review.date,
+          title: review.title,
+        }))
+      : [],
   });
 
   const crumbs = [

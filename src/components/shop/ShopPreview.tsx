@@ -9,6 +9,7 @@ import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 import { Media, WishlistButton } from "@/components/ui";
+import { SHOW_STORE_REVIEWS } from "@/lib/storefront-reviews";
 
 const categories = [
   { label: "All Products", id: "all" },
@@ -240,12 +241,14 @@ function ShopProductCard({ product }: { product: Product }) {
           <WishlistButton productId={product.id} name={product.name} className="-mr-2 -mt-1" />
         </div>
         <p className="mt-1 truncate text-[11px] text-[#8a8178] sm:text-xs">{product.scent}</p>
-        <div className="mt-2 flex flex-wrap items-center gap-1.5">
-          <span className="text-[11px] tracking-wider text-[#8c784c]">★★★★★</span>
-          <span className="text-[10px] text-[#888176] sm:text-xs">
-            {product.rating.toFixed(1)} ({product.reviewCount})
-          </span>
-        </div>
+        {SHOW_STORE_REVIEWS ? (
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span className="text-[11px] tracking-wider text-[#8c784c]">★★★★★</span>
+            <span className="text-[10px] text-[#888176] sm:text-xs">
+              {product.rating.toFixed(1)} ({product.reviewCount})
+            </span>
+          </div>
+        ) : null}
         <p className="mt-2 text-sm font-medium text-[#2c2926] sm:text-base">{formatPrice(product.price)}</p>
         <button type="button" onClick={addToCart} className="mt-3 h-10 w-full rounded-full bg-[#CBAC7C] px-3 text-xs font-medium text-white transition duration-300 hover:bg-[#B39668] sm:h-11 sm:text-sm">
           Add to cart
