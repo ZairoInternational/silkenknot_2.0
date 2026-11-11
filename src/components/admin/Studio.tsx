@@ -7,8 +7,11 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowUp,
+  Ban,
   ChevronDown,
   Banknote,
+  Eye,
+  ShieldCheck,
   FileText,
   Hand,
   ImagePlus,
@@ -40,7 +43,17 @@ function linesToList(value: string) {
 }
 import { Media } from "@/components/ui";
 import { csrfHeaders } from "@/lib/auth/browser";
-import { AdminPageHeader, AdminPanel } from "@/components/admin/AdminShell";
+import {
+  AdminEmptyState,
+  AdminFilterBar,
+  AdminPageHeader,
+  AdminPanel,
+  AdminStatCard,
+  AdminStickyActions,
+  AdminTip,
+  adminBtn,
+  adminControl,
+} from "@/components/admin/AdminShell";
 import {
   AdminEditorSkeleton,
   AdminFormSkeleton,
@@ -53,7 +66,18 @@ import {
   SiteMediaDraftPreview,
 } from "@/components/admin/StorefrontPreviews";
 
-export { AdminPageHeader, AdminPanel, AdminShell } from "@/components/admin/AdminShell";
+export {
+  AdminEmptyState,
+  AdminFilterBar,
+  AdminPageHeader,
+  AdminPanel,
+  AdminShell,
+  AdminStatCard,
+  AdminStickyActions,
+  AdminTip,
+  adminBtn,
+  adminControl,
+} from "@/components/admin/AdminShell";
 
 function parseChipList(value: string) {
   return value
@@ -73,6 +97,92 @@ async function uploadAdminImage(file: File, fields: Record<string, string>) {
 }
 
 type LoginStep = "credentials" | "channel" | "code" | "forgot" | "forgot-code";
+
+function AdminOtpInput({
+  value,
+  onChange,
+  disabled,
+  autoFocus,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  disabled?: boolean;
+  autoFocus?: boolean;
+}) {
+  const inputs = useRef<Array<HTMLInputElement | null>>([]);
+  const digits = Array.from({ length: 6 }, (_, index) => value[index] || "");
+
+  useEffect(() => {
+    if (!autoFocus) return;
+    const focus = window.setTimeout(() => inputs.current[0]?.focus(), 0);
+    return () => window.clearTimeout(focus);
+  }, [autoFocus]);
+
+  function write(index: number, raw: string) {
+    const cleaned = raw.replace(/\D/g, "");
+    if (!cleaned) {
+      const next = digits.map((digit, i) => (i === index ? "" : digit));
+      onChange(next.join(""));
+      return;
+    }
+    if (cleaned.length > 1) {
+      const next = [...digits];
+      cleaned.slice(0, 6 - index).split("").forEach((digit, offset) => {
+        next[index + offset] = digit;
+      });
+      onChange(next.join("").slice(0, 6));
+      inputs.current[Math.min(index + cleaned.length, 5)]?.focus();
+      return;
+    }
+    const next = digits.map((digit, i) => (i === index ? cleaned : digit));
+    onChange(next.join(""));
+    if (index < 5) inputs.current[index + 1]?.focus();
+  }
+
+  return (
+    <div className="mt-3 grid grid-cols-6 gap-2" role="group" aria-label="Six-digit one-time password">
+      {digits.map((digit, index) => (
+        <input
+          key={index}
+          ref={(node) => {
+            inputs.current[index] = node;
+          }}
+          aria-label={`OTP digit ${index + 1}`}
+          autoComplete={index === 0 ? "one-time-code" : "off"}
+          inputMode="numeric"
+          maxLength={6}
+          disabled={disabled}
+          value={digit}
+          onFocus={(event) => event.currentTarget.select()}
+          onChange={(event) => write(index, event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Backspace") {
+              event.preventDefault();
+              if (digits[index]) {
+                write(index, "");
+                return;
+              }
+              if (index > 0) {
+                const next = [...digits];
+                next[index - 1] = "";
+                onChange(next.join(""));
+                inputs.current[index - 1]?.focus();
+              }
+              return;
+            }
+            if (event.key === "ArrowLeft" && index > 0) inputs.current[index - 1]?.focus();
+            if (event.key === "ArrowRight" && index < 5) inputs.current[index + 1]?.focus();
+          }}
+          onPaste={(event) => {
+            event.preventDefault();
+            write(index, event.clipboardData.getData("text"));
+          }}
+          className="h-14 w-full min-w-0 rounded-lg border border-stone bg-white text-center text-xl text-ink outline-none transition-[border-color,box-shadow] focus:border-mist focus:shadow-[0_0_0_3px_rgb(203_172_124_/_28%)] disabled:opacity-60"
+        />
+      ))}
+    </div>
+  );
+}
 
 export function AdminLogin() {
   const store = useStore();
@@ -112,7 +222,7 @@ export function AdminLogin() {
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5">
       <p className="eyebrow text-mute">Studio</p>
-      <h1 className="mt-3 font-serif text-6xl">
+      <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink">
         {step === "forgot" || step === "forgot-code" ? "Reset access" : step === "code" || step === "channel" ? "Verify" : "Log in"}
       </h1>
       <p className="mt-3 text-sm text-mute">
@@ -165,7 +275,7 @@ export function AdminLogin() {
               autoComplete="username"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none"
+              className={`mt-1.5 ${adminControl.input}`}
             />
           </label>
           <label className="mt-6 block text-sm">
@@ -177,7 +287,7 @@ export function AdminLogin() {
               autoComplete="current-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none"
+              className={`mt-1.5 ${adminControl.input}`}
             />
           </label>
           {error ? <p role="alert" className="mt-4 text-sm">{error}</p> : null}
@@ -240,19 +350,10 @@ export function AdminLogin() {
             router.push("/admin");
           }}
         >
-          <label className="text-sm">
-            6-digit code
-            <input
-              inputMode="numeric"
-              pattern="\d{6}"
-              maxLength={6}
-              required
-              autoComplete="one-time-code"
-              value={code}
-              onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-              className="mt-2 h-12 w-full border-b border-line bg-transparent tracking-[0.3em] outline-none"
-            />
-          </label>
+          <div>
+            <p className="text-sm">6-digit code</p>
+            <AdminOtpInput value={code} onChange={setCode} disabled={busy} autoFocus />
+          </div>
           {devCode ? <p className="mt-3 text-xs text-mute">Dev code: {devCode}</p> : null}
           {error ? <p role="alert" className="mt-4 text-sm">{error}</p> : null}
           <button type="submit" disabled={busy || code.length !== 6} className="mt-8 h-12 w-full bg-ink text-[11px] uppercase tracking-[0.2em] text-paper disabled:opacity-60">
@@ -321,7 +422,7 @@ export function AdminLogin() {
               autoComplete="username"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none"
+              className={`mt-1.5 ${adminControl.input}`}
             />
           </label>
           {error ? <p role="alert" className="mt-4 text-sm">{error}</p> : null}
@@ -367,19 +468,10 @@ export function AdminLogin() {
             setStep("credentials");
           }}
         >
-          <label className="text-sm">
-            6-digit code
-            <input
-              inputMode="numeric"
-              pattern="\d{6}"
-              maxLength={6}
-              required
-              autoComplete="one-time-code"
-              value={code}
-              onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-              className="mt-2 h-12 w-full border-b border-line bg-transparent tracking-[0.3em] outline-none"
-            />
-          </label>
+          <div>
+            <p className="text-sm">6-digit code</p>
+            <AdminOtpInput value={code} onChange={setCode} disabled={busy} autoFocus />
+          </div>
           <label className="mt-6 block text-sm">
             New password
             <input
@@ -389,7 +481,7 @@ export function AdminLogin() {
               autoComplete="new-password"
               value={newPassword}
               onChange={(event) => setNewPassword(event.target.value)}
-              className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none"
+              className={`mt-1.5 ${adminControl.input}`}
             />
           </label>
           <label className="mt-6 block text-sm">
@@ -401,7 +493,7 @@ export function AdminLogin() {
               autoComplete="new-password"
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
-              className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none"
+              className={`mt-1.5 ${adminControl.input}`}
             />
           </label>
           {devCode ? <p className="mt-3 text-xs text-mute">Dev code: {devCode}</p> : null}
@@ -443,12 +535,12 @@ export function AdminLogin() {
 }
 
 const commonTasks = [
-  { href: "/admin/orders", title: "Fulfill orders", hint: "See new orders, update status, and ship." },
-  { href: "/admin/products", title: "Add or edit products", hint: "Names, prices, stock, and product photos." },
-  { href: "/admin/hero", title: "Change homepage hero", hint: "Sale campaign slide and product slides." },
-  { href: "/admin/site-media", title: "Replace website photos", hint: "Collection tiles, shop banners, login, checkout." },
-  { href: "/admin/offers", title: "Create a discount code", hint: "Coupons customers enter at checkout." },
-  { href: "/admin/shipping", title: "Update shipping / delivery", hint: "Delivery rates, free shipping, and Delhivery." },
+  { href: "/admin/orders", title: "Fulfill orders", hint: "Open new orders, mark packed or shipped, print labels." },
+  { href: "/admin/products", title: "Add or edit products", hint: "Change name, price, stock, and photos. Save updates the shop." },
+  { href: "/admin/hero", title: "Change homepage hero", hint: "Edit the sale slide and product slides customers see first." },
+  { href: "/admin/site-media", title: "Replace website photos", hint: "Swap photos on home, login, and checkout pages." },
+  { href: "/admin/offers", title: "Create a discount code", hint: "Make a code shoppers type at checkout, then turn it on." },
+  { href: "/admin/shipping", title: "Update shipping / delivery", hint: "Set delivery rates, free shipping, and Delhivery." },
 ];
 
 export function Dashboard() {
@@ -465,41 +557,46 @@ export function Dashboard() {
     <div>
       <AdminPageHeader
         title="Overview"
-        purpose="Start here. Check the numbers below, then use a common task when you know what you need to change."
+        purpose="Store snapshot and shortcuts to everyday work."
       />
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(([value, label]) => (
-          <div key={label} className="bg-paper p-6">
-            <p className="font-serif text-4xl">{value}</p>
-            <p className="mt-2 eyebrow text-mute">{label}</p>
-          </div>
+          <AdminStatCard key={String(label)} label={String(label)} value={value} />
         ))}
       </div>
 
-      <h2 className="mt-12 font-serif text-3xl">Common tasks</h2>
-      <p className="mt-2 text-sm text-mute">Pick the job you need — each link opens the right admin page.</p>
-      <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <h2 className="mt-10 text-lg font-semibold text-ink">Common tasks</h2>
+      <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {commonTasks.map((task) => (
           <li key={task.href}>
-            <Link href={task.href} className="block h-full bg-paper p-5 transition-colors hover:bg-white">
-              <p className="font-medium">{task.title}</p>
-              <p className="mt-2 text-sm text-mute">{task.hint}</p>
-            </Link>
+            <AdminTip label={task.title} className="h-full w-full">
+              <Link
+                href={task.href}
+                className="block h-full cursor-pointer rounded-xl border border-line bg-paper p-4 transition-colors duration-200 hover:bg-cream focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              >
+                <p className="text-sm font-medium text-ink">{task.title}</p>
+                <p className="mt-1.5 text-sm leading-6 text-mute">{task.hint}</p>
+              </Link>
+            </AdminTip>
           </li>
         ))}
       </ul>
 
-      <h2 className="mt-12 font-serif text-3xl">Needs attention</h2>
+      <h2 className="mt-10 text-lg font-semibold text-ink">Needs attention</h2>
+      <p className="mt-1.5 text-sm text-mute">Low stock (under 8). Open a product to restock.</p>
       <ul className="mt-4 space-y-2 text-sm">
         {low.map((product) => (
           <li key={product.id}>
-            <Link href={`/admin/products/${product.id}`} className="underline-offset-2 hover:underline">
+            <Link
+              href={`/admin/products/${product.id}`}
+              className="font-medium underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+            >
               {product.name}
             </Link>{" "}
-            is low in stock.
+            <span className="text-mute">is low in stock — open it and raise quantity, then save.</span>
           </li>
         ))}
-        {low.length === 0 ? <li className="text-mute">Stock looks comfortable.</li> : null}
+        {low.length === 0 ? <li className="text-mute">Nothing urgent. Stock looks fine.</li> : null}
       </ul>
     </div>
   );
@@ -562,44 +659,43 @@ export function ProductIndex() {
     <div className="space-y-8">
       <AdminPageHeader
         title="Products"
-        purpose="Add or edit items customers buy — name, price, stock, and product photos. Changes show on the shop after you save."
+        purpose="These are the items customers buy. Edit name, price, stock, and photos here."
         action={
-          <Link href="/admin/products/new" className="inline-flex h-11 items-center gap-2 bg-ink px-5 text-[11px] uppercase tracking-[0.18em] text-paper">
-            <Plus size={14} /> Add product
-          </Link>
+          <AdminTip label="Add product">
+            <Link href="/admin/products/new" className={adminBtn.primary}>
+              <Plus size={14} /> Add product
+            </Link>
+          </AdminTip>
         }
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Total", value: stats.total },
-          { label: "Active", value: stats.active },
+          { label: "Active on shop", value: stats.active },
           { label: "Hidden", value: stats.hidden },
           { label: "Low / out of stock", value: stats.low + stats.out },
         ].map((item) => (
-          <div key={item.label} className="rounded-2xl border border-line bg-paper px-4 py-3">
-            <p className="text-[11px] uppercase tracking-[0.14em] text-mute">{item.label}</p>
-            <p className="mt-1 font-serif text-3xl">{item.value}</p>
-          </div>
+          <AdminStatCard key={item.label} label={item.label} value={item.value} />
         ))}
       </div>
 
-      <div className="flex flex-wrap items-end gap-4 rounded-2xl border border-line bg-paper p-4">
+      <AdminFilterBar>
         <label className="min-w-[14rem] flex-1 text-sm">
           Search
-          <span className="mt-2 flex h-11 items-center gap-2 border-b border-line">
+          <span className={`mt-1.5 flex items-center gap-2 ${adminControl.input}`}>
             <Search size={14} className="shrink-0 text-mute" aria-hidden />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Name, type, scent, category"
-              className="h-full w-full bg-transparent outline-none"
+              className="h-full w-full bg-transparent text-sm outline-none"
             />
           </span>
         </label>
         <label className="text-sm">
           Visibility
-          <select value={visibility} onChange={(event) => setVisibility(event.target.value as typeof visibility)} className="mt-2 block h-11 border-b border-line bg-transparent outline-none">
+          <select value={visibility} onChange={(event) => setVisibility(event.target.value as typeof visibility)} className={`mt-1.5 ${adminControl.select}`}>
             <option value="all">All</option>
             <option value="active">Active</option>
             <option value="hidden">Hidden</option>
@@ -607,27 +703,33 @@ export function ProductIndex() {
         </label>
         <label className="text-sm">
           Stock
-          <select value={stockFilter} onChange={(event) => setStockFilter(event.target.value as typeof stockFilter)} className="mt-2 block h-11 border-b border-line bg-transparent outline-none">
+          <select value={stockFilter} onChange={(event) => setStockFilter(event.target.value as typeof stockFilter)} className={`mt-1.5 ${adminControl.select}`}>
             <option value="all">All</option>
             <option value="low">Low (≤ 5)</option>
             <option value="out">Out of stock</option>
           </select>
         </label>
-      </div>
+      </AdminFilterBar>
 
       {products.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line px-6 py-16 text-center">
-          <Package className="mx-auto text-mute" size={28} strokeWidth={1.4} />
-          <p className="mt-4 font-serif text-2xl">{store.products.length ? "No products match" : "No products yet"}</p>
-          <p className="mt-2 text-sm text-mute">
-            {store.products.length ? "Try clearing search or filters." : "Add your first product to start the catalog."}
-          </p>
-          {!store.products.length ? (
-            <Link href="/admin/products/new" className="mt-6 inline-flex h-11 items-center gap-2 bg-ink px-5 text-[11px] uppercase tracking-[0.18em] text-paper">
-              <Plus size={14} /> Add product
-            </Link>
-          ) : null}
-        </div>
+        <AdminEmptyState
+          icon={<Package size={28} strokeWidth={1.4} />}
+          title={store.products.length ? "No products match" : "No products yet"}
+          body={
+            store.products.length
+              ? "Clear search or filters to see the full list."
+              : "Add your first product so customers can buy from the shop."
+          }
+          action={
+            !store.products.length ? (
+              <AdminTip label="Add your first product">
+                <Link href="/admin/products/new" className={adminBtn.primary}>
+                  <Plus size={14} /> Add your first product
+                </Link>
+              </AdminTip>
+            ) : undefined
+          }
+        />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-line bg-paper">
           <div className="overflow-x-auto">
@@ -640,7 +742,7 @@ export function ProductIndex() {
                   <th className="px-4 py-3">Stock</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Flags</th>
-                  <th className="px-4 py-3" />
+                  <th className="px-4 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -649,7 +751,7 @@ export function ProductIndex() {
                   const category = store.categories.find((item) => item.id === product.categoryId)?.name || product.categoryId;
                   const thumb = product.images[0];
                   return (
-                    <tr key={product.id} className="border-b border-line/70 align-middle last:border-b-0">
+                    <tr key={product.id} className="border-b border-line/70 align-middle transition-colors duration-200 last:border-b-0 hover:bg-cream/50">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <span className="relative block size-14 shrink-0 overflow-hidden rounded-xl bg-[#efeae3]">
@@ -681,26 +783,24 @@ export function ProductIndex() {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="inline-flex items-center gap-1.5">
-                          <Link
-                            href={`/admin/products/${product.id}`}
-                            className="inline-flex h-8 w-8 items-center justify-center border border-line"
-                            aria-label={`Edit ${product.name}`}
-                            title="Edit"
-                          >
-                            <Pencil size={14} />
-                          </Link>
-                          <button
-                            type="button"
-                            className="inline-flex h-8 w-8 items-center justify-center border border-red-200 text-red-700"
-                            aria-label={`Delete ${product.name}`}
-                            title="Delete"
-                            onClick={async () => {
-                              if (!window.confirm(`Delete “${product.name}”? This cannot be undone.`)) return;
-                              await store.deleteProduct(product.id);
-                            }}
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          <AdminTip label={`Edit ${product.name}`}>
+                            <Link href={`/admin/products/${product.id}`} className={adminBtn.row} aria-label={`Edit ${product.name}`}>
+                              <Pencil size={14} /> Edit
+                            </Link>
+                          </AdminTip>
+                          <AdminTip label={`Delete ${product.name}`}>
+                            <button
+                              type="button"
+                              className={adminBtn.rowDanger}
+                              aria-label={`Delete ${product.name}`}
+                              onClick={async () => {
+                                if (!window.confirm(`Delete “${product.name}”? This cannot be undone.`)) return;
+                                await store.deleteProduct(product.id);
+                              }}
+                            >
+                              <Trash2 size={14} /> Delete
+                            </button>
+                          </AdminTip>
                         </div>
                       </td>
                     </tr>
@@ -896,9 +996,9 @@ function ProductForm({ initial }: { initial?: Product }) {
         </Link>
         <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-2xl">
-            <h1 className="font-serif text-4xl md:text-5xl">{initial ? "Edit product" : "New product"}</h1>
-            <p className="mt-3 text-sm leading-6 text-mute">
-              Fill in what customers see on the product page. Upload gallery photos here. The live preview shows the shop-card look before you save.
+            <h1 className="text-2xl font-semibold tracking-tight text-ink">{initial ? "Edit product" : "New product"}</h1>
+            <p className="mt-1.5 text-sm leading-6 text-mute">
+              Product page details, photos, and stock. Preview on the right, then save.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -920,7 +1020,7 @@ function ProductForm({ initial }: { initial?: Product }) {
                 <select
                   value={product.categoryId}
                   onChange={(event) => set("categoryId", event.target.value)}
-                  className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+                  className={`mt-1.5 ${adminControl.select}`}
                 >
                   {store.categories.map((category) => (
                     <option key={category.id} value={category.id}>{category.name}</option>
@@ -935,7 +1035,7 @@ function ProductForm({ initial }: { initial?: Product }) {
               <textarea
                 value={product.shortDescription}
                 onChange={(event) => set("shortDescription", event.target.value)}
-                className="mt-2 min-h-20 w-full border-b border-line bg-transparent outline-none"
+                className={`mt-1.5 ${adminControl.textarea}`}
               />
             </label>
           </StudioPanel>
@@ -972,19 +1072,21 @@ function ProductForm({ initial }: { initial?: Product }) {
                         <span className="truncate font-medium">{label}</span>
                         {!enabled ? <span className="text-[11px] uppercase tracking-[0.12em] text-mute">Hidden on store</span> : null}
                       </label>
-                      <button
-                        type="button"
-                        aria-label={rowOpen ? `Hide ${label}` : `Show ${label}`}
-                        aria-expanded={rowOpen}
-                        onClick={() => setOpenDetail((current) => ({ ...current, [flag]: !rowOpen }))}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-paper text-mute"
-                      >
-                        <ChevronDown
-                          size={16}
-                          className={`transition-transform duration-200 ${rowOpen ? "rotate-180" : ""}`}
-                          aria-hidden
-                        />
-                      </button>
+                      <AdminTip label={rowOpen ? `Hide ${label}` : `Show ${label}`}>
+                        <button
+                          type="button"
+                          aria-label={rowOpen ? `Hide ${label}` : `Show ${label}`}
+                          aria-expanded={rowOpen}
+                          onClick={() => setOpenDetail((current) => ({ ...current, [flag]: !rowOpen }))}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-paper text-mute"
+                        >
+                          <ChevronDown
+                            size={16}
+                            className={`transition-transform duration-200 ${rowOpen ? "rotate-180" : ""}`}
+                            aria-hidden
+                          />
+                        </button>
+                      </AdminTip>
                     </div>
                     {rowOpen ? (
                       <div className="border-t border-line px-3 py-3">
@@ -997,7 +1099,7 @@ function ProductForm({ initial }: { initial?: Product }) {
                               else set("description", event.target.value);
                             }}
                             disabled={!enabled}
-                            className="mt-2 min-h-28 w-full border-b border-line bg-transparent outline-none disabled:opacity-50"
+                            className={`mt-1.5 ${adminControl.textarea} disabled:opacity-50`}
                           />
                         </label>
                       </div>
@@ -1033,11 +1135,13 @@ function ProductForm({ initial }: { initial?: Product }) {
                 value={imageUrl}
                 onChange={(event) => setImageUrl(event.target.value)}
                 placeholder="Or paste an image URL"
-                className="h-11 flex-1 border-b border-line bg-transparent outline-none"
+                className={`flex-1 ${adminControl.input}`}
               />
-              <button type="button" className="h-11 border border-line px-3 text-[11px] uppercase tracking-[0.16em]" onClick={addImageUrl}>
-                Add URL
-              </button>
+              <AdminTip label="Add image URL">
+                <button type="button" className="h-11 border border-line px-3 text-[11px] uppercase tracking-[0.16em]" onClick={addImageUrl}>
+                  Add URL
+                </button>
+              </AdminTip>
             </div>
             {product.images.length ? (
               <ul className="flex flex-wrap gap-3">
@@ -1065,13 +1169,15 @@ function ProductForm({ initial }: { initial?: Product }) {
                         </span>
                       ) : null}
                     </span>
-                    <button
-                      type="button"
-                      className="mt-1 inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.14em] text-mute hover:text-ink"
-                      onClick={() => void removeImage(index)}
-                    >
-                      <Trash2 size={11} /> Remove
-                    </button>
+                    <AdminTip label="Remove photo">
+                      <button
+                        type="button"
+                        className="mt-1 inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.14em] text-mute hover:text-ink"
+                        onClick={() => void removeImage(index)}
+                      >
+                        <Trash2 size={11} /> Remove
+                      </button>
+                    </AdminTip>
                   </li>
                 ))}
               </ul>
@@ -1106,7 +1212,7 @@ function ProductForm({ initial }: { initial?: Product }) {
                           aria-label="Option"
                           value={variant.label}
                           onChange={(event) => updateVariant(product, setProduct, index, { label: event.target.value })}
-                          className="h-10 w-full min-w-[6rem] border-b border-line bg-transparent outline-none"
+                          className={`${adminControl.input} min-w-[6rem]`}
                           placeholder="200 g"
                         />
                       </td>
@@ -1117,7 +1223,7 @@ function ProductForm({ initial }: { initial?: Product }) {
                           inputMode="numeric"
                           value={String(variant.price || "")}
                           onChange={(event) => updateVariant(product, setProduct, index, { price: Number(event.target.value) || 0 })}
-                          className="h-10 w-full min-w-[5rem] border-b border-line bg-transparent outline-none"
+                          className={`${adminControl.input} min-w-[5rem]`}
                           placeholder="300"
                         />
                       </td>
@@ -1132,7 +1238,7 @@ function ProductForm({ initial }: { initial?: Product }) {
                               compareAtPrice: event.target.value ? Number(event.target.value) : undefined,
                             })
                           }
-                          className="h-10 w-full min-w-[5rem] border-b border-line bg-transparent outline-none"
+                          className={`${adminControl.input} min-w-[5rem]`}
                           placeholder="340"
                         />
                       </td>
@@ -1143,7 +1249,7 @@ function ProductForm({ initial }: { initial?: Product }) {
                           inputMode="numeric"
                           value={String(variant.stock)}
                           onChange={(event) => updateVariant(product, setProduct, index, { stock: Number(event.target.value) || 0 })}
-                          className="h-10 w-full min-w-[4rem] border-b border-line bg-transparent outline-none"
+                          className={`${adminControl.input} min-w-[4rem]`}
                           placeholder="20"
                         />
                       </td>
@@ -1160,21 +1266,22 @@ function ProductForm({ initial }: { initial?: Product }) {
                                 : undefined,
                             })
                           }
-                          className="h-10 w-full min-w-[4rem] border-b border-line bg-transparent outline-none"
+                          className={`${adminControl.input} min-w-[4rem]`}
                           placeholder="250"
                         />
                       </td>
                       <td className="px-3 py-2">
-                        <button
-                          type="button"
-                          aria-label="Delete option"
-                          title="Delete option"
-                          disabled={product.variants.length <= 1}
-                          onClick={() => set("variants", product.variants.filter((_, item) => item !== index))}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line text-mute transition hover:border-red-200 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-30"
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                        <AdminTip label="Delete option">
+                          <button
+                            type="button"
+                            aria-label="Delete option"
+                            disabled={product.variants.length <= 1}
+                            onClick={() => set("variants", product.variants.filter((_, item) => item !== index))}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line text-mute transition hover:border-red-200 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-30"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </AdminTip>
                       </td>
                     </tr>
                   ))}
@@ -1182,25 +1289,27 @@ function ProductForm({ initial }: { initial?: Product }) {
               </table>
             </div>
 
-            <button
-              type="button"
-              className="inline-flex h-11 items-center gap-2 border border-line px-4 text-sm text-ink transition hover:bg-[#faf7f2]"
-              onClick={() =>
-                set("variants", [
-                  ...product.variants,
-                  {
-                    id: `opt-${Date.now()}`,
-                    label: "",
-                    price: product.price || 0,
-                    stock: 0,
-                    weightGrams: product.weightGrams || undefined,
-                  },
-                ])
-              }
-            >
-              <Plus size={16} />
-              Add option
-            </button>
+            <AdminTip label="Add option">
+              <button
+                type="button"
+                className="inline-flex h-11 items-center gap-2 border border-line px-4 text-sm text-ink transition hover:bg-[#faf7f2]"
+                onClick={() =>
+                  set("variants", [
+                    ...product.variants,
+                    {
+                      id: `opt-${Date.now()}`,
+                      label: "",
+                      price: product.price || 0,
+                      stock: 0,
+                      weightGrams: product.weightGrams || undefined,
+                    },
+                  ])
+                }
+              >
+                <Plus size={16} />
+                Add option
+              </button>
+            </AdminTip>
 
             <label className="block text-sm">
               Default product weight (grams)
@@ -1210,7 +1319,7 @@ function ProductForm({ initial }: { initial?: Product }) {
                 max={30000}
                 value={product.weightGrams || ""}
                 onChange={(event) => set("weightGrams", Math.round(Number(event.target.value) || 0))}
-                className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+                className={`mt-1.5 ${adminControl.input}`}
               />
               <span className="mt-2 block text-xs text-mute">
                 Fallback when a row has no weight. Prefer Weight on each option.
@@ -1248,29 +1357,30 @@ function ProductForm({ initial }: { initial?: Product }) {
             </p>
           ) : null}
 
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <button
-              type="submit"
-              className="inline-flex h-10 items-center justify-center gap-2 bg-ink px-3 text-[8px] tracking-[0.16em] text-paper transition hover:bg-[#2a2420]"
-            >
-              <Save size={10} strokeWidth={2.25} />
-              Save product
-            </button>
-            {initial ? (
-              <button
-                type="button"
-                className="inline-flex h-10 items-center justify-center gap-2 border border-red-200 bg-[#fdf4f2] px-3 text-[8px] tracking-[0.16em] text-red-700 transition hover:border-red-300 hover:bg-[#faeae6]"
-                onClick={async () => {
-                  if (!window.confirm(`Delete “${initial.name}”? This cannot be undone.`)) return;
-                  await store.deleteProduct(initial.id);
-                  router.push("/admin/products");
-                }}
-              >
-                <Trash2 size={10} />
-                Delete product
+          <AdminStickyActions note="Changes go live on the shop when you save.">
+            <AdminTip label="Save product">
+              <button type="submit" className={adminBtn.primary}>
+                <Save size={16} strokeWidth={2} />
+                Save product
               </button>
+            </AdminTip>
+            {initial ? (
+              <AdminTip label={`Delete ${initial.name}`}>
+                <button
+                  type="button"
+                  className={adminBtn.danger}
+                  onClick={async () => {
+                    if (!window.confirm(`Delete “${initial.name}”? This cannot be undone.`)) return;
+                    await store.deleteProduct(initial.id);
+                    router.push("/admin/products");
+                  }}
+                >
+                  <Trash2 size={14} />
+                  Delete
+                </button>
+              </AdminTip>
             ) : null}
-          </div>
+          </AdminStickyActions>
         </div>
 
         <div className="order-first xl:order-none xl:sticky xl:top-4">
@@ -1303,7 +1413,7 @@ function AdminField({
   return (
     <label htmlFor={id} className="block text-sm">
       {label}
-      <input id={id} value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none" />
+      <input id={id} value={value} onChange={(event) => onChange(event.target.value)} className={`mt-1.5 ${adminControl.input}`} />
     </label>
   );
 }
@@ -1328,7 +1438,18 @@ export function CategoryManager() {
   const [draft, setDraft] = useState<Category>(blank());
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState<"image" | "imageAlt" | null>(null);
+  const editorRef = useRef<HTMLFormElement | null>(null);
   const editingExisting = store.categories.some((category) => category.id === draft.id && draft.id);
+
+  function openEditor(category?: Category) {
+    setDraft(category ? category : blank());
+    setError("");
+    window.requestAnimationFrame(() => {
+      editorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const nameInput = editorRef.current?.querySelector<HTMLInputElement>("input");
+      nameInput?.focus({ preventScroll: true });
+    });
+  }
 
   const onUpload = async (files: FileList | null, field: "image" | "imageAlt") => {
     const file = files?.[0];
@@ -1356,28 +1477,27 @@ export function CategoryManager() {
     <div className="space-y-8">
       <AdminPageHeader
         title="Categories"
-        purpose="Shop groups like Body Care or Candles. Images here are used in search and as a fallback in the header menu. Homepage collection tiles and the circular category strip are under Website photos."
+        purpose="Shop groups like Body Care or Candles. Customers use these to browse."
         action={
           editingExisting ? (
-            <button
-              type="button"
-              onClick={() => {
-                setDraft(blank());
-                setError("");
-              }}
-              className="inline-flex h-11 items-center border border-line bg-paper px-4 text-[11px] uppercase tracking-[0.16em]"
-            >
-              New category
-            </button>
+            <AdminTip label="New category">
+              <button
+                type="button"
+                onClick={() => openEditor()}
+                className={adminBtn.secondary}
+              >
+                New category
+              </button>
+            </AdminTip>
           ) : null
         }
       />
 
       {store.categories.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line px-6 py-12 text-center">
-          <p className="font-serif text-2xl">No categories yet</p>
-          <p className="mt-2 text-sm text-mute">Create a group below so products can be organised in the shop.</p>
-        </div>
+        <AdminEmptyState
+          title="No categories yet"
+          body="Create a group in the form below so products can be organised in the shop."
+        />
       ) : (
         <ul className="space-y-3">
           {store.categories.map((category, index) => {
@@ -1398,7 +1518,7 @@ export function CategoryManager() {
                     </span>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-serif text-2xl leading-tight">{category.name}</p>
+                        <p className="text-base font-semibold text-ink">{category.name}</p>
                         {statusPill("mute", `${productCount(category.id)} products`)}
                       </div>
                       <p className="mt-1 line-clamp-2 text-sm text-mute">{category.description || "No description"}</p>
@@ -1406,45 +1526,50 @@ export function CategoryManager() {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      aria-label="Move up"
-                      disabled={index === 0}
-                      onClick={() => void store.moveCategory(category.id, -1)}
-                      className="inline-flex h-8 w-8 items-center justify-center border border-line disabled:opacity-40"
-                    >
-                      <ArrowUp size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Move down"
-                      disabled={index === store.categories.length - 1}
-                      onClick={() => void store.moveCategory(category.id, 1)}
-                      className="inline-flex h-8 w-8 items-center justify-center border border-line disabled:opacity-40"
-                    >
-                      <ArrowDown size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setDraft(category);
-                        setError("");
-                      }}
-                      className="inline-flex h-8 items-center gap-1 border border-line px-2.5 text-xs"
-                    >
-                      <Pencil size={12} /> Edit
-                    </button>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if (!window.confirm(`Delete “${category.name}”? Products keep their category id until you reassign them.`)) return;
-                        setError((await store.deleteCategory(category.id)).message || "");
-                        if (draft.id === category.id) setDraft(blank());
-                      }}
-                      className="inline-flex h-8 items-center gap-1 border border-red-200 px-2.5 text-xs text-red-700"
-                    >
-                      <Trash2 size={12} /> Delete
-                    </button>
+                    <AdminTip label="Move up">
+                      <button
+                        type="button"
+                        aria-label="Move up"
+                        disabled={index === 0}
+                        onClick={() => void store.moveCategory(category.id, -1)}
+                        className="inline-flex h-8 w-8 items-center justify-center border border-line disabled:opacity-40"
+                      >
+                        <ArrowUp size={14} />
+                      </button>
+                    </AdminTip>
+                    <AdminTip label="Move down">
+                      <button
+                        type="button"
+                        aria-label="Move down"
+                        disabled={index === store.categories.length - 1}
+                        onClick={() => void store.moveCategory(category.id, 1)}
+                        className="inline-flex h-8 w-8 items-center justify-center border border-line disabled:opacity-40"
+                      >
+                        <ArrowDown size={14} />
+                      </button>
+                    </AdminTip>
+                    <AdminTip label={`Edit ${category.name}`}>
+                      <button
+                        type="button"
+                        onClick={() => openEditor(category)}
+                        className={adminBtn.row}
+                      >
+                        <Pencil size={12} /> Edit
+                      </button>
+                    </AdminTip>
+                    <AdminTip label={`Delete ${category.name}`}>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!window.confirm(`Delete “${category.name}”? Products keep their category id until you reassign them.`)) return;
+                          setError((await store.deleteCategory(category.id)).message || "");
+                          if (draft.id === category.id) setDraft(blank());
+                        }}
+                        className={adminBtn.rowDanger}
+                      >
+                        <Trash2 size={12} /> Delete
+                      </button>
+                    </AdminTip>
                   </div>
                 </div>
               </li>
@@ -1455,7 +1580,9 @@ export function CategoryManager() {
 
       <div className="grid gap-10 xl:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] xl:items-start">
         <form
-          className="space-y-5 rounded-2xl border border-line bg-paper p-6"
+          ref={editorRef}
+          id="category-editor"
+          className="scroll-mt-24 space-y-5 rounded-2xl border border-line bg-paper p-6"
           onSubmit={async (event) => {
             event.preventDefault();
             const isNew = !store.categories.some((category) => category.id === draft.id);
@@ -1475,7 +1602,7 @@ export function CategoryManager() {
             <textarea
               value={draft.description}
               onChange={(event) => setDraft({ ...draft, description: event.target.value })}
-              className="mt-2 min-h-20 w-full border-b border-line bg-transparent outline-none"
+              className={`mt-1.5 ${adminControl.textarea}`}
             />
           </label>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -1511,20 +1638,24 @@ export function CategoryManager() {
           </div>
           {error ? <p role="status" className="text-sm text-red-700">{error}</p> : null}
           <div className="flex flex-wrap gap-3">
-            <button type="submit" className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper">
-              {editingExisting ? "Update category" : "Save category"}
-            </button>
-            {editingExisting ? (
-              <button
-                type="button"
-                className="h-12 px-4 text-[11px] uppercase tracking-[0.16em] text-mute"
-                onClick={() => {
-                  setDraft(blank());
-                  setError("");
-                }}
-              >
-                Cancel
+            <AdminTip label={editingExisting ? "Update category" : "Save category"}>
+              <button type="submit" className={adminBtn.primary}>
+                {editingExisting ? "Update category" : "Save category"}
               </button>
+            </AdminTip>
+            {editingExisting ? (
+              <AdminTip label="Cancel edit">
+                <button
+                  type="button"
+                  className="h-12 px-4 text-[11px] uppercase tracking-[0.16em] text-mute"
+                  onClick={() => {
+                    setDraft(blank());
+                    setError("");
+                  }}
+                >
+                  Cancel
+                </button>
+              </AdminTip>
             ) : null}
           </div>
         </form>
@@ -1573,7 +1704,7 @@ export function OrderIndex() {
     <div className="space-y-8">
       <AdminPageHeader
         title="Orders"
-        purpose="Open an order to update status, check payment, or book shipping. Use filters to find work for today."
+        purpose="Customer checkouts land here. Open an order to pack, ship, or fix payment."
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -1583,29 +1714,26 @@ export function OrderIndex() {
           { label: "Awaiting payment", value: stats.awaitingPay },
           { label: "Ready to ship", value: stats.toShip },
         ].map((item) => (
-          <div key={item.label} className="rounded-2xl border border-line bg-paper px-4 py-3">
-            <p className="text-[11px] uppercase tracking-[0.14em] text-mute">{item.label}</p>
-            <p className="mt-1 font-serif text-3xl">{item.value}</p>
-          </div>
+          <AdminStatCard key={item.label} label={item.label} value={item.value} />
         ))}
       </div>
 
-      <div className="flex flex-wrap items-end gap-4 rounded-2xl border border-line bg-paper p-4">
+      <AdminFilterBar>
         <label className="min-w-[14rem] flex-1 text-sm">
           Search
-          <span className="mt-2 flex h-11 items-center gap-2 border-b border-line">
+          <span className={`mt-1.5 flex items-center gap-2 ${adminControl.input}`}>
             <Search size={14} className="shrink-0 text-mute" aria-hidden />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Order number, name, email, phone"
-              className="h-full w-full bg-transparent outline-none"
+              className="h-full w-full bg-transparent text-sm outline-none"
             />
           </span>
         </label>
         <label className="text-sm">
           Status
-          <select value={status} onChange={(event) => setStatus(event.target.value)} className="mt-2 block h-11 border-b border-line bg-transparent outline-none">
+          <select value={status} onChange={(event) => setStatus(event.target.value)} className={`mt-1.5 ${adminControl.select}`}>
             {["all", "pending_payment", "placed", "confirmed", "packed", "shipped", "delivered", "cancelled"].map((item) => (
               <option key={item} value={item}>{item === "all" ? "All" : humanLabel(item)}</option>
             ))}
@@ -1613,7 +1741,7 @@ export function OrderIndex() {
         </label>
         <label className="text-sm">
           Payment
-          <select value={payment} onChange={(event) => setPayment(event.target.value)} className="mt-2 block h-11 border-b border-line bg-transparent outline-none">
+          <select value={payment} onChange={(event) => setPayment(event.target.value)} className={`mt-1.5 ${adminControl.select}`}>
             {["all", "pending", "captured", "failed", "refund_pending", "refunded"].map((item) => (
               <option key={item} value={item}>{item === "all" ? "All" : humanLabel(item)}</option>
             ))}
@@ -1621,22 +1749,24 @@ export function OrderIndex() {
         </label>
         <label className="text-sm">
           Shipment
-          <select value={shipment} onChange={(event) => setShipment(event.target.value)} className="mt-2 block h-11 border-b border-line bg-transparent outline-none">
+          <select value={shipment} onChange={(event) => setShipment(event.target.value)} className={`mt-1.5 ${adminControl.select}`}>
             {["all", "not_created", "pending", "booked", "in_transit", "delivered", "exception", "unknown"].map((item) => (
               <option key={item} value={item}>{item === "all" ? "All" : humanLabel(item)}</option>
             ))}
           </select>
         </label>
-      </div>
+      </AdminFilterBar>
 
       {orders.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line px-6 py-16 text-center">
-          <ShoppingBag className="mx-auto text-mute" size={28} strokeWidth={1.4} />
-          <p className="mt-4 font-serif text-2xl">{store.orders.length ? "No orders match" : "No orders yet"}</p>
-          <p className="mt-2 text-sm text-mute">
-            {store.orders.length ? "Try clearing search or filters." : "New checkout orders will appear here."}
-          </p>
-        </div>
+        <AdminEmptyState
+          icon={<ShoppingBag size={28} strokeWidth={1.4} />}
+          title={store.orders.length ? "No orders match" : "No orders yet"}
+          body={
+            store.orders.length
+              ? "Clear search or filters to see every order."
+              : "When someone checks out on the shop, the order shows up here."
+          }
+        />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-line bg-paper">
           <div className="overflow-x-auto">
@@ -1650,14 +1780,14 @@ export function OrderIndex() {
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Payment</th>
                   <th className="px-4 py-3">Shipment</th>
-                  <th className="px-4 py-3" />
+                  <th className="px-4 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {orders.map((order) => {
                   const shipState = order.shipment?.state || "not_created";
                   return (
-                    <tr key={order.id} className="border-b border-line/70 align-middle last:border-b-0">
+                    <tr key={order.id} className="border-b border-line/70 align-middle transition-colors duration-200 last:border-b-0 hover:bg-cream/50">
                       <td className="px-4 py-3">
                         <Link href={`/admin/orders/${order.id}`} className="font-medium hover:underline">
                           {order.number}
@@ -1678,9 +1808,11 @@ export function OrderIndex() {
                       </td>
                       <td className="px-4 py-3">{statusPill(orderStatusTone(shipState), humanLabel(shipState))}</td>
                       <td className="px-4 py-3 text-right">
-                        <Link href={`/admin/orders/${order.id}`} className="inline-flex h-8 items-center border border-line px-2.5 text-xs">
-                          Open
-                        </Link>
+                        <AdminTip label={`Open order ${order.number}`}>
+                          <Link href={`/admin/orders/${order.id}`} className={adminBtn.row}>
+                            Open
+                          </Link>
+                        </AdminTip>
                       </td>
                     </tr>
                   );
@@ -1710,12 +1842,17 @@ export function OrderDetail({ id }: { id: string }) {
   }
   if (!order) {
     return (
-      <div className="rounded-2xl border border-dashed border-line px-6 py-16 text-center">
-        <p className="font-serif text-2xl">Order not found</p>
-        <Link href="/admin/orders" className="mt-6 inline-flex h-11 items-center gap-2 border border-line px-4 text-[11px] uppercase tracking-[0.16em]">
-          <ArrowLeft size={14} /> Back to orders
-        </Link>
-      </div>
+      <AdminEmptyState
+        title="Order not found"
+        body="That order id is missing or was removed. Go back to the list and open another order."
+        action={
+          <AdminTip label="Back to orders">
+            <Link href="/admin/orders" className={adminBtn.secondary}>
+              <ArrowLeft size={14} /> Back to orders
+            </Link>
+          </AdminTip>
+        }
+      />
     );
   }
 
@@ -1729,7 +1866,7 @@ export function OrderDetail({ id }: { id: string }) {
         </Link>
         <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-serif text-4xl md:text-5xl">{order.number}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-ink">{order.number}</h1>
             <p className="mt-2 text-sm text-mute">
               {formatDate(order.createdAt)} · {order.items.length} item{order.items.length === 1 ? "" : "s"}
             </p>
@@ -1768,7 +1905,7 @@ export function OrderDetail({ id }: { id: string }) {
               value={order.status}
               disabled={Boolean(order.shipment?.awb)}
               onChange={(event) => store.updateOrderStatus(order.id, event.target.value as OrderStatus)}
-              className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none disabled:opacity-60"
+              className={`mt-1.5 ${adminControl.input} disabled:opacity-60`}
             >
               {["pending_payment", "placed", "confirmed", "packed", "shipped", "delivered", "cancelled"].map((status) => (
                 <option key={status} value={status}>{humanLabel(status)}</option>
@@ -1820,6 +1957,7 @@ export function OrderDetail({ id }: { id: string }) {
 export function CustomerIndex() {
   const store = useStore();
   const [query, setQuery] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
   const customers = useMemo(() => {
     const list = store.users.filter((user) => user.role === "customer");
     const needle = query.trim().toLowerCase();
@@ -1845,24 +1983,24 @@ export function CustomerIndex() {
     <div className="space-y-8">
       <AdminPageHeader
         title="Customers"
-        purpose="People who have signed in or placed orders. Open a customer to see addresses and their order history."
+        purpose="People who signed in or bought something. Open a row to see addresses and past orders."
       />
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-line bg-paper px-5 py-4">
-          <p className="text-[11px] uppercase tracking-[0.14em] text-mute">Customers</p>
-          <p className="mt-2 font-serif text-3xl">{store.users.filter((user) => user.role === "customer").length}</p>
-        </div>
+        <AdminStatCard
+          label="Customers"
+          value={store.users.filter((user) => user.role === "customer").length}
+        />
         <div className="rounded-2xl border border-line bg-paper px-5 py-4 sm:col-span-2">
           <label className="block text-sm">
             Search
-            <span className="mt-2 flex h-11 items-center gap-2 border-b border-line">
+            <span className={`mt-1.5 flex items-center gap-2 ${adminControl.input}`}>
               <Search size={16} className="text-mute" aria-hidden />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Name, email, or phone"
-                className="h-full w-full bg-transparent outline-none"
+                className="h-full w-full bg-transparent text-sm outline-none"
               />
             </span>
           </label>
@@ -1872,21 +2010,28 @@ export function CustomerIndex() {
       {withOrders.length ? (
         <div className="overflow-hidden rounded-2xl border border-line bg-paper">
           <table className="min-w-full text-left text-sm">
-            <thead className="bg-[#f3eee6] text-[11px] uppercase tracking-[0.12em] text-mute">
+            <thead className="border-b border-line text-[11px] uppercase tracking-[0.12em] text-mute">
               <tr>
                 <th className="px-5 py-3 font-medium">Customer</th>
                 <th className="px-5 py-3 font-medium">Contact</th>
                 <th className="px-5 py-3 font-medium">Orders</th>
-                <th className="px-5 py-3 font-medium" />
+                <th className="px-5 py-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {withOrders.map(({ customer, orderCount }) => (
-                <tr key={customer.id} className="border-t border-line">
+                <tr key={customer.id} className="border-t border-line transition-colors duration-200 hover:bg-cream/50">
                   <td className="px-5 py-4">
-                    <Link href={`/admin/customers/${customer.id}`} className="font-medium hover:underline">
-                      {customer.name}
-                    </Link>
+                    <span className="inline-flex flex-wrap items-center gap-2">
+                      <Link href={`/admin/customers/${customer.id}`} className="font-medium hover:underline">
+                        {customer.name || customer.email || customer.phone || customer.id}
+                      </Link>
+                      {customer.blocked ? (
+                        <span className="inline-flex rounded bg-[#8b0000] px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-white">
+                          Blocked
+                        </span>
+                      ) : null}
+                    </span>
                   </td>
                   <td className="px-5 py-4 text-mute">
                     <p>{customer.email}</p>
@@ -1894,12 +2039,41 @@ export function CustomerIndex() {
                   </td>
                   <td className="px-5 py-4">{orderCount}</td>
                   <td className="px-5 py-4 text-right">
-                    <Link
-                      href={`/admin/customers/${customer.id}`}
-                      className="inline-flex h-9 items-center border border-line px-3 text-xs transition hover:bg-[#faf7f2]"
-                    >
-                      Open
-                    </Link>
+                    <div className="inline-flex items-center gap-1.5">
+                      <AdminTip label={`Open ${customer.name || customer.email || "customer"}`}>
+                        <Link
+                          href={`/admin/customers/${customer.id}`}
+                          className="inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-ink bg-ink px-2.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-[#2a2420] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                          aria-label={`Open ${customer.name || customer.email || "customer"}`}
+                        >
+                          <Eye size={14} aria-hidden className="text-white" />
+                        </Link>
+                      </AdminTip>
+                      <AdminTip label={customer.blocked ? "Unblock" : "Block"}>
+                        <button
+                          type="button"
+                          className={
+                            customer.blocked
+                              ? "inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-[#2f6b3c] bg-[#2f6b3c] px-2.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-[#265732] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-60"
+                              : "inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-[#8b0000] bg-[#8b0000] px-2.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-[#6e0000] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-60"
+                          }
+                          aria-label={customer.blocked ? "Unblock" : "Block"}
+                          disabled={busyId === customer.id}
+                          onClick={async () => {
+                            const next = !customer.blocked;
+                            setBusyId(customer.id);
+                            await store.setCustomerBlocked(customer.id, next);
+                            setBusyId(null);
+                          }}
+                        >
+                          {customer.blocked ? (
+                            <ShieldCheck size={14} aria-hidden className="text-white" />
+                          ) : (
+                            <Ban size={14} aria-hidden className="text-white" />
+                          )}
+                        </button>
+                      </AdminTip>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -1907,12 +2081,14 @@ export function CustomerIndex() {
           </table>
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-line px-6 py-16 text-center">
-          <p className="font-serif text-2xl">{query ? "No matching customers" : "No customers yet"}</p>
-          <p className="mt-2 text-sm text-mute">
-            {query ? "Try a different name, email, or phone." : "Customers appear after someone signs in or places an order."}
-          </p>
-        </div>
+        <AdminEmptyState
+          title={query ? "No matching customers" : "No customers yet"}
+          body={
+            query
+              ? "Try a different name, email, or phone."
+              : "Customers appear after someone signs in or places an order on the shop."
+          }
+        />
       )}
     </div>
   );
@@ -1920,6 +2096,7 @@ export function CustomerIndex() {
 
 export function CustomerDetail({ id }: { id: string }) {
   const store = useStore();
+  const [busy, setBusy] = useState(false);
   const customer = store.users.find((user) => user.id === id);
   if (!store.ready) {
     return (
@@ -1931,12 +2108,17 @@ export function CustomerDetail({ id }: { id: string }) {
   }
   if (!customer) {
     return (
-      <div className="rounded-2xl border border-dashed border-line px-6 py-16 text-center">
-        <p className="font-serif text-2xl">Customer not found</p>
-        <Link href="/admin/customers" className="mt-6 inline-flex h-11 items-center gap-2 border border-line px-4 text-[11px] uppercase tracking-[0.16em]">
-          <ArrowLeft size={14} /> Back to customers
-        </Link>
-      </div>
+      <AdminEmptyState
+        title="Customer not found"
+        body="That customer id is missing. Go back to the list and open another person."
+        action={
+          <AdminTip label="Back to customers">
+            <Link href="/admin/customers" className={adminBtn.secondary}>
+              <ArrowLeft size={14} /> Back to customers
+            </Link>
+          </AdminTip>
+        }
+      />
     );
   }
   const orders = store.orders.filter((order) => order.userId === customer.id || order.email === customer.email);
@@ -1948,10 +2130,43 @@ export function CustomerDetail({ id }: { id: string }) {
         </Link>
         <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-serif text-4xl md:text-5xl">{customer.name}</h1>
+            <h1 className="inline-flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight text-ink">
+              {customer.name || customer.email || customer.phone || customer.id}
+              {customer.blocked ? (
+                <span className="inline-flex rounded bg-[#8b0000] px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-white">
+                  Blocked
+                </span>
+              ) : null}
+            </h1>
             <p className="mt-2 text-sm text-mute">{customer.email} · {customer.phone || "No phone"}</p>
           </div>
-          {statusPill("info", `${orders.length} order${orders.length === 1 ? "" : "s"}`)}
+          <div className="inline-flex items-center gap-1.5">
+            <AdminTip label={customer.blocked ? "Unblock" : "Block"}>
+              <button
+                type="button"
+                className={
+                  customer.blocked
+                    ? "inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-[#2f6b3c] bg-[#2f6b3c] px-2.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-[#265732] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-60"
+                    : "inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-[#8b0000] bg-[#8b0000] px-2.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-[#6e0000] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-60"
+                }
+                aria-label={customer.blocked ? "Unblock" : "Block"}
+                disabled={busy}
+                onClick={async () => {
+                  const next = !customer.blocked;
+                  setBusy(true);
+                  await store.setCustomerBlocked(customer.id, next);
+                  setBusy(false);
+                }}
+              >
+                {customer.blocked ? (
+                  <ShieldCheck size={14} aria-hidden className="text-white" />
+                ) : (
+                  <Ban size={14} aria-hidden className="text-white" />
+                )}
+              </button>
+            </AdminTip>
+            {statusPill("info", `${orders.length} order${orders.length === 1 ? "" : "s"}`)}
+          </div>
         </div>
       </div>
 
@@ -2082,7 +2297,7 @@ export function HeroManager() {
     <div className="space-y-8">
       <AdminPageHeader
         title="Homepage hero"
-        purpose="These are the first slides on the homepage. The campaign slide is for a sale or festival (you can turn it off). The product slides stay on all the time. Upload photos here — no redeploy needed. Use the live preview to check the look before you save."
+        purpose="These are the first slides shoppers see on the homepage."
       />
 
       <div className="grid gap-10 xl:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] xl:items-start">
@@ -2145,7 +2360,7 @@ export function HeroManager() {
                 value={draft.note}
                 onChange={(event) => patch({ note: event.target.value })}
                 rows={3}
-                className="mt-2 w-full border-b border-line bg-transparent outline-none"
+                className={`mt-1.5 ${adminControl.input}`}
               />
             </label>
 
@@ -2197,7 +2412,7 @@ export function HeroManager() {
                   value={slide.note}
                   onChange={(event) => patchSlide(index, { note: event.target.value })}
                   rows={2}
-                  className="mt-2 w-full border-b border-line bg-transparent outline-none"
+                  className={`mt-1.5 ${adminControl.input}`}
                 />
               </label>
               <div className="grid gap-4 md:grid-cols-2">
@@ -2231,9 +2446,13 @@ export function HeroManager() {
           {message ? (
             <p role="status" className="rounded-xl border border-[#cfe0c8] bg-[#f3f8f1] px-4 py-3 text-sm text-[#3d5a3a]">{message}</p>
           ) : null}
-          <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
-            {saving ? "Saving…" : "Save hero"}
-          </button>
+          <AdminStickyActions note="Homepage updates after you save.">
+            <AdminTip label={saving ? "Saving…" : "Save hero"}>
+              <button type="submit" disabled={saving} className={adminBtn.primary}>
+                {saving ? "Saving…" : "Save hero"}
+              </button>
+            </AdminTip>
+          </AdminStickyActions>
         </form>
 
         <div className="order-first xl:order-none xl:sticky xl:top-4">
@@ -2321,7 +2540,7 @@ export function SiteMediaManager() {
     <div className="space-y-8">
       <AdminPageHeader
         title="Website photos"
-        purpose="Marketing photos that are not product galleries. Use this when a homepage, shop, login, or checkout image needs a real Silken Knot photo. Use the live preview tabs to check each surface before you save."
+        purpose="Change marketing photos on home, shop, login, and checkout — not product galleries."
       />
 
       <div className="grid gap-10 xl:grid-cols-[minmax(0,32rem)_minmax(0,1fr)] xl:items-start">
@@ -2446,7 +2665,7 @@ export function SiteMediaManager() {
                     value={review.text}
                     onChange={(event) => patchReview(index, { text: event.target.value })}
                     rows={3}
-                    className="mt-2 w-full border-b border-line bg-transparent outline-none"
+                    className={`mt-1.5 ${adminControl.input}`}
                   />
                 </label>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -2462,7 +2681,7 @@ export function SiteMediaManager() {
                           image: product?.images[0] || review.image,
                         });
                       }}
-                      className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+                      className={`mt-1.5 ${adminControl.input}`}
                     >
                       <option value="">Custom / fallback only</option>
                       {store.products.map((product) => (
@@ -2496,9 +2715,13 @@ export function SiteMediaManager() {
           {message ? (
             <p role="status" className="rounded-xl border border-[#cfe0c8] bg-[#f3f8f1] px-4 py-3 text-sm text-[#3d5a3a]">{message}</p>
           ) : null}
-          <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
-            {saving ? "Saving…" : "Save website photos"}
-          </button>
+          <AdminStickyActions note="Website photos update after you save.">
+            <AdminTip label={saving ? "Saving…" : "Save photos"}>
+              <button type="submit" disabled={saving} className={adminBtn.primary}>
+                {saving ? "Saving…" : "Save photos"}
+              </button>
+            </AdminTip>
+          </AdminStickyActions>
         </form>
 
         <div className="order-first xl:order-none xl:sticky xl:top-4">
@@ -2562,7 +2785,7 @@ export function OfferManager() {
     <div className="space-y-6">
       <AdminPageHeader
         title="Discount codes"
-        purpose="Coupon codes customers type at checkout (for example DIWALI20). Create a code, choose percent or fixed amount, then turn it active."
+        purpose="Codes shoppers type at checkout (for example DIWALI20)."
       />
 
       <div className="flex flex-wrap gap-2">
@@ -2602,34 +2825,34 @@ export function OfferManager() {
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => startEdit(coupon)}
-                        className="inline-flex h-9 items-center gap-1 border border-line px-3 text-xs transition hover:bg-[#faf7f2]"
-                      >
-                        <Pencil size={13} /> Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!window.confirm(`Delete code “${coupon.code}”?`)) return;
-                          void store.deleteCoupon(coupon.id);
-                          if (draft.id === coupon.id) {
-                            setDraft(blank);
-                            setProductQuery("");
-                          }
-                        }}
-                        className="inline-flex h-9 items-center gap-1 border border-red-200 bg-[#fdf4f2] px-3 text-xs text-red-700 transition hover:bg-[#faeae6]"
-                      >
-                        <Trash2 size={13} /> Delete
-                      </button>
+                      <AdminTip label={`Edit ${coupon.code}`}>
+                        <button type="button" onClick={() => startEdit(coupon)} className={adminBtn.row}>
+                          <Pencil size={13} /> Edit
+                        </button>
+                      </AdminTip>
+                      <AdminTip label={`Delete ${coupon.code}`}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!window.confirm(`Delete code “${coupon.code}”?`)) return;
+                            void store.deleteCoupon(coupon.id);
+                            if (draft.id === coupon.id) {
+                              setDraft(blank);
+                              setProductQuery("");
+                            }
+                          }}
+                          className={adminBtn.rowDanger}
+                        >
+                          <Trash2 size={13} /> Delete
+                        </button>
+                      </AdminTip>
                     </div>
                   </li>
                 );
               })}
             </ul>
           ) : (
-            <p className="px-5 py-10 text-sm text-mute">No discount codes yet. Create one in the form.</p>
+            <p className="px-5 py-10 text-sm text-mute">No discount codes yet. Fill the form on the right, then save to create your first code.</p>
           )}
         </div>
 
@@ -2808,7 +3031,7 @@ export function OfferManager() {
                 <select
                   value={draft.categoryId ?? ""}
                   onChange={(event) => setDraft({ ...draft, categoryId: event.target.value })}
-                  className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+                  className={`mt-1.5 ${adminControl.input}`}
                 >
                   <option value="">Choose</option>
                   {store.categories.map((category) => (
@@ -2836,22 +3059,26 @@ export function OfferManager() {
             ) : null}
 
             <div className="flex flex-wrap gap-2">
-              <button type="submit" className="inline-flex h-11 items-center gap-2 bg-ink px-5 text-[11px] uppercase tracking-[0.16em] text-paper">
-                <Save size={14} />
-                {editing ? "Update offer" : "Save offer"}
-              </button>
-              {editing ? (
-                <button
-                  type="button"
-                  className="h-11 border border-line px-4 text-[11px] uppercase tracking-[0.16em] text-mute transition hover:text-ink"
-                  onClick={() => {
-                    setDraft(blank);
-                    setProductQuery("");
-                    setError("");
-                  }}
-                >
-                  Cancel
+              <AdminTip label={editing ? "Update offer" : "Save offer"}>
+                <button type="submit" className={adminBtn.primary}>
+                  <Save size={14} />
+                  {editing ? "Update offer" : "Save offer"}
                 </button>
+              </AdminTip>
+              {editing ? (
+                <AdminTip label="Cancel edit">
+                  <button
+                    type="button"
+                    className="h-11 border border-line px-4 text-[11px] uppercase tracking-[0.16em] text-mute transition hover:text-ink"
+                    onClick={() => {
+                      setDraft(blank);
+                      setProductQuery("");
+                      setError("");
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </AdminTip>
               ) : null}
             </div>
           </div>
@@ -2915,6 +3142,7 @@ function FulfilmentAction({
   } as const;
   const look = tones[tone];
   return (
+    <AdminTip label={busy ? "Working…" : title} className="w-full">
     <button
       type="button"
       disabled={disabled || busy}
@@ -2935,6 +3163,7 @@ function FulfilmentAction({
         </span>
       </span>
     </button>
+    </AdminTip>
   );
 }
 
@@ -3097,7 +3326,7 @@ function FulfilmentPanel({ orderId, initial }: { orderId: string; initial: Order
             <select
               value={labelSize}
               onChange={(event) => setLabelSize(event.target.value === "A4" ? "A4" : "4R")}
-              className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+              className={`mt-1.5 ${adminControl.input}`}
             >
               <option value="4R">4R · 4×6 sticker</option>
               <option value="A4">A4 · full page</option>

@@ -129,6 +129,8 @@ export type User = {
   emailVerifiedAt?: string | null;
   phoneVerifiedAt?: string | null;
   nameSetAt?: string | null;
+  /** When true, customer sessions are refused. Omitted/false = active. */
+  blocked?: boolean;
 };
 
 export type DeliveryMethod = "standard" | "express";
@@ -260,4 +262,4 @@ export type Coupon = {
   redeemed?: number;
 };
 
-export type Result = { ok: true; message?: string } | { ok: false; message: string };
+export type Result = { ok: true; message?: string } | { ok: false; message: string; code?: string };

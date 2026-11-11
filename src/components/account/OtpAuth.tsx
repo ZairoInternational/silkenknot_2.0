@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Heart, Mail, ShoppingBag, X } from "lucide-react";
+import { ArrowLeft, Heart, Mail, ShieldOff, ShoppingBag, X } from "lucide-react";
+import { ACCOUNT_RESTRICTED_CODE, ACCOUNT_RESTRICTED_MESSAGE } from "@/lib/auth/codes";
 import { afterAuthPath, needsName, safeNext } from "@/lib/auth/browser";
 import { normalizeEmail, normalizePhone } from "@/lib/auth/contact";
 import { useSiteMedia } from "@/lib/site-media/client";
@@ -52,12 +53,13 @@ export function OtpAuth({
   const router = useRouter();
   const locked = purpose === "link-email" ? "email" : purpose === "link-phone" ? "whatsapp" : null;
   const [channel, setChannel] = useState<"whatsapp" | "email">(locked || "whatsapp");
-  const [screen, setScreen] = useState<"login" | "otp" | "success">("login");
+  const [screen, setScreen] = useState<"login" | "otp" | "success" | "restricted">("login");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [challengeId, setChallengeId] = useState("");
   const [error, setError] = useState("");
+  const [restrictedMessage, setRestrictedMessage] = useState(ACCOUNT_RESTRICTED_MESSAGE);
   const [devCode, setDevCode] = useState("");
   const [sentTo, setSentTo] = useState("");
   const [busy, setBusy] = useState(false);
@@ -102,6 +104,11 @@ export function OtpAuth({
     });
     setBusy(false);
     if (!result.ok || !result.challengeId) {
+      if (result.code === ACCOUNT_RESTRICTED_CODE) {
+        setRestrictedMessage(result.message || ACCOUNT_RESTRICTED_MESSAGE);
+        setScreen("restricted");
+        return;
+      }
       setError(result.message || "We couldn’t send a code.");
       return;
     }
@@ -125,6 +132,11 @@ export function OtpAuth({
     const result = await store.verifyOtp({ challengeId, code: joined, purpose });
     setBusy(false);
     if (!result.ok) {
+      if (result.code === ACCOUNT_RESTRICTED_CODE) {
+        setRestrictedMessage(result.message || ACCOUNT_RESTRICTED_MESSAGE);
+        setScreen("restricted");
+        return;
+      }
       setError(result.message || "That code is incorrect or has expired.");
       return;
     }
@@ -206,7 +218,30 @@ export function OtpAuth({
           </header>
         ) : null}
 
-        {screen !== "success" ? (
+        {screen === "restricted" ? (
+          <div className="sk-auth-content sk-auth-restricted" role="alert">
+            <span className="sk-auth-restricted-icon" aria-hidden>
+              <ShieldOff size={28} strokeWidth={1.6} />
+            </span>
+            <h1>Account restricted</h1>
+            <p className="sk-auth-subtitle">{restrictedMessage}</p>
+            <div className="sk-auth-restricted-actions">
+              <Link className="sk-auth-primary" href="/contact">
+                Contact support
+              </Link>
+              <button
+                className="sk-auth-secondary"
+                type="button"
+                onClick={() => {
+                  setScreen("login");
+                  setError("");
+                }}
+              >
+                Use a different account
+              </button>
+            </div>
+          </div>
+        ) : screen !== "success" ? (
           <div className="sk-auth-content">
             {variant === "inline" ? (
               <div className="sk-auth-inline-bar">

@@ -352,12 +352,28 @@ export function useMeasuredHeader(target: React.RefObject<HTMLElement | null>) {
   return height;
 }
 
-export function Toast({ message, aboveCart = false }: { message: string | null; aboveCart?: boolean }) {
+export function Toast({
+  message,
+  aboveCart = false,
+  tone = "default",
+}: {
+  message: string | null;
+  aboveCart?: boolean;
+  tone?: "default" | "ok" | "success" | "error";
+}) {
+  const bg =
+    tone === "error"
+      ? "bg-[#8b0000]"
+      : tone === "success"
+        ? "bg-[#2f6b3c]"
+        : tone === "ok"
+          ? "bg-ink"
+          : "bg-[#CBAC7C]";
   return (
     <div
       role="status"
       aria-live="polite"
-      className={`pointer-events-none fixed right-6 z-[200] rounded-lg bg-[#CBAC7C] px-4 py-3 text-sm text-white shadow-lg transition duration-500 md:right-[60px] ${
+      className={`pointer-events-none fixed right-6 z-[200] rounded-lg px-4 py-3 text-sm text-white shadow-lg transition duration-500 md:right-[60px] ${bg} ${
         aboveCart ? "bottom-[calc(min(78vh,560px)+2.75rem)] md:bottom-[calc(min(78vh,560px)+3.25rem)]" : "bottom-6"
       } ${message ? "opacity-100" : "opacity-0"}`}
     >

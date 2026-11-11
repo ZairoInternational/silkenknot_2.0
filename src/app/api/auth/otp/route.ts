@@ -1,5 +1,6 @@
 import { mergeBag } from "@/lib/auth/bag";
 import { linkVerifiedContact, resolveVerifiedLogin } from "@/lib/auth/account";
+import { ACCOUNT_RESTRICTED_CODE, ACCOUNT_RESTRICTED_MESSAGE } from "@/lib/auth/codes";
 import { normalizeEmail, normalizePhone } from "@/lib/auth/contact";
 import { csrfHeaderMatches, clientIp, jsonError, sameOrigin } from "@/lib/auth/http";
 import { requestOtp, verifyOtp, type OtpPurpose } from "@/lib/auth/otp";
@@ -36,6 +37,14 @@ export async function POST(request: Request) {
     const session = await currentSession();
     if (!session || session.role !== "customer") return jsonError("Log in to continue.", 401);
     userId = session.id;
+  } else {
+    const existing =
+      channel === "email"
+        ? await db.collection("users").findOne({ email: destination, role: "customer" }, { projection: { blocked: 1 } })
+        : await db.collection("users").findOne({ phone: destination, role: "customer" }, { projection: { blocked: 1 } });
+    if (existing?.blocked) {
+      return jsonError(ACCOUNT_RESTRICTED_MESSAGE, 403, { code: ACCOUNT_RESTRICTED_CODE });
+    }
   }
   const result = await requestOtp(db, { destination, channel, purpose, ip: clientIp(request), userId });
   if (!result.ok) return jsonError(result.message, result.status);
@@ -64,7 +73,12 @@ export async function PUT(request: Request) {
   const challenge = checked.challenge;
   if (challenge.purpose === "login") {
     const account = await resolveVerifiedLogin(db, challenge.channel, challenge.destination);
-    if (!account.ok || !account.user?.id) return jsonError(account.ok ? "We couldn’t finish signing you in." : account.message, 400);
+    if (!account.ok || !account.user?.id) {
+      if (!account.ok && "code" in account && account.code === ACCOUNT_RESTRICTED_CODE) {
+        return jsonError(account.message, 403, { code: ACCOUNT_RESTRICTED_CODE });
+      }
+      return jsonError(account.ok ? "We couldn’t finish signing you in." : account.message, 400);
+    }
     const role = account.user.role === "admin" ? "admin" : "customer";
     if (role !== "customer") return jsonError("Use the studio login for this contact.", 403);
     await createSession(String(account.user.id), "customer");

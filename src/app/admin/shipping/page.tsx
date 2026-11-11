@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AdminPageHeader, AdminPanel } from "@/components/admin/AdminShell";
+import { AdminPageHeader, AdminPanel, AdminStickyActions, AdminTip, adminBtn, adminControl } from "@/components/admin/AdminShell";
 import { AdminFormSkeleton, AdminPageHeaderSkeleton } from "@/components/admin/AdminSkeletons";
 import { csrfHeaders } from "@/lib/auth/browser";
 import { formatPrice } from "@/lib/format";
@@ -86,7 +86,7 @@ export default function ShippingSettingsPage() {
     <form onSubmit={save} className="space-y-8">
       <AdminPageHeader
         title="Shipping / Delivery"
-        purpose="Delivery rates, free-shipping threshold, cash on delivery, and Delhivery booking. Change these when shipping rules or courier setup change."
+        purpose="Set what customers pay for delivery and how orders get booked with Delhivery."
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -133,7 +133,7 @@ export default function ShippingSettingsPage() {
             <input
               value={policy.pickupLocation}
               onChange={(event) => setPolicy({ ...policy, pickupLocation: event.target.value })}
-              className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+              className={`mt-1.5 ${adminControl.input}`}
             />
           </label>
           <label className="block text-sm">
@@ -141,7 +141,7 @@ export default function ShippingSettingsPage() {
             <select
               value={policy.bookingMode}
               onChange={(event) => setPolicy({ ...policy, bookingMode: event.target.value as "auto" | "manual" })}
-              className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+              className={`mt-1.5 ${adminControl.select}`}
             >
               <option value="auto">Automatic after payment</option>
               <option value="manual">Manual from the order page</option>
@@ -162,7 +162,7 @@ export default function ShippingSettingsPage() {
               type="number"
               value={policy.freeShippingPaise}
               onChange={(event) => setPolicy({ ...policy, freeShippingPaise: Number(event.target.value) })}
-              className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+              className={`mt-1.5 ${adminControl.input}`}
             />
             <span className="mt-1 block text-xs text-mute">
               Free delivery from {formatPrice(policy.freeShippingPaise / 100)} bag value.
@@ -173,7 +173,7 @@ export default function ShippingSettingsPage() {
             <input
               value={policy.standardEta}
               onChange={(event) => setPolicy({ ...policy, standardEta: event.target.value })}
-              className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+              className={`mt-1.5 ${adminControl.input}`}
             />
           </label>
           <label className="block text-sm">
@@ -181,7 +181,7 @@ export default function ShippingSettingsPage() {
             <input
               value={policy.expressEta}
               onChange={(event) => setPolicy({ ...policy, expressEta: event.target.value })}
-              className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+              className={`mt-1.5 ${adminControl.input}`}
             />
           </label>
         </AdminPanel>
@@ -209,10 +209,14 @@ export default function ShippingSettingsPage() {
         {message ? (
           <p role="status" className="rounded-xl border border-[#cfe0c8] bg-[#f3f8f1] px-4 py-3 text-sm text-[#3d5a3a]">{message}</p>
         ) : null}
-        <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
-          {saving ? "Saving…" : "Save shipping / delivery"}
-        </button>
       </div>
+      <AdminStickyActions>
+        <AdminTip label={saving ? "Saving…" : "Save shipping"}>
+          <button type="submit" disabled={saving} className={adminBtn.primary}>
+            {saving ? "Saving…" : "Save shipping"}
+          </button>
+        </AdminTip>
+      </AdminStickyActions>
     </form>
   );
 }

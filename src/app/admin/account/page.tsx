@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AdminPageHeader } from "@/components/admin/AdminShell";
+import { AdminPageHeader, AdminTip, adminBtn, adminControl } from "@/components/admin/AdminShell";
 import { useStore } from "@/lib/store";
 
 export default function AdminAccountPage() {
@@ -17,7 +17,7 @@ export default function AdminAccountPage() {
     <div>
       <AdminPageHeader
         title="Account"
-        purpose="Change the studio password. Other signed-in studio sessions are signed out when you save."
+        purpose="Change the studio password used to sign in here."
       />
       <form
         className="mt-10 max-w-md"
@@ -52,7 +52,7 @@ export default function AdminAccountPage() {
             autoComplete="current-password"
             value={currentPassword}
             onChange={(event) => setCurrentPassword(event.target.value)}
-            className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none"
+            className={`mt-1.5 ${adminControl.input}`}
           />
         </label>
         <label className="mt-6 block text-sm">
@@ -64,7 +64,7 @@ export default function AdminAccountPage() {
             autoComplete="new-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none"
+            className={`mt-1.5 ${adminControl.input}`}
           />
         </label>
         <p className="mt-2 text-xs text-mute">At least 10 characters. Do not reuse a weak studio default.</p>
@@ -77,14 +77,16 @@ export default function AdminAccountPage() {
             autoComplete="new-password"
             value={confirm}
             onChange={(event) => setConfirm(event.target.value)}
-            className="mt-2 h-12 w-full border-b border-line bg-transparent outline-none"
+            className={`mt-1.5 ${adminControl.input}`}
           />
         </label>
         {error ? <p role="alert" className="mt-4 text-sm">{error}</p> : null}
         {message ? <p className="mt-4 text-sm text-mute">{message}</p> : null}
-        <button type="submit" disabled={busy} className="mt-8 h-12 bg-ink px-8 text-[11px] uppercase tracking-[0.2em] text-paper disabled:opacity-60">
-          Update password
-        </button>
+        <AdminTip label={busy ? "Updating…" : "Update password"}>
+          <button type="submit" disabled={busy} className={`mt-8 ${adminBtn.primary}`}>
+            {busy ? "Updating…" : "Update password"}
+          </button>
+        </AdminTip>
       </form>
     </div>
   );

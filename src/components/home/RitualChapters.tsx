@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { ritualChapters, seedProducts } from "@/lib/data";
 import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
@@ -77,40 +77,66 @@ export function CategorySection() {
   ];
 
   return (
-    <section className="bg-[#f7f4ef] px-4 py-14 sm:px-6 sm:py-16 lg:px-10 lg:py-20">
+    <section className="bg-[#f7f4ef] px-4 py-16 sm:px-6 sm:py-20 lg:px-10 lg:py-24">
       <div className="mx-auto max-w-[1440px]">
-        <div className="mb-7 sm:mb-9">
-          <p className="mb-3 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#59634b]">
-            <span className="h-px w-7 bg-[#59634b]" />
-            Explore the collections
-          </p>
-          <h2 className="font-serif text-3xl leading-tight tracking-tight text-[#292d25] sm:text-4xl lg:text-5xl">Three ways to begin.</h2>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-[#817c71] sm:text-base">
-            Discover your self-care ritual — from nourishing body care to calming scents, thoughtfully crafted for your everyday moments.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-12 md:grid-rows-[225px_225px] lg:gap-4">
+        <Reveal>
+          <div className="mb-9 flex flex-col gap-6 sm:mb-11 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <p className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#8a7350]">
+                <span className="h-px w-8 bg-[#CBAC7C]" aria-hidden />
+                Explore the collections
+              </p>
+              <h2 className="mt-3 font-serif text-3xl leading-[1.05] tracking-tight text-[#292d25] sm:text-4xl lg:text-5xl">
+                Three ways to begin.
+              </h2>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-[#6f675d] sm:text-base">
+                Discover your self-care ritual — from nourishing body care to calming scents, thoughtfully crafted for your everyday moments.
+              </p>
+            </div>
+            <Link
+              href="/shop"
+              className="group/all inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-[#CBAC7C] bg-white px-5 py-2.5 text-sm text-[#2c2926] shadow-[0_2px_8px_rgba(44,41,38,0.04)] transition-colors duration-300 hover:bg-[#CBAC7C] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
+            >
+              Shop all
+              <ArrowUpRight
+                size={15}
+                className="transition-transform duration-300 group-hover/all:translate-x-0.5 group-hover/all:-translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover/all:translate-x-0 motion-reduce:group-hover/all:translate-y-0"
+              />
+            </Link>
+          </div>
+        </Reveal>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:grid-rows-[minmax(240px,1fr)_minmax(240px,1fr)] lg:gap-5">
           {collections.map((collection) => (
             <Link
               key={collection.number}
               href={collection.href}
-              className={`group relative min-h-[260px] overflow-hidden rounded-lg bg-[#ded5c8] md:min-h-0 ${collection.className}`}
+              className={`group relative min-h-[300px] cursor-pointer overflow-hidden rounded-2xl bg-[#ded5c8] shadow-[0_2px_10px_rgba(44,41,38,0.06)] transition-[box-shadow,transform] duration-300 ease-out hover:shadow-[0_14px_36px_rgba(44,41,38,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350] motion-reduce:transition-colors md:min-h-0 ${collection.className}`}
             >
               <Media
                 src={collection.image}
                 alt={collection.title}
                 sizes="(min-width: 768px) 60vw, 100vw"
-                className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/35 to-transparent transition duration-500 group-hover:from-black/75" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/5" />
-              <div className="relative flex h-full max-w-[390px] flex-col items-start justify-center p-5 text-white sm:p-7 lg:p-9">
-                <span className="mb-3 text-[10px] font-medium tracking-[0.22em] text-white/85">{collection.number} /</span>
-                <h3 className="font-serif text-3xl leading-tight tracking-tight sm:text-4xl lg:text-[42px]">{collection.title}</h3>
-                <p className="mt-2 max-w-[260px] font-serif text-sm leading-6 text-white/90 sm:text-base">{collection.description}</p>
-                <span className="mt-5 inline-flex min-h-10 items-center gap-3 rounded-full border border-white/60 bg-[#CBAC7C]/90 px-4 py-2 text-[11px] font-medium tracking-wide text-white backdrop-blur-sm transition duration-300 group-hover:border-mist group-hover:bg-[#CBAC7C] sm:px-5 sm:text-xs">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/10 transition-opacity duration-300 group-hover:from-black/80" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/45 via-transparent to-transparent" />
+
+              <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-6 lg:p-8">
+                <span className="mb-3 inline-flex w-fit items-center rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[10px] font-medium tracking-[0.2em] text-white backdrop-blur-md">
+                  {collection.number}
+                </span>
+                <h3 className="max-w-[20ch] font-serif text-3xl leading-tight tracking-tight text-white sm:text-4xl lg:text-[2.65rem]">
+                  {collection.title}
+                </h3>
+                <p className="mt-2 max-w-[28ch] text-sm leading-6 text-white/88 sm:text-[15px]">
+                  {collection.description}
+                </p>
+                <span className="mt-5 inline-flex w-fit items-center gap-3 rounded-full bg-[#9a7352] py-1.5 pl-5 pr-1.5 text-sm font-medium tracking-[0.02em] text-white shadow-[0_8px_24px_rgba(0,0,0,0.28)] transition-colors duration-300 group-hover:bg-[#85603f] sm:pl-6">
                   Explore Collection
-                  <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
+                  <span className="inline-flex size-9 items-center justify-center rounded-full bg-white text-[#1c1b19] transition-transform duration-300 ease-out group-hover:rotate-45 motion-reduce:transition-none motion-reduce:group-hover:rotate-0">
+                    <ArrowUpRight size={16} />
+                  </span>
                 </span>
               </div>
             </Link>

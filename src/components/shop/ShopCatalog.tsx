@@ -33,7 +33,7 @@ import { SHOW_STORE_REVIEWS } from "@/lib/storefront-reviews";
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 9;
 
 const SORT_OPTIONS = (
   [
@@ -550,14 +550,14 @@ export function ShopCatalog() {
             </div>
           ) : api.status === "idle" || (isLoading && items.length === 0) ? (
             /* ── Skeleton grid on initial load ────────────────────────── */
-            <div className="mt-4 grid grid-cols-2 items-stretch gap-x-2 gap-y-4 md:mt-6 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 items-stretch gap-x-3 gap-y-5 md:mt-6 md:grid-cols-3 md:gap-7 lg:grid-cols-3">
               {Array.from({ length: PAGE_SIZE }, (_, i) => (
                 <ProductCardSkeleton key={i} />
               ))}
             </div>
           ) : items.length > 0 ? (
             <div
-              className={`mt-4 grid grid-cols-2 items-stretch gap-x-2 gap-y-4 md:mt-6 md:grid-cols-3 md:gap-6 lg:grid-cols-4 transition-opacity duration-150 ${isLoading ? "opacity-60 pointer-events-none" : "opacity-100"}`}
+              className={`mt-4 grid grid-cols-2 items-stretch gap-x-3 gap-y-5 md:mt-6 md:grid-cols-3 md:gap-7 lg:grid-cols-3 transition-opacity duration-150 ${isLoading ? "opacity-60 pointer-events-none" : "opacity-100"}`}
             >
               {items.map((product) => (
                 <ProductCard key={product.id} product={product} />
@@ -689,10 +689,10 @@ export function ShopCatalog() {
 function ProductCardSkeleton() {
   return (
     <article
-      className="flex h-[calc((100dvh-0.5rem)/1.7)] min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-[#e6e0d6] md:h-auto md:overflow-visible md:rounded-none md:bg-transparent md:ring-0"
+      className="flex h-[calc((100dvh-0.5rem)/1.55)] min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-[#e6e0d6] md:h-auto md:overflow-visible md:rounded-none md:bg-transparent md:ring-0"
       aria-hidden="true"
     >
-      <div className="min-h-0 flex-1 overflow-hidden bg-[#eee8de] md:aspect-[4/5] md:flex-none md:rounded-2xl">
+      <div className="min-h-0 flex-1 overflow-hidden bg-[#eee8de] md:aspect-[3/4] md:flex-none md:rounded-2xl">
         <div className="h-full animate-pulse bg-[#e0d8cc]" />
       </div>
       <div className="shrink-0 space-y-2 px-2 py-2 md:px-0 md:pt-3">
@@ -730,27 +730,27 @@ function ProductCard({ product }: { product: SearchProduct }) {
   };
 
   return (
-    <article className="group flex h-[calc((100dvh-0.5rem)/1.7)] min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-[#e6e0d6] md:h-auto md:overflow-visible md:rounded-none md:bg-transparent md:ring-0">
+    <article className="group flex h-[calc((100dvh-0.5rem)/1.55)] min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-[#e6e0d6] md:h-auto md:overflow-visible md:rounded-none md:bg-transparent md:ring-0">
       <div className="relative min-h-0 flex-1 md:flex-none">
         <ListingCardMedia
           href={`/products/${product.slug}`}
           name={product.name}
           images={product.images}
-          sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, 46vw"
+          sizes="(min-width: 1024px) 28vw, (min-width: 768px) 30vw, 48vw"
           inCart={inCart}
           onAdd={add}
           fit="cover"
-          className="h-full rounded-none !aspect-auto md:rounded-2xl md:!aspect-[4/5]"
+          className="h-full rounded-none !aspect-auto md:rounded-2xl md:!aspect-[3/4]"
           badge={
             badge ? (
-              <span className="hidden max-w-[70%] truncate rounded-full bg-white/90 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-[#2c2926] backdrop-blur-sm md:inline-flex">
+              <span className="hidden rounded-full bg-[#1c1b19] px-2 py-1 text-[9px] font-medium uppercase tracking-[0.12em] text-white md:inline-flex">
                 {badge}
               </span>
             ) : null
           }
         />
       </div>
-      <div className="flex shrink-0 flex-col gap-1 px-2 pb-2 pt-2 md:gap-0 md:px-0 md:pt-3">
+      <div className="flex shrink-0 flex-col gap-1 px-2.5 pb-2.5 pt-2.5 md:gap-0 md:px-0 md:pt-3.5">
         {badge ? (
           <span className="w-fit max-w-full truncate rounded-full bg-[#f6f3ee] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-[#8a7350] md:hidden">
             {badge}
@@ -759,17 +759,17 @@ function ProductCard({ product }: { product: SearchProduct }) {
         <Link
           href={`/products/${product.slug}`}
           title={product.name}
-          className="line-clamp-2 text-[17px] font-semibold leading-snug text-[#2c2926] md:truncate md:text-base md:font-medium"
+          className="line-clamp-2 text-[18px] font-semibold leading-snug text-[#2c2926] md:truncate md:text-lg md:font-medium"
         >
           {product.name}
         </Link>
         {product.scent || product.type ? (
-          <p className="line-clamp-1 text-[15px] capitalize leading-snug text-[#6f675d] md:mt-1 md:text-[13px] md:text-[#8a8178]">
+          <p className="line-clamp-1 text-base capitalize leading-snug text-[#6f675d] md:mt-1 md:text-sm md:text-[#8a8178]">
             {[product.type, product.scent].filter(Boolean).join(" · ")}
           </p>
         ) : null}
         <CardGoldRating rating={product.rating} count={product.reviewCount} />
-        <div className="text-[16px] text-[#2c2926] md:mt-1.5 md:text-[15px]">
+        <div className="text-[17px] text-[#2c2926] md:mt-1.5 md:text-base">
           <PriceTag price={product.price} compare={product.compareAtPrice} />
         </div>
         <div className="mt-1.5 md:mt-0">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AdminPageHeader, AdminPanel } from "@/components/admin/AdminShell";
+import { AdminPageHeader, AdminPanel, AdminStickyActions, AdminTip, adminBtn, adminControl } from "@/components/admin/AdminShell";
 import { AdminFormSkeleton, AdminPageHeaderSkeleton } from "@/components/admin/AdminSkeletons";
 import { csrfHeaders } from "@/lib/auth/browser";
 import { formatPrice } from "@/lib/format";
@@ -72,7 +72,7 @@ export default function PlatformFeeSettingsPage() {
     <form onSubmit={save} className="space-y-8">
       <AdminPageHeader
         title="Platform fee"
-        purpose={`Optional checkout “Platform fee” (default ${formatPrice(30)}). Customers only see the fee amount. Use waiver rules when you want to waive it for large or first orders.`}
+        purpose={`Optional fee at checkout (default ${formatPrice(30)}). Customers only see the amount.`}
       />
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -114,7 +114,7 @@ export default function PlatformFeeSettingsPage() {
               step={100}
               value={policy.feePaise}
               onChange={(event) => setPolicy({ ...policy, feePaise: Number(event.target.value) })}
-              className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+              className={`mt-1.5 ${adminControl.input}`}
             />
             <span className="mt-1 block text-xs text-mute">{formatPrice(policy.feePaise / 100)} per order when not waived</span>
           </label>
@@ -141,7 +141,7 @@ export default function PlatformFeeSettingsPage() {
               step={100}
               value={policy.waiveAbovePaise}
               onChange={(event) => setPolicy({ ...policy, waiveAbovePaise: Number(event.target.value) })}
-              className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+              className={`mt-1.5 ${adminControl.input}`}
             />
             <span className="mt-1 block text-xs text-mute">
               {policy.waiveAbovePaise > 0
@@ -157,10 +157,14 @@ export default function PlatformFeeSettingsPage() {
         {message ? (
           <p role="status" className="rounded-xl border border-[#cfe0c8] bg-[#f3f8f1] px-4 py-3 text-sm text-[#3d5a3a]">{message}</p>
         ) : null}
-        <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
-          {saving ? "Saving…" : "Save platform fee"}
-        </button>
       </div>
+      <AdminStickyActions>
+        <AdminTip label={saving ? "Saving…" : "Save platform fee"}>
+          <button type="submit" disabled={saving} className={adminBtn.primary}>
+            {saving ? "Saving…" : "Save platform fee"}
+          </button>
+        </AdminTip>
+      </AdminStickyActions>
     </form>
   );
 }

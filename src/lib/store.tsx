@@ -52,6 +52,7 @@ function readStoredBag(): StoredBag {
 type ApiResult = {
   ok: boolean;
   message?: string;
+  code?: string;
   user?: User;
   order?: Order;
   orders?: Order[];
@@ -118,7 +119,7 @@ type Database = {
   recentSearches: string[];
 };
 
-type Toast = { id: number; message: string } | null;
+type Toast = { id: number; message: string; tone?: "ok" | "success" | "error" } | null;
 
 type StoreValue = {
   ready: boolean;
@@ -148,7 +149,7 @@ type StoreValue = {
   openAccount: () => void;
   closeAccount: () => void;
   closeOverlays: () => void;
-  notify: (message: string) => void;
+  notify: (message: string, tone?: "ok" | "success" | "error") => void;
   addToCart: (productId: string, variantLabel: string, quantity?: number) => Result;
   setQuantity: (lineId: string, quantity: number) => void;
   removeFromCart: (lineId: string) => void;
@@ -158,7 +159,7 @@ type StoreValue = {
   clearCoupon: () => void;
   toggleWishlist: (productId: string) => Result;
   isWished: (productId: string) => boolean;
-  requestOtp: (input: { channel: "email" | "whatsapp"; destination: string; country?: string; purpose?: "login" | "link-email" | "link-phone" }) => Promise<Result & { challengeId?: string; resendAt?: string; devCode?: string }>;
+  requestOtp: (input: { channel: "email" | "whatsapp"; destination: string; country?: string; purpose?: "login" | "link-email" | "link-phone" }) => Promise<Result & { challengeId?: string; resendAt?: string; devCode?: string; code?: string }>;
   verifyOtp: (input: { challengeId: string; code: string; purpose?: "login" | "link-email" | "link-phone" }) => Promise<Result>;
   logout: () => Promise<void>;
   updateProfile: (input: { name: string }) => Promise<Result>;
@@ -214,6 +215,7 @@ type StoreValue = {
   deleteCategory: (id: string) => Promise<Result>;
   moveCategory: (id: string, direction: -1 | 1) => Promise<void>;
   updateOrderStatus: (id: string, status: OrderStatus) => Promise<void>;
+  setCustomerBlocked: (userId: string, blocked: boolean) => Promise<Result>;
   saveCoupon: (coupon: Coupon, isNew: boolean) => Promise<Result>;
   deleteCoupon: (id: string) => Promise<void>;
   addReview: (productId: string, review: Omit<Review, "id" | "date">) => Promise<void>;
@@ -367,8 +369,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
-  const notify = useCallback((message: string) => {
-    setToast({ id: Date.now(), message });
+  const notify = useCallback((message: string, tone?: "ok" | "success" | "error") => {
+    setToast({ id: Date.now(), message, tone });
   }, []);
 
   const patch = useCallback((next: Partial<Database>) => {
@@ -531,7 +533,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       response = await send();
     }
     const data = (await response.json()) as ApiResult;
-    if (!data.ok || !data.challengeId) return { ok: false as const, message: data.message || "We couldn’t send a code." };
+    if (!data.ok || !data.challengeId) {
+      return {
+        ok: false as const,
+        message: data.message || "We couldn’t send a code.",
+        code: data.code,
+      };
+    }
     return { ok: true as const, challengeId: data.challengeId, resendAt: data.resendAt, devCode: data.devCode };
   }, []);
 
@@ -549,7 +557,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       }),
     });
     const data = (await response.json()) as ApiResult;
-    if (!data.ok || !data.user) return { ok: false as const, message: data.message || "That code is incorrect or has expired." };
+    if (!data.ok || !data.user) {
+      return {
+        ok: false as const,
+        message: data.message || "That code is incorrect or has expired.",
+        code: data.code,
+      };
+    }
     if (input.purpose === undefined || input.purpose === "login") retainCheckoutDraft(data.user.id);
     signedIn({ ...data, orders: data.orders ?? current.orders });
     if (input.purpose === undefined || input.purpose === "login") {
@@ -710,24 +724,34 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const slugTaken = current.products.some((item) => item.slug === next.slug && item.id !== next.id);
     if (slugTaken) next.slug = `${next.slug}-${next.id.slice(-4)}`;
     const data = await post("save-product", { product: next, isNew });
-    if (!data.ok) return { ok: false, message: data.message || "Could not save the product." };
+    if (!data.ok) {
+      const message = data.message || "Could not save the product.";
+      notify(message, "error");
+      return { ok: false, message };
+    }
     patch({
       products: isNew
         ? [next, ...current.products]
         : current.products.map((item) => (item.id === next.id ? next : item)),
     });
+    notify(isNew ? "Product created." : "Product saved.", "ok");
     return { ok: true, message: data.message };
-  }, [patch]);
+  }, [notify, patch]);
 
   const deleteProduct = useCallback(async (id: string): Promise<Result> => {
     const data = await post("delete-product", { id });
-    if (!data.ok) return { ok: false, message: data.message || "Could not delete the product." };
+    if (!data.ok) {
+      const message = data.message || "Could not delete the product.";
+      notify(message, "error");
+      return { ok: false, message };
+    }
     patch({
       products: dbRef.current.products.filter((product) => product.id !== id),
       wishlist: dbRef.current.wishlist.filter((productId) => productId !== id),
     });
+    notify("Product deleted.", "ok");
     return { ok: true, message: data.message };
-  }, [patch]);
+  }, [notify, patch]);
 
   const saveCategory = useCallback(async (category: Category, isNew: boolean): Promise<Result> => {
     const current = dbRef.current;
@@ -736,24 +760,35 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       return { ok: false, message: "That category already exists." };
     }
     const data = await post("save-category", { category, isNew });
-    if (!data.ok) return { ok: false, message: data.message || "Could not save the category." };
+    if (!data.ok) {
+      const message = data.message || "Could not save the category.";
+      notify(message, "error");
+      return { ok: false, message };
+    }
     patch({
       categories: isNew
         ? [...current.categories, category]
         : current.categories.map((item) => (item.id === category.id ? category : item)),
     });
+    notify(isNew ? "Category created." : "Category saved.", "ok");
     return { ok: true, message: data.message };
-  }, [patch]);
+  }, [notify, patch]);
 
   const deleteCategory = useCallback(async (id: string): Promise<Result> => {
     const data = await post("delete-category", { id });
-    if (!data.ok) return { ok: false, message: data.message || "Could not delete the category." };
+    if (!data.ok) {
+      const message = data.message || "Could not delete the category.";
+      notify(message, "error");
+      return { ok: false, message };
+    }
     patch({ categories: dbRef.current.categories.filter((category) => category.id !== id) });
+    notify("Category deleted.", "ok");
     return { ok: true, message: data.message };
-  }, [patch]);
+  }, [notify, patch]);
 
   const moveCategory = useCallback(async (id: string, direction: -1 | 1) => {
-    const categories = [...dbRef.current.categories].sort((a, b) => a.order - b.order);
+    const previous = dbRef.current.categories;
+    const categories = [...previous].sort((a, b) => a.order - b.order);
     const index = categories.findIndex((category) => category.id === id);
     const target = index + direction;
     if (index < 0 || target < 0 || target >= categories.length) return;
@@ -762,8 +797,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     categories[index] = { ...next, order: current.order };
     categories[target] = { ...current, order: next.order };
     patch({ categories });
-    await post("move-category", { categories });
-  }, [patch]);
+    const data = await post("move-category", { categories });
+    if (!data.ok) {
+      patch({ categories: previous });
+      notify(data.message || "Could not reorder categories.", "error");
+      return;
+    }
+    notify("Order updated.", "ok");
+  }, [notify, patch]);
 
   const saveCoupon = useCallback(async (coupon: Coupon, isNew: boolean): Promise<Result> => {
     const current = dbRef.current;
@@ -774,18 +815,27 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
     const next = { ...coupon, code };
     const data = await post("save-coupon", { coupon: next, isNew });
-    if (!data.ok) return { ok: false, message: data.message || "Could not save the offer." };
+    if (!data.ok) {
+      const message = data.message || "Could not save the offer.";
+      notify(message, "error");
+      return { ok: false, message };
+    }
     patch({
       coupons: isNew ? [...current.coupons, next] : current.coupons.map((item) => (item.id === next.id ? next : item)),
     });
+    notify(isNew ? "Offer created." : "Offer saved.", "ok");
     return { ok: true, message: data.message };
-  }, [patch]);
+  }, [notify, patch]);
 
   const deleteCoupon = useCallback(async (id: string) => {
     const data = await post("delete-coupon", { id });
-    if (!data.ok) return;
+    if (!data.ok) {
+      notify(data.message || "Could not delete the offer.", "error");
+      return;
+    }
     patch({ coupons: dbRef.current.coupons.filter((coupon) => coupon.id !== id) });
-  }, [patch]);
+    notify("Offer deleted.", "ok");
+  }, [notify, patch]);
 
   const acceptServerOrder = useCallback((order: Order, products?: Product[]) => {
     patch({
@@ -808,10 +858,40 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const data = await post("order-status", { id, status });
     if (!data.ok || !data.order) {
       patch({ orders: previous });
-      if (data.message) notify(data.message);
+      notify(data.message || "Could not update order.", "error");
       return;
     }
     patch({ orders: dbRef.current.orders.map((order) => (order.id === id ? data.order! : order)) });
+    notify("Order updated.", "ok");
+  }, [notify, patch]);
+
+  const setCustomerBlocked = useCallback(async (userId: string, blocked: boolean): Promise<Result> => {
+    const previous = dbRef.current.users;
+    const account = previous.find((user) => user.id === userId);
+    const label = (account?.name || account?.email || account?.phone || "User").trim() || "User";
+    patch({ users: previous.map((user) => (user.id === userId ? { ...user, blocked } : user)) });
+    const response = await fetch("/api/admin/customers", {
+      method: "POST",
+      headers: csrfHeaders(),
+      body: JSON.stringify({ action: "set-blocked", userId, blocked }),
+    });
+    const data = (await response.json()) as ApiResult & { user?: User; error?: string };
+    if (!response.ok || !data.ok) {
+      patch({ users: previous });
+      const message = data.message || data.error || "Update failed.";
+      notify(message, "error");
+      return { ok: false, message };
+    }
+    if (data.user) {
+      patch({
+        users: dbRef.current.users.map((user) =>
+          user.id === userId ? { ...data.user!, password: "" } : user,
+        ),
+      });
+    }
+    if (blocked) notify(`${label} is temporarily blocked.`, "error");
+    else notify(`${label} has been unblocked.`, "success");
+    return { ok: true };
   }, [notify, patch]);
 
   const addReview = useCallback(async (productId: string, review: Omit<Review, "id" | "date">) => {
@@ -952,6 +1032,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     deleteCategory,
     moveCategory,
     updateOrderStatus,
+    setCustomerBlocked,
     saveCoupon,
     deleteCoupon,
     addReview,
@@ -969,7 +1050,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     ready, db, currentUser, cartOpen, searchOpen, menuOpen, accountOpen, toast, activeProducts, closeOverlays, notify,
     addToCart, setQuantity, removeFromCart, moveToWishlist, applyCoupon, toggleWishlist, requestOtp, verifyOtp, logout,
     updateProfile, saveAddress, deleteAddress, loginAdmin, sendAdminMfa, verifyAdminMfa, requestAdminPasswordReset, resendAdminPasswordReset, confirmAdminPasswordReset, changeAdminPassword, logoutAdmin, placeOrder, acceptServerOrder, rememberOrder, saveProduct, deleteProduct,
-    saveCategory, deleteCategory, moveCategory, updateOrderStatus, saveCoupon, deleteCoupon, addReview, voteReview, reportReview, loadReviewVotes, rememberSearch, patch,
+    saveCategory, deleteCategory, moveCategory, updateOrderStatus, setCustomerBlocked, saveCoupon, deleteCoupon, addReview, voteReview, reportReview, loadReviewVotes, rememberSearch, patch,
   ]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

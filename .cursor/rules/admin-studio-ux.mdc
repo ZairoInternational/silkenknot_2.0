@@ -1,0 +1,14 @@
+---
+description: Studio admin UX — comfortable modern ops UI, keep existing colors
+globs: src/components/admin/**/*.{ts,tsx},src/app/admin/**/*.{ts,tsx}
+---
+
+# Admin Studio UX
+
+- Keep cream / paper / ink / mute / line tokens. No new theme or dark mode for Studio.
+- Prefer shared primitives from `AdminShell`: `adminBtn`, `adminControl`, `AdminPageHeader`, `AdminPanel`, `AdminEmptyState`, `AdminFilterBar`, `AdminStatCard`, `AdminStickyActions`.
+- Do **not** add numbered how-to step lists on page headers. Clarity comes from labels, grouping, and CTAs.
+- Use bordered `adminControl` inputs/selects/textareas — not underline-only fields.
+- Primary actions use `adminBtn.primary` (sentence case). Long forms get `AdminStickyActions`.
+- Page titles stay compact (`font-semibold`), not storefront display type.
+- Empty states include one clear next action.

@@ -68,5 +68,5 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
 
 function ToastBridge() {
   const { toast, cartOpen } = useStore();
-  return <Toast message={toast?.message ?? null} aboveCart={cartOpen} />;
+  return <Toast message={toast?.message ?? null} aboveCart={cartOpen} tone={toast?.tone ?? "default"} />;
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { AdminPageHeader, AdminPanel } from "@/components/admin/AdminShell";
+import { AdminPageHeader, AdminPanel, AdminStickyActions, AdminTip, adminBtn, adminControl } from "@/components/admin/AdminShell";
 import { AdminEditorSkeleton } from "@/components/admin/AdminSkeletons";
 import { AnnouncementDraftPreview } from "@/components/admin/StorefrontPreviews";
 import { csrfHeaders } from "@/lib/auth/browser";
@@ -80,7 +80,7 @@ export default function AnnouncementsPage() {
     <div className="space-y-8">
       <AdminPageHeader
         title="Announcement"
-        purpose="Short messages that rotate in the black bar at the top of the store (shipping notes, sale lines). Keep each line brief. Check the live preview before you save."
+        purpose="Short lines that rotate in the top bar of the store (shipping notes, sale lines)."
       />
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -131,14 +131,16 @@ export default function AnnouncementsPage() {
                   />
                   Active in rotation
                 </label>
-                <button
-                  type="button"
-                  className="inline-flex h-9 items-center gap-1 border border-red-200 bg-[#fdf4f2] px-3 text-xs text-red-700 transition hover:bg-[#faeae6] disabled:opacity-40"
-                  onClick={() => setDraft((current) => ({ ...current, notes: current.notes.filter((_, i) => i !== index) }))}
-                  disabled={draft.notes.length <= 1}
-                >
-                  <Trash2 size={13} /> Remove
-                </button>
+                <AdminTip label="Remove message">
+                  <button
+                    type="button"
+                    className="inline-flex h-9 items-center gap-1 border border-red-200 bg-[#fdf4f2] px-3 text-xs text-red-700 transition hover:bg-[#faeae6] disabled:opacity-40"
+                    onClick={() => setDraft((current) => ({ ...current, notes: current.notes.filter((_, i) => i !== index) }))}
+                    disabled={draft.notes.length <= 1}
+                  >
+                    <Trash2 size={13} /> Remove
+                  </button>
+                </AdminTip>
               </div>
               <label className="block text-sm">
                 Text
@@ -146,7 +148,7 @@ export default function AnnouncementsPage() {
                   value={note.text}
                   onChange={(event) => updateNote(index, { text: event.target.value })}
                   maxLength={80}
-                  className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+                  className={`mt-1.5 ${adminControl.input}`}
                   required={note.active}
                 />
                 <span className="mt-1 block text-xs text-mute">{note.text.length}/80</span>
@@ -156,7 +158,7 @@ export default function AnnouncementsPage() {
                 <input
                   value={note.href}
                   onChange={(event) => updateNote(index, { href: event.target.value })}
-                  className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+                  className={`mt-1.5 ${adminControl.input}`}
                   placeholder="/shop"
                 />
               </label>
@@ -165,7 +167,7 @@ export default function AnnouncementsPage() {
                 <select
                   value={note.icon}
                   onChange={(event) => updateNote(index, { icon: event.target.value as AnnouncementNote["icon"] })}
-                  className="mt-2 h-11 w-full border-b border-line bg-transparent outline-none"
+                  className={`mt-1.5 ${adminControl.input}`}
                 >
                   {ANNOUNCEMENT_ICONS.map((icon) => (
                     <option key={icon} value={icon}>{icon}</option>
@@ -175,17 +177,19 @@ export default function AnnouncementsPage() {
             </AdminPanel>
           ))}
 
-          <button
-            type="button"
-            className="inline-flex h-11 w-full items-center justify-center gap-2 border border-dashed border-line text-sm transition hover:bg-[#faf7f2] disabled:opacity-40"
-            onClick={() => setDraft((current) => (
-              current.notes.length >= 8 ? current : { ...current, notes: [...current.notes, blankNote(current.notes.length)] }
-            ))}
-            disabled={draft.notes.length >= 8}
-          >
-            <Plus size={16} />
-            Add message
-          </button>
+          <AdminTip label="Add message" className="w-full">
+            <button
+              type="button"
+              className="inline-flex h-11 w-full items-center justify-center gap-2 border border-dashed border-line text-sm transition hover:bg-[#faf7f2] disabled:opacity-40"
+              onClick={() => setDraft((current) => (
+                current.notes.length >= 8 ? current : { ...current, notes: [...current.notes, blankNote(current.notes.length)] }
+              ))}
+              disabled={draft.notes.length >= 8}
+            >
+              <Plus size={16} />
+              Add message
+            </button>
+          </AdminTip>
 
           {error ? (
             <p role="alert" className="rounded-xl border border-red-200 bg-[#fdf4f2] px-4 py-3 text-sm text-red-700">{error}</p>
@@ -193,9 +197,13 @@ export default function AnnouncementsPage() {
           {message ? (
             <p role="status" className="rounded-xl border border-[#cfe0c8] bg-[#f3f8f1] px-4 py-3 text-sm text-[#3d5a3a]">{message}</p>
           ) : null}
-          <button type="submit" disabled={saving} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
-            {saving ? "Saving…" : "Save announcement"}
-          </button>
+          <AdminStickyActions>
+            <AdminTip label={saving ? "Saving…" : "Save announcement"}>
+              <button type="submit" disabled={saving} className={adminBtn.primary}>
+                {saving ? "Saving…" : "Save announcement"}
+              </button>
+            </AdminTip>
+          </AdminStickyActions>
         </form>
 
         <div className="order-first xl:order-none xl:sticky xl:top-4">

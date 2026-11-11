@@ -94,6 +94,15 @@ export async function currentSession() {
   const now = Date.now();
   if (!row || row.revokedAt) return null;
   if (new Date(row.absoluteExpiresAt).getTime() <= now || new Date(row.expiresAt).getTime() <= now) return null;
+  if (row.role === "customer") {
+    const account = await db.collection("users").findOne({ id: row.userId, role: "customer" }, { projection: { blocked: 1 } });
+    if (account?.blocked) {
+      await sessions.updateOne({ id: row.id, revokedAt: null }, { $set: { revokedAt: new Date().toISOString() } });
+      jar.delete(SESSION_COOKIE);
+      jar.delete(CSRF_COOKIE);
+      return null;
+    }
+  }
   const config = otpConfig();
   if (now - new Date(row.lastSeenAt).getTime() > 5 * 60 * 1000) {
     const idle = new Date(Math.min(now + config.idleSeconds * 1000, new Date(row.absoluteExpiresAt).getTime()));

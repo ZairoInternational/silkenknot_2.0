@@ -1,6 +1,9 @@
 import type { Db } from "mongodb";
+import { ACCOUNT_RESTRICTED_CODE, ACCOUNT_RESTRICTED_MESSAGE } from "@/lib/auth/codes";
 import type { OtpChannel, OtpPurpose } from "@/lib/auth/otp";
 import { publicUser } from "@/lib/mongo";
+
+export { ACCOUNT_RESTRICTED_CODE, ACCOUNT_RESTRICTED_MESSAGE } from "@/lib/auth/codes";
 
 type Account = {
   id: string;
@@ -9,7 +12,10 @@ type Account = {
   phone?: string;
   emailVerifiedAt?: string | null;
   phoneVerifiedAt?: string | null;
+  blocked?: boolean;
 };
+
+const LOGIN_FAIL = "We couldn’t finish signing you in.";
 
 export async function resolveVerifiedLogin(db: Db, channel: OtpChannel, destination: string) {
   const users = db.collection<Account>("users");
@@ -22,6 +28,9 @@ export async function resolveVerifiedLogin(db: Db, channel: OtpChannel, destinat
     if (owner?.role === "admin") return { ok: false as const, message: "Use the studio login for this contact." };
   }
   if (verified) {
+    if (verified.blocked) {
+      return { ok: false as const, message: ACCOUNT_RESTRICTED_MESSAGE, code: ACCOUNT_RESTRICTED_CODE };
+    }
     const stamp = new Date().toISOString();
     const patch = channel === "email" ? { emailVerifiedAt: stamp } : { phoneVerifiedAt: stamp };
     await users.updateOne({ id: verified.id }, { $set: patch });
@@ -47,8 +56,13 @@ export async function resolveVerifiedLogin(db: Db, channel: OtpChannel, destinat
     }
     const again = channel === "email" ? await users.findOne({ email: destination }) : null;
     if (again?.role === "admin") return { ok: false as const, message: "Use the studio login for this contact." };
-    if (again?.role === "customer" && again.emailVerifiedAt) return { ok: true as const, user: publicUser(again) };
-    return { ok: false as const, message: "We couldn’t finish signing you in." };
+    if (again?.role === "customer" && again.emailVerifiedAt) {
+      if (again.blocked) {
+        return { ok: false as const, message: ACCOUNT_RESTRICTED_MESSAGE, code: ACCOUNT_RESTRICTED_CODE };
+      }
+      return { ok: true as const, user: publicUser(again) };
+    }
+    return { ok: false as const, message: LOGIN_FAIL };
   }
   return { ok: true as const, user: publicUser(created) };
 }

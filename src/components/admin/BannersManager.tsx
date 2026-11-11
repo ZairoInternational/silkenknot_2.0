@@ -12,7 +12,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import { AdminPageHeader } from "@/components/admin/AdminShell";
+import { AdminEmptyState, AdminPageHeader, AdminStickyActions, AdminTip, adminBtn, adminControl } from "@/components/admin/AdminShell";
 import { AdminEditorSkeleton, AdminTableSkeleton } from "@/components/admin/AdminSkeletons";
 import { Media } from "@/components/ui";
 import { csrfHeaders } from "@/lib/auth/browser";
@@ -177,7 +177,7 @@ function Field({
         value={value}
         required={required}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 w-full border-b border-line bg-transparent outline-none"
+        className={`mt-1.5 ${adminControl.input}`}
       />
       {hint ? <span className="mt-1 block text-xs text-mute">{hint}</span> : null}
     </label>
@@ -369,11 +369,13 @@ export function BannersList() {
     <div className="space-y-8">
       <AdminPageHeader
         title="Banners & Campaigns"
-        purpose="Create, schedule, and publish storefront banners. Scheduling uses Asia/Kolkata. Homepage hero campaigns show full-bleed across the hero and rotate in the same carousel as your product slides. Promotional strip sits under the hero."
+        purpose="Promo banners on the homepage. Hero campaigns sit in the main carousel; the strip sits under the hero."
         action={
-          <Link href="/admin/banners/new" className="inline-flex h-11 items-center gap-2 bg-ink px-5 text-[11px] uppercase tracking-[0.18em] text-paper">
-            <Plus size={14} /> New campaign
-          </Link>
+          <AdminTip label="New campaign">
+            <Link href="/admin/banners/new" className={adminBtn.primary}>
+              <Plus size={14} /> New campaign
+            </Link>
+          </AdminTip>
         }
       />
 
@@ -386,7 +388,7 @@ export function BannersList() {
               setPage(1);
               setPlacement(event.target.value);
             }}
-            className="ml-2 border-b border-line bg-transparent outline-none"
+            className="ml-2 h-10 rounded-lg border border-line bg-paper px-3 text-sm outline-none"
           >
             <option value="">All</option>
             {BANNER_PLACEMENTS.map((item) => (
@@ -404,7 +406,7 @@ export function BannersList() {
               setPage(1);
               setStatus(event.target.value);
             }}
-            className="ml-2 border-b border-line bg-transparent outline-none"
+            className="ml-2 h-10 rounded-lg border border-line bg-paper px-3 text-sm outline-none"
           >
             <option value="">All</option>
             {BANNER_STATUSES.map((item) => (
@@ -422,13 +424,17 @@ export function BannersList() {
       {loading ? (
         <AdminTableSkeleton rows={6} cols={5} />
       ) : items.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line px-6 py-16 text-center">
-          <p className="font-serif text-2xl">No campaigns yet</p>
-          <p className="mt-2 text-sm text-mute">Create a draft, upload images, then schedule or publish.</p>
-          <Link href="/admin/banners/new" className="mt-6 inline-flex h-11 items-center bg-ink px-5 text-[11px] uppercase tracking-[0.18em] text-paper">
-            Create campaign
-          </Link>
-        </div>
+        <AdminEmptyState
+          title="No campaigns yet"
+          body="Create a draft, upload images, then schedule or publish when you are ready."
+          action={
+            <AdminTip label="Create your first campaign">
+              <Link href="/admin/banners/new" className={adminBtn.primary}>
+                Create your first campaign
+              </Link>
+            </AdminTip>
+          }
+        />
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full text-left text-sm">
@@ -476,41 +482,57 @@ export function BannersList() {
                   <td className="py-4 pr-4 text-xs text-mute">{new Date(banner.updatedAt).toLocaleString("en-IN", { timeZone: BANNER_TIMEZONE })}</td>
                   <td className="py-4">
                     <div className="flex flex-wrap gap-2">
-                      <Link href={`/admin/banners/${banner.id}`} className="inline-flex h-8 items-center gap-1 border border-line px-2 text-xs">
-                        <Eye size={12} /> Edit
-                      </Link>
+                      <AdminTip label={`Edit ${banner.name}`}>
+                        <Link href={`/admin/banners/${banner.id}`} className="inline-flex h-8 items-center gap-1 border border-line px-2 text-xs">
+                          <Eye size={12} /> Edit
+                        </Link>
+                      </AdminTip>
                       {banner.status !== "published" ? (
-                        <button type="button" disabled={busyId === banner.id} onClick={() => void runAction(banner.id, "publish")} className="h-8 border border-line px-2 text-xs disabled:opacity-50">
-                          Publish
-                        </button>
+                        <AdminTip label="Publish">
+                          <button type="button" disabled={busyId === banner.id} onClick={() => void runAction(banner.id, "publish")} className="h-8 border border-line px-2 text-xs disabled:opacity-50">
+                            Publish
+                          </button>
+                        </AdminTip>
                       ) : (
-                        <button type="button" disabled={busyId === banner.id} onClick={() => void runAction(banner.id, "unpublish")} className="h-8 border border-line px-2 text-xs disabled:opacity-50">
-                          Unpublish
-                        </button>
+                        <AdminTip label="Unpublish">
+                          <button type="button" disabled={busyId === banner.id} onClick={() => void runAction(banner.id, "unpublish")} className="h-8 border border-line px-2 text-xs disabled:opacity-50">
+                            Unpublish
+                          </button>
+                        </AdminTip>
                       )}
                       {banner.status !== "scheduled" ? (
-                        <button type="button" disabled={busyId === banner.id} onClick={() => void runAction(banner.id, "schedule")} className="inline-flex h-8 items-center gap-1 border border-line px-2 text-xs disabled:opacity-50">
-                          <CalendarClock size={12} /> Schedule
-                        </button>
+                        <AdminTip label="Schedule">
+                          <button type="button" disabled={busyId === banner.id} onClick={() => void runAction(banner.id, "schedule")} className="inline-flex h-8 items-center gap-1 border border-line px-2 text-xs disabled:opacity-50">
+                            <CalendarClock size={12} /> Schedule
+                          </button>
+                        </AdminTip>
                       ) : null}
                       {banner.status !== "archived" ? (
-                        <button type="button" disabled={busyId === banner.id} onClick={() => void runAction(banner.id, "archive")} className="inline-flex h-8 items-center gap-1 border border-line px-2 text-xs disabled:opacity-50">
-                          <Archive size={12} /> Archive
-                        </button>
+                        <AdminTip label="Archive">
+                          <button type="button" disabled={busyId === banner.id} onClick={() => void runAction(banner.id, "archive")} className="inline-flex h-8 items-center gap-1 border border-line px-2 text-xs disabled:opacity-50">
+                            <Archive size={12} /> Archive
+                          </button>
+                        </AdminTip>
                       ) : null}
                       {placement ? (
                         <>
-                          <button type="button" disabled={busyId === banner.id || index === 0} onClick={() => void move(index, -1)} className="h-8 border border-line px-2 disabled:opacity-40" aria-label="Move up">
-                            <ArrowUp size={12} />
-                          </button>
-                          <button type="button" disabled={busyId === banner.id || index === items.length - 1} onClick={() => void move(index, 1)} className="h-8 border border-line px-2 disabled:opacity-40" aria-label="Move down">
-                            <ArrowDown size={12} />
-                          </button>
+                          <AdminTip label="Move up">
+                            <button type="button" disabled={busyId === banner.id || index === 0} onClick={() => void move(index, -1)} className="h-8 border border-line px-2 disabled:opacity-40" aria-label="Move up">
+                              <ArrowUp size={12} />
+                            </button>
+                          </AdminTip>
+                          <AdminTip label="Move down">
+                            <button type="button" disabled={busyId === banner.id || index === items.length - 1} onClick={() => void move(index, 1)} className="h-8 border border-line px-2 disabled:opacity-40" aria-label="Move down">
+                              <ArrowDown size={12} />
+                            </button>
+                          </AdminTip>
                         </>
                       ) : null}
-                      <button type="button" disabled={busyId === banner.id} onClick={() => void onDelete(banner)} className="inline-flex h-8 items-center gap-1 border border-red-200 px-2 text-xs text-red-700 disabled:opacity-50">
-                        <Trash2 size={12} /> Delete
-                      </button>
+                      <AdminTip label={`Delete ${banner.name}`}>
+                        <button type="button" disabled={busyId === banner.id} onClick={() => void onDelete(banner)} className="inline-flex h-8 items-center gap-1 border border-red-200 px-2 text-xs text-red-700 disabled:opacity-50">
+                          <Trash2 size={12} /> Delete
+                        </button>
+                      </AdminTip>
                     </div>
                   </td>
                 </tr>
@@ -725,11 +747,13 @@ export function BannerEditor({ id }: { id?: string }) {
     <div className="space-y-8">
       <AdminPageHeader
         title={isNew && !bannerId ? "New campaign" : draft.name || "Edit campaign"}
-        purpose="Upload desktop and optional mobile images to BunnyCDN, configure an optional CTA, and schedule in Asia/Kolkata. Save as draft before publishing."
+        purpose="Build a promo banner, then save as draft before you publish."
         action={
-          <Link href="/admin/banners" className="text-sm text-mute underline">
-            Back to list
-          </Link>
+          <AdminTip label="Back to list">
+            <Link href="/admin/banners" className={adminBtn.ghost}>
+              Back to list
+            </Link>
+          </AdminTip>
         }
       />
 
@@ -748,7 +772,7 @@ export function BannerEditor({ id }: { id?: string }) {
           }}
         >
           <section className="space-y-4 border-b border-line pb-10">
-            <h2 className="font-serif text-3xl">Campaign details</h2>
+            <h2 className="text-lg font-semibold text-ink">Campaign details</h2>
             <Field label="Campaign name" value={draft.name} onChange={(name) => patch({ name })} required />
             <label className="block text-sm">
               Internal description
@@ -756,7 +780,7 @@ export function BannerEditor({ id }: { id?: string }) {
                 value={draft.description}
                 onChange={(event) => patch({ description: event.target.value })}
                 rows={2}
-                className="mt-2 w-full border-b border-line bg-transparent outline-none"
+                className={`mt-1.5 ${adminControl.input}`}
               />
             </label>
             <label className="block text-sm">
@@ -764,7 +788,7 @@ export function BannerEditor({ id }: { id?: string }) {
               <select
                 value={draft.placement}
                 onChange={(event) => patch({ placement: event.target.value as BannerPlacement })}
-                className="mt-2 w-full border-b border-line bg-transparent outline-none"
+                className={`mt-1.5 ${adminControl.input}`}
               >
                 {BANNER_PLACEMENTS.map((item) => (
                   <option key={item} value={item}>
@@ -788,7 +812,7 @@ export function BannerEditor({ id }: { id?: string }) {
                     value={draft.supportingText}
                     onChange={(event) => patch({ supportingText: event.target.value })}
                     rows={3}
-                    className="mt-2 w-full border-b border-line bg-transparent outline-none"
+                    className={`mt-1.5 ${adminControl.input}`}
                   />
                 </label>
               </>
@@ -803,7 +827,7 @@ export function BannerEditor({ id }: { id?: string }) {
           </section>
 
           <section className="space-y-4 border-b border-line pb-10">
-            <h2 className="font-serif text-3xl">Images</h2>
+            <h2 className="text-lg font-semibold text-ink">Images</h2>
             <Field
               label="Image alt text"
               value={draft.image.alt}
@@ -864,7 +888,7 @@ export function BannerEditor({ id }: { id?: string }) {
           <section className="space-y-4 border-b border-line pb-10">
             {draft.placement === "homepage-hero" ? (
               <>
-                <h2 className="font-serif text-3xl">Optional link</h2>
+                <h2 className="text-lg font-semibold text-ink">Optional link</h2>
                 <p className="text-sm text-mute">
                   Leave empty for a non-clickable image. If set, the whole campaign image becomes the link — no separate button.
                 </p>
@@ -887,7 +911,7 @@ export function BannerEditor({ id }: { id?: string }) {
               </>
             ) : (
               <>
-                <h2 className="font-serif text-3xl">CTA</h2>
+                <h2 className="text-lg font-semibold text-ink">CTA</h2>
                 <label className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
@@ -936,7 +960,7 @@ export function BannerEditor({ id }: { id?: string }) {
           </section>
 
           <section className="space-y-4 border-b border-line pb-10">
-            <h2 className="font-serif text-3xl">Schedule</h2>
+            <h2 className="text-lg font-semibold text-ink">Schedule</h2>
             <p className="text-sm text-mute">Timezone: {BANNER_TIMEZONE}. Date-only ends are treated as end of that IST day.</p>
             <Field label="Starts at" type="datetime-local" value={draft.startsAtLocal} onChange={(startsAtLocal) => patch({ startsAtLocal })} required />
             <Field label="Ends at" type="datetime-local" value={draft.endsAtLocal} onChange={(endsAtLocal) => patch({ endsAtLocal })} required />
@@ -945,41 +969,55 @@ export function BannerEditor({ id }: { id?: string }) {
           {error ? <p role="status" className="text-sm text-red-700">{error}</p> : null}
           {message ? <p role="status" className="text-sm text-mute">{message}</p> : null}
 
-          <div className="flex flex-wrap gap-3">
-            <button type="submit" disabled={saving || Boolean(uploading)} className="h-12 bg-ink px-6 text-[11px] uppercase tracking-[0.18em] text-paper disabled:opacity-60">
-              {saving ? "Saving…" : "Save draft"}
-            </button>
-            <button type="button" disabled={saving || !bannerId} onClick={() => void runStatus("schedule")} className="h-12 border border-line px-5 text-[11px] uppercase tracking-[0.18em] disabled:opacity-60">
-              Schedule
-            </button>
-            <button type="button" disabled={saving || !bannerId} onClick={() => void runStatus("publish")} className="h-12 border border-line px-5 text-[11px] uppercase tracking-[0.18em] disabled:opacity-60">
-              Publish
-            </button>
-            <button type="button" disabled={saving || !bannerId || status === "draft"} onClick={() => void runStatus("unpublish")} className="h-12 border border-line px-5 text-[11px] uppercase tracking-[0.18em] disabled:opacity-60">
-              Unpublish
-            </button>
-            <button type="button" disabled={saving || !bannerId} onClick={() => void runStatus("archive")} className="h-12 border border-line px-5 text-[11px] uppercase tracking-[0.18em] disabled:opacity-60">
-              Archive
-            </button>
-          </div>
+          <AdminStickyActions note="Save a draft first, then schedule or publish.">
+            <AdminTip label={saving ? "Saving…" : "Save draft"}>
+              <button type="submit" disabled={saving || Boolean(uploading)} className={adminBtn.primary}>
+                {saving ? "Saving…" : "Save draft"}
+              </button>
+            </AdminTip>
+            <AdminTip label="Schedule">
+              <button type="button" disabled={saving || !bannerId} onClick={() => void runStatus("schedule")} className={adminBtn.secondary}>
+                Schedule
+              </button>
+            </AdminTip>
+            <AdminTip label="Publish">
+              <button type="button" disabled={saving || !bannerId} onClick={() => void runStatus("publish")} className={adminBtn.secondary}>
+                Publish
+              </button>
+            </AdminTip>
+            <AdminTip label="Unpublish">
+              <button type="button" disabled={saving || !bannerId || status === "draft"} onClick={() => void runStatus("unpublish")} className={adminBtn.secondary}>
+                Unpublish
+              </button>
+            </AdminTip>
+            <AdminTip label="Archive">
+              <button type="button" disabled={saving || !bannerId} onClick={() => void runStatus("archive")} className={adminBtn.ghost}>
+                Archive
+              </button>
+            </AdminTip>
+          </AdminStickyActions>
         </form>
 
         <div className="order-first space-y-4 xl:order-none xl:sticky xl:top-4">
           <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setPreviewMode("desktop")}
-              className={`h-9 px-3 text-xs uppercase tracking-[0.14em] ${previewMode === "desktop" ? "bg-ink text-paper" : "border border-line"}`}
-            >
-              Desktop
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreviewMode("mobile")}
-              className={`h-9 px-3 text-xs uppercase tracking-[0.14em] ${previewMode === "mobile" ? "bg-ink text-paper" : "border border-line"}`}
-            >
-              Mobile
-            </button>
+            <AdminTip label="Desktop preview">
+              <button
+                type="button"
+                onClick={() => setPreviewMode("desktop")}
+                className={`h-9 px-3 text-xs uppercase tracking-[0.14em] ${previewMode === "desktop" ? "bg-ink text-paper" : "border border-line"}`}
+              >
+                Desktop
+              </button>
+            </AdminTip>
+            <AdminTip label="Mobile preview">
+              <button
+                type="button"
+                onClick={() => setPreviewMode("mobile")}
+                className={`h-9 px-3 text-xs uppercase tracking-[0.14em] ${previewMode === "mobile" ? "bg-ink text-paper" : "border border-line"}`}
+              >
+                Mobile
+              </button>
+            </AdminTip>
           </div>
           <BannerPreview draft={draft} mode={previewMode} />
         </div>

@@ -17,6 +17,7 @@ import {
   ShoppingBag,
   User,
 } from "lucide-react";
+import { AdminTip } from "@/components/admin/AdminShell";
 import { AdminEditorSkeleton } from "@/components/admin/AdminSkeletons";
 import { csrfHeaders } from "@/lib/auth/browser";
 import { primeBrandCache } from "@/lib/brand/client";
@@ -488,32 +489,36 @@ export function BrandManager() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-xl">
           <h1 className="text-[1.85rem] font-semibold tracking-tight md:text-[2.15rem]" style={{ color: TEAL }}>
-            Brand Logo & Identity
+            Logo
           </h1>
           <p className="mt-2 text-sm leading-6" style={{ color: MUTE }}>
-            Manage your brand logo and how it appears across the store. These changes will be applied to all pages.
+            Upload and size the logo for header, footer, checkout, and sign-in.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border bg-white px-4 text-sm font-medium transition hover:bg-[#FAFAF8]"
-            style={{ borderColor: LINE, color: TEAL }}
-          >
-            <Eye size={15} />
-            Preview changes
-          </button>
-          <button
-            type="button"
-            disabled={saving}
-            onClick={() => void save()}
-            className="inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-medium text-white transition disabled:opacity-60"
-            style={{ background: TEAL }}
-          >
-            <Save size={15} />
-            {saving ? "Saving…" : "Save changes"}
-          </button>
+          <AdminTip label="Preview changes">
+            <button
+              type="button"
+              onClick={() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border bg-white px-4 text-sm font-medium transition hover:bg-[#FAFAF8]"
+              style={{ borderColor: LINE, color: TEAL }}
+            >
+              <Eye size={15} />
+              Preview changes
+            </button>
+          </AdminTip>
+          <AdminTip label={saving ? "Saving…" : "Save changes"}>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => void save()}
+              className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl px-4 text-sm font-medium text-white transition disabled:opacity-60"
+              style={{ background: TEAL }}
+            >
+              <Save size={15} />
+              {saving ? "Saving…" : "Save changes"}
+            </button>
+          </AdminTip>
         </div>
       </div>
 
