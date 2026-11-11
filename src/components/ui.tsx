@@ -208,12 +208,14 @@ export function Stars({ rating }: { rating: number }) {
 export function PriceTag({ price, compare }: { price: number; compare?: number }) {
   const off = discountPercent(price, compare);
   return (
-    <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-      <span>{formatPrice(price)}</span>
+    <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+      <span className="font-semibold tabular-nums tracking-tight">{formatPrice(price)}</span>
       {off > 0 && compare ? (
         <>
-          <s className="text-mute">{formatPrice(compare)}</s>
-          <span className="text-[11px] uppercase tracking-[0.16em] text-olive">{off}% off</span>
+          <s className="text-[12px] font-normal text-mute md:text-[0.92em]">{formatPrice(compare)}</s>
+          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-olive">
+            {off}% off
+          </span>
         </>
       ) : null}
     </p>

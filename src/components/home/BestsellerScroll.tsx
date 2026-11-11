@@ -87,12 +87,7 @@ function BestsellerCard({ product }: { product: Product }) {
   const inBag = Boolean(
     variant && store.cart.some((item) => item.productId === product.id && item.variantLabel === variant.label),
   );
-  const hasDiscount =
-    typeof (variant?.compareAtPrice ?? product.compareAtPrice) === "number" &&
-    (variant?.compareAtPrice ?? product.compareAtPrice)! > price;
   const compare = variant?.compareAtPrice ?? product.compareAtPrice;
-  const discount =
-    hasDiscount && compare ? Math.round(((compare - price) / compare) * 100) : 0;
 
   function add(event: React.MouseEvent) {
     event.preventDefault();
@@ -132,22 +127,15 @@ function BestsellerCard({ product }: { product: Product }) {
         onAdd={add}
         wishlist={<WishlistButton productId={product.id} name={product.name} />}
         badge={
-          <>
-            {product.bestseller ? (
-              <span className="bg-[#F7F3EE]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm">
-                Bestseller
-              </span>
-            ) : product.newArrival ? (
-              <span className="bg-[#F7F3EE]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm">
-                New
-              </span>
-            ) : null}
-            {hasDiscount ? (
-              <span className="bg-[#2c2926]/90 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.14em] text-white backdrop-blur-sm">
-                {discount}% off
-              </span>
-            ) : null}
-          </>
+          product.bestseller ? (
+            <span className="bg-[#F7F3EE]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm">
+              Bestseller
+            </span>
+          ) : product.newArrival ? (
+            <span className="bg-[#F7F3EE]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm">
+              New
+            </span>
+          ) : null
         }
       />
 

@@ -263,7 +263,7 @@ function repairDatabase(db: Database): Database {
       const seed = seedProducts.find((item) => item.id === product.id);
       const stale = product.images.some((src) => src.includes("unsplash.com"));
       const images = seed && stale ? seed.images : product.images;
-      return { ...product, images: images.map(repairImageUrl) };
+      return withDerivedPrice({ ...product, images: images.map(repairImageUrl) });
     }),
     categories: db.categories.map((category) => {
       const seed = seedCategories.find((item) => item.id === category.id);

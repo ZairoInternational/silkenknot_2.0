@@ -5,6 +5,7 @@ import {
   catalogCacheSet,
   invalidateCatalogCache,
 } from "@/lib/catalog/cache";
+import { withDerivedPrice } from "@/lib/format";
 import type { Category, Coupon, Product } from "@/lib/types";
 
 export { invalidateCatalogCache };
@@ -66,7 +67,7 @@ async function loadSlimCatalog(db: Db): Promise<SlimCatalog> {
     products: products.map((item) => {
       const product = cleanDoc(item) as unknown as Product;
       if (!Array.isArray(product.reviews)) product.reviews = [];
-      return product;
+      return withDerivedPrice(product);
     }),
     categories: categories.map((item) => cleanDoc(item) as unknown as Category),
     coupons: coupons.map((item) => cleanDoc(item) as unknown as Coupon),
@@ -85,7 +86,7 @@ export async function getFullProducts(db: Db): Promise<Product[]> {
   const hit = await catalogCacheGet<Product[]>(CATALOG_CACHE_KEYS.fullProducts);
   if (hit !== undefined) return hit;
   const rows = await db.collection("products").find().toArray();
-  const products = rows.map((item) => cleanDoc(item) as unknown as Product);
+  const products = rows.map((item) => withDerivedPrice(cleanDoc(item) as unknown as Product));
   await catalogCacheSet(CATALOG_CACHE_KEYS.fullProducts, products, 30_000);
   return products;
 }
@@ -99,7 +100,7 @@ export async function getFullProductBySlug(db: Db, slug: string): Promise<Produc
     await catalogCacheSet(key, null, 15_000);
     return null;
   }
-  const product = cleanDoc(row) as unknown as Product;
+  const product = withDerivedPrice(cleanDoc(row) as unknown as Product);
   await catalogCacheSet(key, product, 30_000);
   return product;
 }

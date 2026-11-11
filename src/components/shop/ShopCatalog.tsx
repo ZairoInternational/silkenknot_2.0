@@ -17,7 +17,7 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import { BottomSheet, Media, WishlistButton } from "@/components/ui";
+import { BottomSheet, Media, PriceTag } from "@/components/ui";
 import { CardGoldRating, CardMobileAdd, ListingCardMedia } from "@/components/product/ListingCardMedia";
 import { seedCategories } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
@@ -354,7 +354,7 @@ export function ShopCatalog() {
       </section>
 
       {/* Product listing */}
-      <section id="products" className="scroll-mt-28 px-5 py-8 lg:grid lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-10 lg:px-10 lg:py-12">
+      <section id="products" className="scroll-mt-28 px-3.5 py-6 md:px-5 md:py-8 lg:grid lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-10 lg:px-10 lg:py-12">
         <aside className="hidden lg:block">{fields}</aside>
         <div>
           {/* ── Header row ─────────────────────────────────────────────── */}
@@ -550,14 +550,14 @@ export function ShopCatalog() {
             </div>
           ) : api.status === "idle" || (isLoading && items.length === 0) ? (
             /* ── Skeleton grid on initial load ────────────────────────── */
-            <div className="mt-6 grid grid-cols-2 items-stretch gap-x-3 gap-y-8 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 items-stretch gap-x-2 gap-y-4 md:mt-6 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
               {Array.from({ length: PAGE_SIZE }, (_, i) => (
                 <ProductCardSkeleton key={i} />
               ))}
             </div>
           ) : items.length > 0 ? (
             <div
-              className={`mt-6 grid grid-cols-2 items-stretch gap-x-3 gap-y-8 md:grid-cols-3 md:gap-6 lg:grid-cols-4 transition-opacity duration-150 ${isLoading ? "opacity-60 pointer-events-none" : "opacity-100"}`}
+              className={`mt-4 grid grid-cols-2 items-stretch gap-x-2 gap-y-4 md:mt-6 md:grid-cols-3 md:gap-6 lg:grid-cols-4 transition-opacity duration-150 ${isLoading ? "opacity-60 pointer-events-none" : "opacity-100"}`}
             >
               {items.map((product) => (
                 <ProductCard key={product.id} product={product} />
@@ -688,12 +688,16 @@ export function ShopCatalog() {
 
 function ProductCardSkeleton() {
   return (
-    <article className="min-w-0" aria-hidden="true">
-      <div className="overflow-hidden rounded-2xl bg-[#eee8de]">
-        <div className="aspect-[2/3] animate-pulse bg-[#e0d8cc] md:aspect-[4/5]" />
+    <article
+      className="flex h-[calc((100dvh-0.5rem)/1.7)] min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-[#e6e0d6] md:h-auto md:overflow-visible md:rounded-none md:bg-transparent md:ring-0"
+      aria-hidden="true"
+    >
+      <div className="min-h-0 flex-1 overflow-hidden bg-[#eee8de] md:aspect-[4/5] md:flex-none md:rounded-2xl">
+        <div className="h-full animate-pulse bg-[#e0d8cc]" />
       </div>
-      <div className="space-y-2 pt-3">
+      <div className="shrink-0 space-y-2 px-2 py-2 md:px-0 md:pt-3">
         <div className="h-4 w-4/5 animate-pulse rounded bg-[#e6e0d6]" />
+        <div className="h-3.5 w-2/3 animate-pulse rounded bg-[#e6e0d6]" />
         <div className="h-4 w-1/3 animate-pulse rounded bg-[#e6e0d6]" />
       </div>
     </article>
@@ -726,34 +730,51 @@ function ProductCard({ product }: { product: SearchProduct }) {
   };
 
   return (
-    <article className="group min-w-0">
-      <ListingCardMedia
-        href={`/products/${product.slug}`}
-        name={product.name}
-        images={product.images}
-        sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, 46vw"
-        inCart={inCart}
-        onAdd={add}
-        wishlist={<WishlistButton productId={product.id} name={product.name} />}
-        badge={
-          badge ? (
-            <span className="max-w-[70%] truncate rounded-full bg-white/90 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-[#2c2926] backdrop-blur-sm">
-              {badge}
-            </span>
-          ) : null
-        }
-      />
-      <div className="pt-3">
+    <article className="group flex h-[calc((100dvh-0.5rem)/1.7)] min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-[#e6e0d6] md:h-auto md:overflow-visible md:rounded-none md:bg-transparent md:ring-0">
+      <div className="relative min-h-0 flex-1 md:flex-none">
+        <ListingCardMedia
+          href={`/products/${product.slug}`}
+          name={product.name}
+          images={product.images}
+          sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, 46vw"
+          inCart={inCart}
+          onAdd={add}
+          fit="cover"
+          className="h-full rounded-none !aspect-auto md:rounded-2xl md:!aspect-[4/5]"
+          badge={
+            badge ? (
+              <span className="hidden max-w-[70%] truncate rounded-full bg-white/90 px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] text-[#2c2926] backdrop-blur-sm md:inline-flex">
+                {badge}
+              </span>
+            ) : null
+          }
+        />
+      </div>
+      <div className="flex shrink-0 flex-col gap-1 px-2 pb-2 pt-2 md:gap-0 md:px-0 md:pt-3">
+        {badge ? (
+          <span className="w-fit max-w-full truncate rounded-full bg-[#f6f3ee] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-[#8a7350] md:hidden">
+            {badge}
+          </span>
+        ) : null}
         <Link
           href={`/products/${product.slug}`}
           title={product.name}
-          className="block truncate text-[15px] font-medium leading-snug text-[#2c2926] md:text-base"
+          className="line-clamp-2 text-[17px] font-semibold leading-snug text-[#2c2926] md:truncate md:text-base md:font-medium"
         >
           {product.name}
         </Link>
+        {product.scent || product.type ? (
+          <p className="line-clamp-1 text-[15px] capitalize leading-snug text-[#6f675d] md:mt-1 md:text-[13px] md:text-[#8a8178]">
+            {[product.type, product.scent].filter(Boolean).join(" · ")}
+          </p>
+        ) : null}
         <CardGoldRating rating={product.rating} count={product.reviewCount} />
-        <p className="mt-1.5 truncate text-sm font-medium text-[#2c2926] md:text-[15px]">{formatPrice(product.price)}</p>
-        <CardMobileAdd inCart={inCart} onAdd={add} />
+        <div className="text-[16px] text-[#2c2926] md:mt-1.5 md:text-[15px]">
+          <PriceTag price={product.price} compare={product.compareAtPrice} />
+        </div>
+        <div className="mt-1.5 md:mt-0">
+          <CardMobileAdd inCart={inCart} onAdd={add} compact />
+        </div>
       </div>
     </article>
   );

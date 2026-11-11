@@ -186,6 +186,7 @@ export function DeliveryChoice() {
   const [open, setOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(true);
+  const [editingPin, setEditingPin] = useState(false);
   const pinInputRef = useRef<HTMLInputElement>(null);
   const dialogRef = useDialog(open, () => setOpen(false));
   const user = store.currentUser;
@@ -276,6 +277,7 @@ export function DeliveryChoice() {
       setAddressId("");
       setPin(draftPin);
       writeChoice({ userId: user?.id || "", pin: draftPin });
+      setEditingPin(false);
       setOpen(false);
     } catch {
       setPinNote("Delivery availability could not be checked. Try again.");
@@ -298,7 +300,16 @@ export function DeliveryChoice() {
 
   function revealPinInput() {
     setPanelOpen(true);
+    setEditingPin(true);
+    setDraftPin(activePin || "");
+    setPinNote("");
     window.setTimeout(() => pinInputRef.current?.focus(), 40);
+  }
+
+  function closePanel() {
+    setPanelOpen(false);
+    setEditingPin(false);
+    setPinNote("");
   }
 
   return (
@@ -333,7 +344,13 @@ export function DeliveryChoice() {
               type="button"
               aria-expanded={false}
               aria-label="Show delivery details"
-              onClick={() => setPanelOpen(true)}
+              onClick={() => {
+                setPanelOpen(true);
+                if (!activePin) {
+                  setEditingPin(true);
+                  window.setTimeout(() => pinInputRef.current?.focus(), 40);
+                }
+              }}
               className="absolute right-2 top-2 grid size-8 place-items-center text-[#8a7350] @min-[680px]:static @min-[680px]:mr-2"
             >
               <ChevronDown size={16} />
@@ -344,19 +361,60 @@ export function DeliveryChoice() {
         {panelOpen ? (
           <div className="px-3 pb-3 pt-3 @min-[680px]:px-4">
             <div className="grid grid-cols-1 items-start gap-3 @min-[680px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] @min-[680px]:items-center @min-[680px]:gap-0">
-              <div className="flex min-w-0 items-center gap-2.5 @min-[680px]:pr-4">
+              <div className="flex min-w-0 items-start gap-2.5 @min-[680px]:pr-4">
                 <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#f6f3ee] text-[#8a7350]">
                   <MapPin size={15} strokeWidth={1.8} />
                 </span>
-                <span className="min-w-0">
+                <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-[#8a7350]">
                     Delivery pincode
-                    {activePin ? <span className="rounded-full bg-[#f6f3ee] px-1.5 py-0.5 text-[10px] font-medium normal-case tracking-normal text-[#8a7350]">Set</span> : null}
+                    {activePin && !editingPin ? <span className="rounded-full bg-[#f6f3ee] px-1.5 py-0.5 text-[10px] font-medium normal-case tracking-normal text-[#8a7350]">Set</span> : null}
                   </span>
-                  <span className="mt-0.5 block text-sm font-medium tracking-tight">{activePin || "—"}</span>
-                  <button type="button" onClick={revealPinInput} className="mt-0.5 inline-flex items-center gap-1 text-xs text-[#8a7350] underline decoration-[#e3dbd1] underline-offset-2">
-                    Change pincode <Pencil size={11} />
-                  </button>
+                  {editingPin || !activePin ? (
+                    <form onSubmit={useDraftPin} className="mt-1.5 space-y-1.5">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <input
+                          ref={pinInputRef}
+                          value={draftPin}
+                          onChange={(event) => setDraftPin(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                          inputMode="numeric"
+                          autoComplete="postal-code"
+                          placeholder="Enter pincode"
+                          aria-label="PIN code"
+                          className="h-9 min-w-0 flex-1 rounded-lg border border-[#e3dbd1] bg-white px-3 text-sm text-[#2c2926] outline-none placeholder:text-[#b5aa9c]"
+                        />
+                        <button type="submit" disabled={checking} className="h-9 shrink-0 rounded-lg bg-[#CBAC7C] px-3 text-sm text-white hover:bg-[#B39668] disabled:opacity-50">
+                          {checking ? "Checking" : "Check"}
+                        </button>
+                        {activePin ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingPin(false);
+                              setDraftPin(activePin);
+                              setPinNote("");
+                            }}
+                            className="h-9 shrink-0 px-1 text-xs text-[#8a7350]"
+                          >
+                            Cancel
+                          </button>
+                        ) : null}
+                      </div>
+                      {pinNote ? <p className="text-xs text-[#9a4b3a]">{pinNote}</p> : null}
+                      {user && addresses.length ? (
+                        <button type="button" onClick={() => setOpen(true)} className="text-left text-xs text-[#8a7350] underline decoration-[#e3dbd1] underline-offset-2">
+                          Use a saved address
+                        </button>
+                      ) : null}
+                    </form>
+                  ) : (
+                    <>
+                      <span className="mt-0.5 block text-sm font-medium tracking-tight">{activePin}</span>
+                      <button type="button" onClick={revealPinInput} className="mt-0.5 inline-flex items-center gap-1 text-xs text-[#8a7350] underline decoration-[#e3dbd1] underline-offset-2">
+                        Change pincode <Pencil size={11} />
+                      </button>
+                    </>
+                  )}
                 </span>
               </div>
               <div className="flex min-w-0 items-center gap-2.5 border-t border-[#eee8de] pt-3 @min-[680px]:border-l @min-[680px]:border-t-0 @min-[680px]:px-4 @min-[680px]:pt-0">
@@ -382,7 +440,7 @@ export function DeliveryChoice() {
                 ) : (
                   <span className="text-xs text-[#6f675d]">{checking ? "Checking express" : "Express appears when it is available"}</span>
                 )}
-                <button type="button" aria-label="Hide delivery details" onClick={() => setPanelOpen(false)} className="grid size-8 shrink-0 place-items-center text-[#8a7350]">
+                <button type="button" aria-label="Hide delivery details" onClick={closePanel} className="grid size-8 shrink-0 place-items-center text-[#8a7350]">
                   <ChevronDown size={16} className="rotate-180" />
                 </button>
               </div>
@@ -427,37 +485,6 @@ export function DeliveryChoice() {
             ) : (
               <p className="mt-4 text-sm leading-6 text-[#6f675d]">{checking ? "Checking this PIN." : result?.message || "Enter a PIN to see if we can deliver there."}</p>
             )}
-
-            <form onSubmit={useDraftPin} className="mt-3 grid grid-cols-1 items-center gap-2.5 border-t border-[#eee8de] pt-3 @min-[680px]:grid-cols-2">
-              <div className="flex min-w-0 items-center gap-2.5">
-                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#f6f3ee] text-[#8a7350]"><MapPin size={14} /></span>
-                <span className="min-w-0">
-                  <span className="block text-sm font-medium">Check another pincode</span>
-                  <span className="block text-xs text-[#6f675d]">Enter a different pincode to see the delivery estimate</span>
-                </span>
-              </div>
-              <div className="flex min-w-0 items-center gap-2">
-                <input
-                  ref={pinInputRef}
-                  value={draftPin}
-                  onChange={(event) => setDraftPin(event.target.value.replace(/\D/g, "").slice(0, 6))}
-                  inputMode="numeric"
-                  autoComplete="postal-code"
-                  placeholder="Enter pincode"
-                  aria-label="PIN code"
-                  className="h-9 min-w-0 flex-1 rounded-lg border border-[#e3dbd1] bg-white px-3 text-sm text-[#2c2926] outline-none placeholder:text-[#b5aa9c]"
-                />
-                <button type="submit" disabled={checking} className="h-9 shrink-0 rounded-lg bg-[#CBAC7C] px-4 text-sm text-white hover:bg-[#B39668] disabled:opacity-50">
-                  {checking ? "Checking" : "Check"}
-                </button>
-              </div>
-              {pinNote ? <p className="text-xs text-[#9a4b3a] @min-[680px]:col-span-2">{pinNote}</p> : null}
-              {user && addresses.length ? (
-                <button type="button" onClick={() => setOpen(true)} className="text-left text-xs text-[#8a7350] underline decoration-[#e3dbd1] underline-offset-2 @min-[680px]:col-span-2">
-                  Use a saved address
-                </button>
-              ) : null}
-            </form>
           </div>
         ) : null}
       </div>

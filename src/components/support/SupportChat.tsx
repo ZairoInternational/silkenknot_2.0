@@ -474,7 +474,10 @@ export function SupportChat() {
 
   function closePanel() {
     setOpen(false);
-    requestAnimationFrame(() => launcherRef.current?.focus());
+    // Launcher remounts after close; focus on the next frame once it exists.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => launcherRef.current?.focus());
+    });
   }
 
   function openPanel() {
@@ -486,14 +489,11 @@ export function SupportChat() {
 
   if (hideOnPath) return null;
 
-  // Hide the floating button while the mobile bottom nav is on screen; show it again when the nav scrolls away.
-  const showLauncher = !mobileNavShowing;
-  const bottomClass = mobileNavShowing
-    ? "bottom-[calc(3.75rem+env(safe-area-inset-bottom))]"
-    : "bottom-[max(1rem,env(safe-area-inset-bottom))]";
+  // Hide the floating button while chat is open or the mobile bottom nav is on screen.
+  const showLauncher = !open && !mobileNavShowing;
 
   return (
-    <div className={`pointer-events-none fixed right-4 z-[180] flex flex-col items-end transition-[bottom] duration-200 md:right-6 md:bottom-6 ${bottomClass}`}>
+    <div className="pointer-events-none fixed right-4 bottom-[calc(3.75rem+env(safe-area-inset-bottom))] z-[180] flex flex-col items-end translate-y-[var(--mobile-nav-shift,0px)] transition-transform duration-200 md:right-6 md:bottom-6 md:translate-y-0">
       <div aria-live="polite" className="sr-only">
         {announceRef.current}
       </div>
@@ -526,19 +526,19 @@ export function SupportChat() {
             </div>
             <button
               type="button"
-              className="grid size-9 place-items-center rounded-full text-[#2c2926] hover:bg-[#F7F3EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
+              className="grid size-9 place-items-center rounded-full text-[#2c2926] hover:bg-[#F7F3EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350] [&:hover_svg]:-rotate-90"
               aria-label="Restart conversation"
               onClick={restart}
             >
-              <RotateCcw size={16} strokeWidth={1.6} />
+              <RotateCcw size={16} strokeWidth={1.6} className="transition-transform duration-200 ease-out" />
             </button>
             <button
               type="button"
-              className="grid size-9 place-items-center rounded-full text-[#2c2926] hover:bg-[#F7F3EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
+              className="grid size-9 place-items-center rounded-full text-[#2c2926] hover:bg-[#F7F3EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350] [&:hover_svg]:rotate-90"
               aria-label="Close chat"
               onClick={closePanel}
             >
-              <X size={18} strokeWidth={1.6} />
+              <X size={18} strokeWidth={1.6} className="transition-transform duration-200 ease-out" />
             </button>
           </header>
 
@@ -559,20 +559,15 @@ export function SupportChat() {
           ref={launcherRef}
           type="button"
           className="support-chat-launcher pointer-events-auto relative ml-auto flex size-14 items-center justify-center rounded-full bg-[#3e5a72] text-[#f6f3ee] shadow-[0_10px_28px_rgba(62,90,114,0.35)] transition hover:bg-[#334b60] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3e5a72] motion-safe:animate-[support-chat-pulse_2.8s_ease-in-out_infinite]"
-          aria-label={open ? "Close chat with Ziva" : "Chat with Ziva"}
-          aria-expanded={open}
-          aria-controls={open ? titleId : undefined}
-          onClick={() => (open ? closePanel() : openPanel())}
+          aria-label="Chat with Ziva"
+          aria-expanded={false}
+          onClick={openPanel}
         >
-          {!open ? (
-            <>
-              <span className="support-chat-sparkle pointer-events-none absolute -right-0.5 -top-0.5 grid size-5 place-items-center rounded-full bg-[#efeae3] text-[#3e5a72] shadow-sm" aria-hidden>
-                <Sparkles size={11} strokeWidth={2} className="motion-safe:animate-[support-chat-twinkle_1.6s_ease-in-out_infinite]" />
-              </span>
-              <span className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_25%,rgba(246,243,238,0.22),transparent_55%)]" aria-hidden />
-            </>
-          ) : null}
-          {open ? <X size={22} strokeWidth={1.6} /> : <MessageCircle size={22} strokeWidth={1.6} />}
+          <span className="support-chat-sparkle pointer-events-none absolute -right-0.5 -top-0.5 grid size-5 place-items-center rounded-full bg-[#efeae3] text-[#3e5a72] shadow-sm" aria-hidden>
+            <Sparkles size={11} strokeWidth={2} className="motion-safe:animate-[support-chat-twinkle_1.6s_ease-in-out_infinite]" />
+          </span>
+          <span className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_25%,rgba(246,243,238,0.22),transparent_55%)]" aria-hidden />
+          <MessageCircle size={22} strokeWidth={1.6} />
         </button>
       ) : null}
     </div>

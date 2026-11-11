@@ -279,6 +279,10 @@
   font-size: 0.8rem;
 }
 
+.sk-auth-phone-field input {
+  font-size: 1rem;
+}
+
 .sk-auth-email-field {
   gap: 10px;
   padding-left: 12px;

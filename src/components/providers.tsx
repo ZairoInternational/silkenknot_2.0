@@ -53,11 +53,11 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   return (
     <>
       {bare ? null : <SiteHeader />}
-      <div className={accountBar ? "pb-20 md:pb-0" : undefined}>
+      <div>
         <main id="main">
           {children}
         </main>
-        {bare ? null : <Footer />}
+        {bare ? null : <Footer mobileNavPad={accountBar} />}
       </div>
       <CartSheet />
       {bare ? null : <SupportChat />}

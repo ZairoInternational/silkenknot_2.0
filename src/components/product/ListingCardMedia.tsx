@@ -15,13 +15,19 @@ const inCartDesktop =
   "absolute inset-x-3 bottom-3 z-20 hidden items-center justify-center gap-2 rounded-full border border-[#5c4033] bg-[#f7f3ee]/95 py-2.5 text-[11px] font-medium uppercase tracking-[0.14em] text-[#5c4033] opacity-0 shadow-sm backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 md:flex";
 
 const navBtn =
-  "absolute top-1/2 z-10 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-white/25 text-[#2c2926]/70 backdrop-blur-[1px] transition active:scale-95 md:hidden";
+  "absolute top-1/2 z-10 grid size-5 -translate-y-1/2 place-items-center rounded-full bg-white/30 text-[#2c2926]/65 backdrop-blur-[1px] transition active:scale-95 md:hidden";
 
 const addMobile =
   "mt-3 flex w-full items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(105deg,#6b4226_0%,#b88955_48%,#5a361c_100%)] px-3 py-2.5 text-[11px] font-medium text-white shadow-[0_10px_22px_-12px_rgba(90,54,28,0.75)] md:hidden disabled:cursor-not-allowed disabled:opacity-50";
 
 const inCartMobile =
   "mt-3 flex w-full items-center justify-center gap-1.5 rounded-full border border-[#5c4033] bg-[#f7f3ee] px-3 py-2.5 text-[11px] font-medium text-[#5c4033] shadow-sm md:hidden";
+
+const addMobileCompact =
+  "flex w-full items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(105deg,#6b4226_0%,#b88955_48%,#5a361c_100%)] px-2.5 py-2 text-xs font-medium text-white md:hidden disabled:cursor-not-allowed disabled:opacity-50";
+
+const inCartMobileCompact =
+  "flex w-full items-center justify-center gap-1.5 rounded-full border border-[#5c4033] bg-[#f7f3ee] px-2.5 py-2 text-xs font-medium text-[#5c4033] md:hidden";
 
 type ListingCardMediaProps = {
   href: string;
@@ -34,6 +40,9 @@ type ListingCardMediaProps = {
   onAdd: (event: React.MouseEvent) => void;
   badge?: React.ReactNode;
   wishlist?: React.ReactNode;
+  className?: string;
+  /** Mobile image fit. Desktop wipe stays cover. */
+  fit?: "cover" | "contain";
 };
 
 /** Desktop: slow hover wipe. Mobile: faint < > on image; bag CTA is rendered by CardMobileAdd after details. */
@@ -47,6 +56,8 @@ export function ListingCardMedia({
   onAdd,
   badge,
   wishlist,
+  className = "",
+  fit = "cover",
 }: ListingCardMediaProps) {
   const gallery = images.filter(Boolean);
   const primary = gallery[0] || "";
@@ -57,6 +68,7 @@ export function ListingCardMedia({
 
   const [active, setActive] = useState(0);
   const current = gallery[active] || primary;
+  const mobileFit = fit === "contain" ? "object-contain p-2" : "object-cover";
 
   const prev = (event: React.MouseEvent) => {
     event.preventDefault();
@@ -71,7 +83,7 @@ export function ListingCardMedia({
   };
 
   return (
-    <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-[#efe8df] md:aspect-[4/5]">
+    <div className={`relative aspect-[2/3] overflow-hidden rounded-2xl bg-[#efe8df] md:aspect-[4/5] ${className}`}>
       {/* Desktop: hover wipe between first two images */}
       <Link href={href} className="absolute inset-0 hidden md:block" aria-label={name}>
         {primary ? (
@@ -93,18 +105,18 @@ export function ListingCardMedia({
       <div className="absolute inset-0 md:hidden">
         <Link href={href} className="absolute inset-0" aria-label={name}>
           {current ? (
-            <Media src={current} alt={name} sizes={sizes} className="object-cover" />
+            <Media src={current} alt={name} sizes={sizes} className={mobileFit} />
           ) : (
             <span className="grid h-full place-items-center px-4 text-center text-sm text-[#6f675d]">{name}</span>
           )}
         </Link>
         {multi ? (
           <>
-            <button type="button" onClick={prev} className={`${navBtn} left-1.5`} aria-label="Previous image">
-              <ChevronLeft size={18} strokeWidth={1.75} />
+            <button type="button" onClick={prev} className={`${navBtn} left-1`} aria-label="Previous image">
+              <ChevronLeft size={13} strokeWidth={2} />
             </button>
-            <button type="button" onClick={next} className={`${navBtn} right-1.5`} aria-label="Next image">
-              <ChevronRight size={18} strokeWidth={1.75} />
+            <button type="button" onClick={next} className={`${navBtn} right-1`} aria-label="Next image">
+              <ChevronRight size={13} strokeWidth={2} />
             </button>
           </>
         ) : null}
@@ -126,16 +138,24 @@ export function CardMobileAdd({
   soldOut,
   inCart,
   onAdd,
+  compact = false,
 }: {
   soldOut?: boolean;
   inCart?: boolean;
   onAdd: (event: React.MouseEvent) => void;
+  compact?: boolean;
 }) {
   const label = soldOut ? "Sold out" : inCart ? "In bag" : "Add to cart";
-  const className = inCart && !soldOut ? inCartMobile : addMobile;
+  const className = compact
+    ? inCart && !soldOut
+      ? inCartMobileCompact
+      : addMobileCompact
+    : inCart && !soldOut
+      ? inCartMobile
+      : addMobile;
   return (
     <button type="button" onClick={onAdd} disabled={soldOut} className={className} aria-label={label}>
-      {soldOut ? null : <ShoppingBag size={15} aria-hidden />}
+      {soldOut ? null : <ShoppingBag size={compact ? 14 : 15} aria-hidden />}
       <span>{label}</span>
     </button>
   );
@@ -146,16 +166,16 @@ export function CardGoldRating({ rating, count }: { rating: number; count?: numb
   if (!SHOW_STORE_REVIEWS || !rating) return null;
   const full = Math.min(5, Math.max(0, Math.round(rating)));
   return (
-    <p className="mt-2 flex items-center gap-2 leading-none text-[#8a7350]" aria-label={`${rating} out of 5 stars`}>
-      <span className="text-[18px] tracking-[0.08em] text-[#C9A227] md:text-[19px]" aria-hidden>
+    <p className="mt-1 flex items-center gap-1.5 leading-none text-[#8a7350] md:mt-2 md:gap-2" aria-label={`${rating} out of 5 stars`}>
+      <span className="text-sm tracking-[0.08em] text-[#C9A227] md:text-[19px]" aria-hidden>
         {"★".repeat(full)}
         <span className="text-[#e0d5c0]">{"★".repeat(5 - full)}</span>
       </span>
-      <span className="text-[14px] font-medium tabular-nums text-[#6f675d] md:text-[15px]">
+      <span className="text-xs font-medium tabular-nums text-[#6f675d] md:text-[15px]">
         {rating % 1 === 0 ? rating.toFixed(0) : rating.toFixed(1)}
       </span>
       {typeof count === "number" && count > 0 ? (
-        <span className="text-[13px] text-[#a3988c]">({count})</span>
+        <span className="text-xs text-[#a3988c] md:text-[13px]">({count})</span>
       ) : null}
     </p>
   );
