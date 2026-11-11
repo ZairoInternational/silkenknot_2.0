@@ -519,11 +519,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, [patch]);
 
   const requestOtp = useCallback(async (input: { channel: "email" | "whatsapp"; destination: string; country?: string; purpose?: "login" | "link-email" | "link-phone" }) => {
-    const response = await fetch("/api/auth/otp", {
+    const send = () => fetch("/api/auth/otp", {
       method: "POST",
       headers: csrfHeaders(),
       body: JSON.stringify(input),
     });
+    let response = await send();
+    // First hit can race Set-Cookie from ensureCsrfCookie; one retry picks up silkknot_csrf.
+    if (response.status === 403) {
+      await new Promise((resolve) => window.setTimeout(resolve, 50));
+      response = await send();
+    }
     const data = (await response.json()) as ApiResult;
     if (!data.ok || !data.challengeId) return { ok: false as const, message: data.message || "We couldn’t send a code." };
     return { ok: true as const, challengeId: data.challengeId, resendAt: data.resendAt, devCode: data.devCode };

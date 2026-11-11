@@ -12,17 +12,63 @@ function firstName(name: string) {
   return clean || "there";
 }
 
+function waText(value: string) {
+  return value.replace(/[\r\n\t]+/g, " ").trim();
+}
+
 function whatsAppDestination(phone: string | undefined) {
   const destination = normalizePhone(phone || "", "IN");
   return destination;
+}
+
+function itemSummary(items: { name: string; quantity: number }[] | undefined) {
+  const summary = (items || [])
+    .map((item) => waText(`${item.name} x${item.quantity}`))
+    .filter(Boolean)
+    .join(", ");
+  return summary || "your items";
+}
+
+function addressLine(address: { line1?: string; line2?: string; city?: string; postal?: string } | undefined) {
+  const line = [address?.line1, address?.line2, address?.city, address?.postal]
+    .map((part) => (part ? waText(String(part)) : ""))
+    .filter(Boolean)
+    .join(", ");
+  return line || "your address";
+}
+
+export function formatDeliveredAt(value: string | Date = new Date()) {
+  const date = value instanceof Date ? value : new Date(value);
+  const when = Number.isNaN(date.getTime()) ? new Date() : date;
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(when);
 }
 
 export function confirmationVariables(order: { customerName: string; number: string; total: number }) {
   return [firstName(order.customerName), order.number, formatPrice(order.total).replace(/\u00a0/g, " ")];
 }
 
-export function deliveredVariables(order: { customerName: string; number: string }) {
-  return [firstName(order.customerName), order.number];
+export function deliveredVariables(order: {
+  customerName: string;
+  number: string;
+  items?: { name: string; quantity: number }[];
+  address?: { line1?: string; line2?: string; city?: string; postal?: string };
+  deliveredAt?: string | Date;
+}) {
+  return [
+    firstName(order.customerName),
+    waText(order.number),
+    itemSummary(order.items),
+    addressLine(order.address),
+    formatDeliveredAt(order.deliveredAt),
+  ];
 }
 
 export function orderLinkSuffix(id: string) {
@@ -74,6 +120,9 @@ export async function notifyOrderDelivered(db: Db, order: {
   phone?: string;
   number: string;
   customerName: string;
+  items?: { name: string; quantity: number }[];
+  address?: { line1?: string; line2?: string; city?: string; postal?: string };
+  deliveredAt?: string | Date;
 }) {
   const template = process.env.MSG91_WHATSAPP_DELIVERED_TEMPLATE_NAME?.trim();
   const destination = whatsAppDestination(order.phone);
@@ -83,10 +132,13 @@ export async function notifyOrderDelivered(db: Db, order: {
     { $set: { "notices.whatsappDeliveredAt": new Date().toISOString() } },
   );
   if (claim.modifiedCount !== 1) return;
-  const [name, number] = deliveredVariables(order);
+  const [name, number, items, address, deliveredAt] = deliveredVariables(order);
   const sent = await sendWhatsAppTemplate(destination, template, {
     body_1: { type: "text", value: name },
     body_2: { type: "text", value: number },
+    body_3: { type: "text", value: items },
+    body_4: { type: "text", value: address },
+    body_5: { type: "text", value: deliveredAt },
   });
   if (!sent.ok) {
     await db.collection("orders").updateOne({ id: order.id }, { $unset: { "notices.whatsappDeliveredAt": "" } });

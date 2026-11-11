@@ -61,18 +61,20 @@ export async function sendWhatsAppTemplate(
         },
       }),
     }).catch(() => null);
-    return sent ? { ok: true, status: "sent" } : { ok: false, status: "failed" };
+    if (sent) return { ok: true, status: "sent" };
+    // MSG91 rejected (bad key/template). Local sink still lets login work.
+    if (devOtpSinkEnabled()) return { ok: true, status: "dev-sink" };
+    return { ok: false, status: "failed" };
   }
   if (devOtpSinkEnabled()) return { ok: true, status: "dev-sink" };
   return { ok: false, status: "unconfigured" };
 }
 
 export async function sendWhatsAppOtp(phone: string, code: string): Promise<Delivery> {
+  // Prefer local sink when enabled so bad/expired MSG91 keys do not block login.
+  if (devOtpSinkEnabled()) return { ok: true, status: "dev-sink" };
   const templateName = process.env.MSG91_WHATSAPP_TEMPLATE_NAME?.trim();
-  if (!templateName) {
-    if (devOtpSinkEnabled()) return { ok: true, status: "dev-sink" };
-    return { ok: false, status: "unconfigured" };
-  }
+  if (!templateName) return { ok: false, status: "unconfigured" };
   return sendWhatsAppTemplate(phone, templateName, {
     body_1: { type: "text", value: code },
     button_1: { subtype: "url", type: "text", value: code },

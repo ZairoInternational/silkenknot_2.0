@@ -267,6 +267,8 @@ async function advanceMockShipment(db: Db, orderId: string) {
       phone: String(order.phone || ""),
       number: String(order.number || ""),
       customerName: String(order.customerName || ""),
+      items: Array.isArray(order.items) ? order.items as { name: string; quantity: number }[] : [],
+      address: order.address as { line1?: string; line2?: string; city?: string; postal?: string } | undefined,
     });
   }
   paymentLog("mock_shipment_advanced", { orderId, state: step.state });
@@ -314,6 +316,8 @@ export async function refreshTracking(db: Db, orderId: string) {
       phone: String(order.phone || ""),
       number: String(order.number || ""),
       customerName: String(order.customerName || ""),
+      items: Array.isArray(order.items) ? order.items as { name: string; quantity: number }[] : [],
+      address: order.address as { line1?: string; line2?: string; city?: string; postal?: string } | undefined,
     });
   }
   return db.collection("orders").findOne({ id: orderId });

@@ -283,8 +283,8 @@ export function OtpAuth({
                     </label>
                   ) : null}
                   {error ? <p className="sk-auth-error" role="alert">{error}</p> : null}
-                  <button className={`sk-auth-primary is-${activeChannel}`} type="submit" disabled={busy}>
-                    {busy
+                  <button className={`sk-auth-primary is-${activeChannel}`} type="submit" disabled={busy || !store.ready}>
+                    {busy || !store.ready
                       ? "Checking…"
                       : activeChannel === "whatsapp"
                         ? "Send WhatsApp code"
