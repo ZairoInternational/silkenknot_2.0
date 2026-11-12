@@ -95,7 +95,7 @@ function BestsellerCard({ product, rank }: { product: Product; rank: number }) {
   }
 
   return (
-    <article className="group flex h-full min-w-0 flex-col rounded-[1.35rem] border border-[#e8e0d6]/90 bg-[#fffcf8] p-2 shadow-[0_2px_10px_rgba(44,41,38,0.05)] transition-[box-shadow,border-color] duration-300 ease-out hover:border-[#CBAC7C]/55 hover:shadow-[0_14px_34px_rgba(44,41,38,0.12)]">
+    <article className="group flex h-full min-w-0 flex-col md:rounded-[1.35rem] md:border md:border-[#e8e0d6]/90 md:bg-[#fffcf8] md:p-2 md:shadow-[0_2px_10px_rgba(44,41,38,0.05)] md:transition-[box-shadow,border-color] md:duration-300 md:ease-out md:hover:border-[#CBAC7C]/55 md:hover:shadow-[0_14px_34px_rgba(44,41,38,0.12)]">
       <div className="relative">
         <ListingCardMedia
           href={`/products/${product.slug}`}
@@ -108,31 +108,32 @@ function BestsellerCard({ product, rank }: { product: Product; rank: number }) {
           wishlist={<WishlistButton productId={product.id} name={product.name} />}
           badge={
             product.bestseller ? (
-              <span className="rounded-full border border-[#CBAC7C]/35 bg-[#F7F3EE]/95 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-[#8a7350] shadow-[0_2px_8px_rgba(44,41,38,0.06)] backdrop-blur-sm">
+              <span className="bg-[#F7F3EE]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm md:rounded-full md:border md:border-[#CBAC7C]/35 md:px-2.5 md:shadow-[0_2px_8px_rgba(44,41,38,0.06)]">
                 Bestseller
               </span>
             ) : product.newArrival ? (
-              <span className="rounded-full border border-[#CBAC7C]/35 bg-[#F7F3EE]/95 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-[#8a7350] shadow-[0_2px_8px_rgba(44,41,38,0.06)] backdrop-blur-sm">
+              <span className="bg-[#F7F3EE]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm md:rounded-full md:border md:border-[#CBAC7C]/35 md:px-2.5 md:shadow-[0_2px_8px_rgba(44,41,38,0.06)]">
                 New
               </span>
             ) : null
           }
         />
         <span
-          className="pointer-events-none absolute bottom-3 left-3 z-10 inline-flex min-w-8 items-center justify-center rounded-full border border-white/40 bg-[#2c2926]/55 px-2 py-1 font-serif text-[11px] tabular-nums tracking-wide text-white backdrop-blur-md"
+          className="pointer-events-none absolute bottom-3 left-3 z-10 hidden min-w-8 items-center justify-center rounded-full border border-white/40 bg-[#2c2926]/55 px-2 py-1 font-serif text-[11px] tabular-nums tracking-wide text-white backdrop-blur-md md:inline-flex"
           aria-hidden
         >
           {String(rank).padStart(2, "0")}
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col px-2.5 pb-2.5 pt-3.5 sm:px-3">
+      {/* Mobile: original flat card details. Desktop: Soft UI padded block. */}
+      <div className="pt-3 md:flex md:flex-1 md:flex-col md:px-3 md:pb-2.5 md:pt-3.5">
         {meta ? (
-          <p className="mb-1 line-clamp-1 text-[13px] capitalize leading-snug text-[#6f675d] md:text-sm md:text-[#8a8178]">
+          <p className="mb-1 line-clamp-1 text-[12px] capitalize leading-snug text-[#6f675d] md:text-sm md:text-[#8a8178]">
             {meta}
           </p>
         ) : null}
-        <h3 className="line-clamp-2 text-base font-medium leading-snug text-[#2c2926] md:text-lg">
+        <h3 className="truncate text-[15px] font-medium leading-snug text-[#2c2926] md:line-clamp-2 md:whitespace-normal md:text-lg">
           <Link
             href={`/products/${product.slug}`}
             className="transition-colors duration-200 hover:text-[#85603f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
@@ -140,11 +141,11 @@ function BestsellerCard({ product, rank }: { product: Product; rank: number }) {
             {product.name}
           </Link>
         </h3>
-        <div className="mt-0.5 text-[15px] md:text-base">
+        <CardGoldRating rating={product.rating} count={product.reviewCount} />
+        <div className="mt-1.5 md:mt-0.5 md:text-base">
           <PriceTag price={price} compare={compare} />
         </div>
-        <CardGoldRating rating={product.rating} count={product.reviewCount} />
-        <div className="mt-auto pt-1">
+        <div className="md:mt-auto md:pt-1">
           <CardMobileAdd soldOut={soldOut} inCart={inBag} onAdd={add} />
         </div>
       </div>
