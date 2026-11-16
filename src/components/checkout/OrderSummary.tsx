@@ -4,11 +4,13 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Info, Percent } from "lucide-react";
-import { DeliveryChargeNote, ShippingFee } from "@/components/checkout/DeliveryChargeNote";
+import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
+import { ShippingFee } from "@/components/checkout/DeliveryChargeNote";
 import { Media } from "@/components/ui";
 import { CheckoutOfferSheet, OfferBox } from "@/components/offers/OfferBox";
 import { IDEMPOTENCY_STORAGE_KEY, PAYMENT_STORAGE_KEY, SHIPPING_SELECTION_KEY, applyBagDiscount, deliveryChargeSplit, retainCheckoutDraft, shippingForPayment, type ShippingSelection } from "@/lib/checkout";
 import { couponDiscount, couponDiscountPaise, formatPrice, subtotal } from "@/lib/format";
+import { useShippingDisplay } from "@/lib/shipping/client";
 import { useStore } from "@/lib/store";
 import type { CartItem } from "@/lib/types";
 
@@ -266,6 +268,7 @@ function MrpNote({ items, mrp, selling }: { items: CartItem[]; mrp: number; sell
 export default function OrderSummary() {
   const store = useStore();
   const pathname = usePathname();
+  const shippingDisplay = useShippingDisplay();
   const [offersOpen, setOffersOpen] = useState(false);
   const [selection, setSelection] = useState<ShippingSelection | null>(null);
   const [payCod, setPayCod] = useState(false);
@@ -349,6 +352,12 @@ export default function OrderSummary() {
     && shortfallPaise > 0
     && !payCod,
   );
+  const deliveryFeeHint = (() => {
+    if (!priced || !charges?.shippingFree) return null;
+    const freeAt = priced.freeShippingPaise ?? 0;
+    if (freeAt > 0) return `Waived on orders over ${formatPrice(freeAt / 100)}`;
+    return "Waived on this order";
+  })();
   const platformWaiveAbovePaise = priced?.platformFeeWaiveAbovePaise ?? 0;
   const platformFeeHint = (() => {
     if (!priced || platformListPaise <= 0 || platformChargePaise > 0) return null;
@@ -413,6 +422,13 @@ export default function OrderSummary() {
       ) : (
         <p className="summaryFoot">Your bag is empty.</p>
       )}
+      {items.length ? (
+        <FreeShippingProgress
+          amount={merchandise}
+          threshold={(priced?.freeShippingPaise ?? shippingDisplay.freeShippingPaise) / 100}
+          className="mb-4"
+        />
+      ) : null}
       {items.length ? <div className="mb-4"><OfferBox onOpenAll={() => setOffersOpen(true)} /></div> : null}
       {couponNotice ? <p className="couponNotice" role="status">{couponNotice}</p> : null}
       <CheckoutOfferSheet open={offersOpen} onClose={() => setOffersOpen(false)} />
@@ -426,16 +442,14 @@ export default function OrderSummary() {
           <span>{formatPrice(mrp || goods)}</span>
         </div>
         <div className={`summaryLine billDelivery${freeDeliveryHint ? " hasHint" : ""}`}>
-          <span className="summaryWithNote">
-            <span className="billLabel">Delivery charges</span>
-            {priced ? <DeliveryChargeNote selection={priced} /> : null}
-          </span>
-          <span>
+          <span className="billLabel">Delivery charges</span>
+          <span className="billAmountBlock">
             {charges ? (
               <ShippingFee amountPaise={charges.shippingPaise} free={charges.shippingFree} />
             ) : (
-              <span className="billPending">Added at shipping</span>
+              <span className="billPriceSkeleton" aria-label="Updating delivery charge" role="status" />
             )}
+            {deliveryFeeHint ? <span className="billAmountNote">{deliveryFeeHint}</span> : null}
           </span>
           {freeDeliveryHint ? (
             <span className="billFreeHint">(Add {formatPrice(shortfallPaise / 100)} for free delivery)</span>
@@ -458,7 +472,7 @@ export default function OrderSummary() {
             ) : priced ? (
               <span className="chargeFree">Free</span>
             ) : (
-              <span className="billPending">Added at shipping</span>
+              <span className="billPriceSkeleton" aria-label="Updating platform fee" role="status" />
             )}
             {platformFeeHint ? <span className="billAmountNote">{platformFeeHint}</span> : null}
           </span>

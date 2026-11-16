@@ -6,6 +6,7 @@ import { MotionConfig } from "framer-motion";
 import { StoreProvider, useStore } from "@/lib/store";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { Footer } from "@/components/layout/Footer";
+import { CouponCelebrate } from "@/components/cart/CouponCelebrate";
 import { CartSheet } from "@/components/layout/CartSheet";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { accountBarPath, MobileAccountBar } from "@/components/account/MobileAccountBar";
@@ -41,6 +42,7 @@ export function Providers({
         <SmoothScroll>{children}</SmoothScroll>
         <MobileAccountBar />
         <RoutePending />
+        <CouponCelebrate />
       </StoreProvider>
     </MotionConfig>
   );

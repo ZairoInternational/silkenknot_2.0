@@ -1,6 +1,7 @@
 import type { CartItem, Coupon, Product } from "@/lib/types";
 import { percentOfPaise } from "@/lib/payments/money";
 
+/** Fallback only — live threshold comes from admin shipping settings via useShippingDisplay. */
 export const FREE_SHIPPING_AT = 999;
 
 export function photo(id: string, width = 960) {
@@ -43,9 +44,9 @@ export function itemCount(items: CartItem[]) {
   return items.reduce((sum, item) => sum + item.quantity, 0);
 }
 
-export function shippingCost(amount: number, method: "standard" | "express") {
+export function shippingCost(amount: number, method: "standard" | "express", freeAt = FREE_SHIPPING_AT) {
   if (method === "express") return 149;
-  return amount >= FREE_SHIPPING_AT ? 0 : 79;
+  return amount >= freeAt ? 0 : 79;
 }
 
 /** Product IDs a product-scope coupon applies to (supports legacy single productId). */

@@ -48,7 +48,7 @@ const trustItems = [
     subtitle: "Small batches, big love",
     Icon: Heart,
   },
-  { title: "Free Shipping", subtitle: "On orders above ₹999", Icon: Truck },
+  { title: "Free Shipping", subtitle: "On qualifying orders", Icon: Truck },
   {
     title: "Secure Checkout",
     subtitle: "Shop with confidence",

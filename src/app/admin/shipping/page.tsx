@@ -5,6 +5,8 @@ import { AdminPageHeader, AdminPanel, AdminStickyActions, AdminTip, adminBtn, ad
 import { AdminFormSkeleton, AdminPageHeaderSkeleton } from "@/components/admin/AdminSkeletons";
 import { csrfHeaders } from "@/lib/auth/browser";
 import { formatPrice } from "@/lib/format";
+import { clearShippingDisplayCache, primeShippingDisplayCache } from "@/lib/shipping/client";
+import { shippingDisplayFromPolicy } from "@/lib/shipping/display";
 
 type Policy = {
   delhiveryEnabled: boolean;
@@ -63,6 +65,8 @@ export default function ShippingSettingsPage() {
         return;
       }
       setPolicy(body.policy);
+      clearShippingDisplayCache();
+      if (body.policy) primeShippingDisplayCache(shippingDisplayFromPolicy(body.policy));
       setMessage("Saved. API tokens stay in server environment variables.");
     } catch {
       setError("Could not save.");

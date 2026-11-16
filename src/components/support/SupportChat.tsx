@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { MessageCircle, X, RotateCcw, ChevronLeft, Sparkles } from "lucide-react";
 import { csrfHeaders } from "@/lib/auth/browser";
 import { accountBarPath } from "@/components/account/MobileAccountBar";
+import { formatPrice } from "@/lib/format";
+import { useShippingDisplay } from "@/lib/shipping/client";
 import { useStore } from "@/lib/store";
 import { faqById } from "@/lib/support/faq";
 import { consumeSupportIntent, saveSupportIntent } from "@/lib/support/intent";
@@ -87,6 +89,8 @@ function orderActions(order: SupportOrderDetail, paymentFocus = false): SupportA
 export function SupportChat() {
   const pathname = usePathname();
   const store = useStore();
+  const shipping = useShippingDisplay();
+  const freeShippingLabel = formatPrice(shipping.freeShippingAt);
   const signedIn = Boolean(store.currentUser);
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -402,7 +406,7 @@ export function SupportChat() {
 
     if (entry.flow === "orders" || entry.flow === "payment_orders") {
       if (!signedIn) {
-        const response = faqResponse(questionId);
+        const response = faqResponse(questionId, freeShippingLabel);
         if (response) push(response);
         saveSupportIntent(questionId);
         push(signInPrompt(pathname || "/shop"));
@@ -412,7 +416,7 @@ export function SupportChat() {
       return;
     }
 
-    const response = faqResponse(questionId);
+    const response = faqResponse(questionId, freeShippingLabel);
     if (response) push(response);
     if (entry.flow === "product_pick_use") {
       await showProductPicker("howToUse");

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FreeShippingAmount } from "@/components/content/FreeShippingCopy";
 import { PolicyDoc, PolicyGlance, PolicyRows, PolicySection, PolicySteps } from "@/components/content/PolicyDoc";
 
 export function PaymentsPolicyPage() {
@@ -30,7 +31,7 @@ export function PaymentsPolicyPage() {
             "Your final total is shown clearly before you pay.",
             "You can pay online (UPI, cards, wallets) or with cash on delivery when it’s offered for your area.",
             "A small platform fee may appear on your bill—you’ll see it before you confirm.",
-            "Delivery is free on eligible orders of ₹999 and above; otherwise the delivery charge for your area is shown at checkout.",
+            <>Delivery is free on eligible orders of <FreeShippingAmount /> and above; otherwise the delivery charge for your area is shown at checkout.</>,
           ]}
         />
       </div>
@@ -46,7 +47,7 @@ export function PaymentsPolicyPage() {
           rows={[
             { label: "Currency", value: "Indian Rupees (₹)." },
             { label: "Taxes", value: "Included in the prices shown. If you need an invoice for an order, write to us and we’ll help." },
-            { label: "Delivery", value: "Shown for your area at checkout. Free on eligible orders of ₹999 and above. A faster option appears only when it’s available for you." },
+            { label: "Delivery", value: <>Shown for your area at checkout. Free on eligible orders of <FreeShippingAmount /> and above. A faster option appears only when it’s available for you.</> },
           ]}
         />
       </PolicySection>
@@ -59,7 +60,7 @@ export function PaymentsPolicyPage() {
           You can use one offer code at a time. If a code isn’t valid, we’ll let you know and remove it. The discount is reflected in the total before you pay.
         </p>
         <p>
-          Free delivery applies to eligible standard delivery when your order meets the ₹999 threshold (or another threshold we show at checkout). Faster delivery, when offered, has its own charge.
+          Free delivery applies to eligible standard delivery when your order meets the <FreeShippingAmount /> threshold shown at checkout. Faster delivery, when offered, has its own charge.
         </p>
       </PolicySection>
 

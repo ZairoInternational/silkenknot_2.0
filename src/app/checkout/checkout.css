@@ -151,6 +151,18 @@
 .silk-checkout .billAmountBlock { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
 .silk-checkout .billAmountNote { max-width: 12.5rem; font-size: 11px; line-height: 1.35; font-weight: 500; color: #1f7a4d; }
 .silk-checkout .billPending { color: #9a958c; font-size: 12px; font-weight: 400; }
+.silk-checkout .billPriceSkeleton {
+  display: inline-block;
+  width: 3.25rem;
+  height: 0.85rem;
+  border-radius: 4px;
+  background: #e6e0d6;
+  animation: bill-price-pulse 1s ease-in-out infinite;
+}
+@keyframes bill-price-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
 .silk-checkout .billRule { height: 0; margin: 6px 0 2px; border: 0; border-top: 1px solid var(--line); }
 .silk-checkout .billRuleDashed { border-top-style: dashed; border-top-color: #e0d8cc; }
 .silk-checkout .billDiscounts { margin: 2px 0 0; }

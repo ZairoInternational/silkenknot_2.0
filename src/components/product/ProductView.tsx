@@ -9,7 +9,8 @@ import { ProductPageSkeleton } from "@/components/storefront/PageSkeletons";
 import { Media, PriceTag, Quantity, Reveal, Stars, usePrefersReducedMotion, WishlistButton } from "@/components/ui";
 import { useFullProductBySlug } from "@/lib/catalog/client";
 import { getSeedProduct } from "@/lib/data";
-import { categoryName, formatDate } from "@/lib/format";
+import { categoryName, formatDate, formatPrice } from "@/lib/format";
+import { useShippingDisplay } from "@/lib/shipping/client";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 import { productShowsSection } from "@/lib/types";
@@ -40,6 +41,7 @@ export function ProductView({ slug }: { slug: string }) {
 function ProductDetail({ product }: { product: Product }) {
   const store = useStore();
   const router = useRouter();
+  const shipping = useShippingDisplay();
   const reduced = usePrefersReducedMotion();
   const [image, setImage] = useState(0);
   const [origin, setOrigin] = useState("50% 50%");
@@ -212,7 +214,7 @@ function ProductDetail({ product }: { product: Product }) {
         <section>
           <h2 className="font-serif text-4xl">Shipping</h2>
           <p className="mt-4 leading-7 text-mute">
-            Standard delivery within India is free on eligible orders over ₹999; otherwise the price for your PIN is shown at checkout. A faster option appears only when available. Candles and jars are packed to travel.{" "}
+            Standard delivery within India is free on eligible orders over {formatPrice(shipping.freeShippingAt)}; otherwise the price for your PIN is shown at checkout. A faster option appears only when available. Candles and jars are packed to travel.{" "}
             <a href="/shipping" className="underline underline-offset-4">
               Shipping policy
             </a>

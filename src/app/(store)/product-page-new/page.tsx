@@ -11,7 +11,8 @@ import { ProductPageSkeleton } from "@/components/storefront/PageSkeletons";
 import { trackViewItem } from "@/lib/analytics";
 import { useFullProductBySlug } from "@/lib/catalog/client";
 import { seedProducts } from "@/lib/data";
-import { FREE_SHIPPING_AT, couponProductIds, formatPrice } from "@/lib/format";
+import { couponProductIds, formatPrice } from "@/lib/format";
+import { useShippingDisplay } from "@/lib/shipping/client";
 import { useStore } from "@/lib/store";
 import type { Coupon, Product, Review } from "@/lib/types";
 import { productShowsSection } from "@/lib/types";
@@ -86,6 +87,7 @@ function ProductLayout({
   const store = useStore();
   const router = useRouter();
   const pathname = usePathname();
+  const shipping = useShippingDisplay();
   const loginHref = `/account/login?next=${encodeURIComponent(pathname || `/products/${product.slug}`)}`;
   const [activeImage, setActiveImage] = useState(0);
   const [variantLabel, setVariantLabel] = useState(product.variants[0]?.label ?? "");
@@ -133,7 +135,7 @@ function ProductLayout({
   );
   const applied = offers.find((offer) => offer.id === offerId) ?? offers.find((offer) => offer.code === store.couponCode);
   const lineTotal = priceAfterOffer(price, applied);
-  const shippingGap = FREE_SHIPPING_AT - lineTotal;
+  const shippingGap = shipping.freeShippingAt - lineTotal;
   const images = product.images.length ? product.images : ["/silknknot/body_butter.jpg"];
   const full = Math.round(product.rating);
   const reviews = mergedReviews(product.reviews, store.reviewsFor(product.id)).sort(
@@ -362,7 +364,7 @@ function ProductLayout({
                       }}
                       className="shrink-0 text-sm text-[#8a7350]"
                     >
-                      {applied?.id === offer.id ? "Applied" : "Apply"}
+                      {applied?.id === offer.id ? "Remove" : "Apply"}
                     </button>
                   </li>
                 ))}

@@ -108,7 +108,7 @@ function BrandContextStage({
     return (
       <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-sm">
         <div className="flex h-8 items-center justify-center bg-black text-[9px] uppercase tracking-[0.16em] text-white/70">
-          Free shipping over ₹999
+          Free shipping on qualifying orders
         </div>
         <div className="flex h-[4.5rem] items-center justify-between px-5">
           <span className="text-[10px] uppercase tracking-[0.14em] text-mute">Menu</span>

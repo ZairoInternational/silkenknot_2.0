@@ -1,6 +1,6 @@
 import Link from "next/link";
+import { FaqAnswers } from "@/components/content/FreeShippingCopy";
 import { BrandLogo } from "@/components/ui";
-import { sharedFaqs } from "@/lib/data";
 
 export function Editorial({
   eyebrow,
@@ -685,12 +685,7 @@ export function TermsPage() {
 export function FaqPage() {
   return (
     <Editorial eyebrow="Help" title="Questions" lede="The practical ones, answered without a script.">
-      {sharedFaqs.map((faq) => (
-        <section key={faq.question}>
-          <h2 className="font-serif text-3xl text-ink">{faq.question}</h2>
-          <p>{faq.answer}</p>
-        </section>
-      ))}
+      <FaqAnswers />
     </Editorial>
   );
 }

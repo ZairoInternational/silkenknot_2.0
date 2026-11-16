@@ -12,6 +12,7 @@ import {
 } from "react";
 import { categoryNameFor, trackAddToCart, trackAddToWishlist } from "@/lib/analytics";
 import { csrfHeaders } from "@/lib/auth/browser";
+import { queueBagCelebrate } from "@/lib/bagCelebrate";
 import { retainCheckoutDraft } from "@/lib/checkout";
 import { seedCategories, seedCoupons, seedProducts } from "@/lib/data";
 import { couponDiscount, repairImageUrl, slugify, subtotal, withDerivedPrice } from "@/lib/format";
@@ -503,6 +504,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       return { ok: false, message: "This offer doesn’t apply to your bag." };
     }
     patch({ couponCode: coupon.code });
+    queueBagCelebrate("coupon");
     return { ok: true, message: coupon.label };
   }, [patch]);
 

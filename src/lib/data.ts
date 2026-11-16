@@ -768,7 +768,7 @@ export const seedOrders: Order[] = [
 export const sharedFaqs: Faq[] = [
   {
     question: "When do I get free shipping?",
-    answer: `Orders of ₹999 and above have free standard delivery within India (when eligible at checkout). Any faster option, and its price, is shown for your PIN.`,
+    answer: `Orders of {{freeShipping}} and above have free standard delivery within India (when eligible at checkout). Any faster option, and its price, is shown for your PIN.`,
   },
   {
     question: "How long does delivery take?",

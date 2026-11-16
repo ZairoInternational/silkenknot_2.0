@@ -92,7 +92,7 @@ export const SUPPORT_FAQ: SupportFaqEntry[] = [
     id: "shipping_how_long",
     label: "How long does delivery take?",
     answer:
-      "At checkout you will see the delivery time for your PIN, and a faster option when it is available. Delivery is free on eligible orders of ₹999 and above; below that, the delivery price for your PIN appears at checkout. We currently deliver within India.",
+      "At checkout you will see the delivery time for your PIN, and a faster option when it is available. Delivery is free on eligible orders of {{freeShipping}} and above; below that, the delivery price for your PIN appears at checkout. We currently deliver within India.",
     policySource: "sharedFaqs delivery time + free shipping; ShippingPolicy; sharedFaqs outside India",
     actions: [readShipping, backTopics],
   },
@@ -259,6 +259,11 @@ export const HOME_TOPICS: SupportQuestionId[] = [
 
 export function faqById(id: SupportQuestionId): SupportFaqEntry | undefined {
   return SUPPORT_FAQ.find((entry) => entry.id === id);
+}
+
+/** Replace {{freeShipping}} with a formatted amount (e.g. ₹799). */
+export function fillFaqAnswer(answer: string, freeShippingLabel: string) {
+  return answer.replace(/\{\{freeShipping\}\}/g, freeShippingLabel);
 }
 
 export function homeTopicActions(): SupportAction[] {

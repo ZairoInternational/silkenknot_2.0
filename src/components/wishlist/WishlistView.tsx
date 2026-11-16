@@ -16,38 +16,39 @@ import {
 
 import { seedProducts } from "@/lib/data";
 import { formatPrice } from "@/lib/format";
+import { useShippingDisplay } from "@/lib/shipping/client";
 import { useSiteMedia } from "@/lib/site-media/client";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 import { Media, WishlistButton } from "@/components/ui";
 import { SHOW_STORE_REVIEWS } from "@/lib/storefront-reviews";
 
-const notes = [
-  {
-    icon: Leaf,
-    title: "Natural Ingredients",
-    copy: "Pure and gentle on your skin.",
-  },
-  {
-    icon: Heart,
-    title: "Handmade with Love",
-    copy: "Crafted with care.",
-  },
-  {
-    icon: Truck,
-    title: "Free Shipping",
-    copy: "On orders over ₹999.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Secure Checkout",
-    copy: "Shop with confidence.",
-  },
-];
-
 export function WishlistView() {
   const store = useStore();
+  const shipping = useShippingDisplay();
   const [sort, setSort] = useState("recent");
+  const notes = [
+    {
+      icon: Leaf,
+      title: "Natural Ingredients",
+      copy: "Pure and gentle on your skin.",
+    },
+    {
+      icon: Heart,
+      title: "Handmade with Love",
+      copy: "Crafted with care.",
+    },
+    {
+      icon: Truck,
+      title: "Free Shipping",
+      copy: `On orders over ${formatPrice(shipping.freeShippingAt)}.`,
+    },
+    {
+      icon: ShieldCheck,
+      title: "Secure Checkout",
+      copy: "Shop with confidence.",
+    },
+  ];
 
   const catalog = store.products.length ? store.products : seedProducts;
 

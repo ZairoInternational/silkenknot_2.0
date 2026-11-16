@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ShoppingBag, X } from "lucide-react";
+import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
 import { OfferBox, OfferList } from "@/components/offers/OfferBox";
 import { couponDiscount, formatPrice, subtotal } from "@/lib/format";
 import { useStore } from "@/lib/store";
@@ -98,6 +99,7 @@ export function CartSheet() {
                 ))}
               </ul>
               <div className="border-t border-line px-5 py-4">
+                <FreeShippingProgress amount={Math.max(0, goods - discount)} className="mb-4" />
                 <OfferBox onOpenAll={() => setOffersOpen(true)} />
                 <div className="mt-4 flex items-baseline justify-between text-sm">
                   <span>Subtotal</span>

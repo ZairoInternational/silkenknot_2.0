@@ -1,4 +1,4 @@
-import { faqById, homeTopicActions, SUPPORT_FAQ, SUPPORT_LINKS, WELCOME_TEXT } from "./faq";
+import { fillFaqAnswer, faqById, homeTopicActions, SUPPORT_FAQ, SUPPORT_LINKS, WELCOME_TEXT } from "./faq";
 import type { ChatMessage, SupportAction, SupportFaqEntry, SupportQuestionId } from "./types";
 
 let seq = 0;
@@ -49,13 +49,13 @@ function followUpActions(entry: SupportFaqEntry): SupportAction[] {
   return merged;
 }
 
-export function faqResponse(questionId: SupportQuestionId): ChatMessage | null {
+export function faqResponse(questionId: SupportQuestionId, freeShippingLabel = "the free-shipping threshold"): ChatMessage | null {
   const entry = faqById(questionId);
   if (!entry) return null;
   return {
     id: nextMessageId("f"),
     role: "bot",
-    text: entry.answer,
+    text: fillFaqAnswer(entry.answer, freeShippingLabel),
     actions: followUpActions(entry),
   };
 }

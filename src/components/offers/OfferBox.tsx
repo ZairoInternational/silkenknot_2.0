@@ -42,7 +42,7 @@ export function OfferBox({ onOpenAll }: { onOpenAll: () => void }) {
           onClick={() => apply(featured)}
           className={`h-8 shrink-0 rounded-md px-3 text-xs ${store.couponCode === featured.code ? "border border-[#2c2926] bg-white text-[#2c2926]" : "bg-[#CBAC7C] text-white hover:bg-[#B39668]"}`}
         >
-          {store.couponCode === featured.code ? "Applied" : "Apply"}
+          {store.couponCode === featured.code ? "Remove" : "Apply"}
         </button>
       </div>
       <button type="button" onClick={() => setCodeOpen((open) => !open)} className="flex w-full items-center gap-2 border-t border-[#e3dbd1] px-3 py-2.5 text-left text-sm text-[#4e4943]">
@@ -115,7 +115,7 @@ export function OfferList({ onClose }: { onClose: () => void }) {
                 onClick={() => apply(offer)}
                 className={`h-8 shrink-0 rounded-md px-3 text-xs ${applied ? "border border-[#2c2926] bg-white text-[#2c2926]" : "bg-[#CBAC7C] text-white hover:bg-[#B39668]"}`}
               >
-                {applied ? "Applied" : "Apply"}
+                {applied ? "Remove" : "Apply"}
               </button>
             </li>
           );

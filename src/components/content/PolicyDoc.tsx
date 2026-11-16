@@ -83,13 +83,13 @@ export function PolicySection({
   );
 }
 
-export function PolicyGlance({ items }: { items: string[] }) {
+export function PolicyGlance({ items }: { items: React.ReactNode[] }) {
   return (
     <div className="rounded-sm bg-cream px-5 py-6 md:px-7">
       <p className="text-[11px] uppercase tracking-[0.16em] text-mute">At a glance</p>
       <ul className="mt-4 space-y-3 text-ink/85">
-        {items.map((item) => (
-          <li key={item} className="flex gap-3">
+        {items.map((item, index) => (
+          <li key={index} className="flex gap-3">
             <span className="mt-2 size-1.5 shrink-0 rounded-full bg-mist" aria-hidden />
             <span>{item}</span>
           </li>
@@ -120,7 +120,7 @@ export function PolicySteps({ steps }: { steps: { title: string; body: string }[
 export function PolicyRows({
   rows,
 }: {
-  rows: { label: string; value: string }[];
+  rows: { label: string; value: React.ReactNode }[];
 }) {
   return (
     <dl className="divide-y divide-line border-y border-line">

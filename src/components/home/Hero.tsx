@@ -18,6 +18,8 @@ import type { PublicBanner } from "@/lib/banners/content";
 import { setHeroNav } from "@/lib/hero-nav";
 import type { HeroContent, HeroEvergreenSlide, HeroOffer } from "@/lib/hero/content";
 import { DEFAULT_HERO_CONTENT, DEFAULT_HERO_OFFER } from "@/lib/hero/content";
+import { formatPrice } from "@/lib/format";
+import { useShippingDisplay } from "@/lib/shipping/client";
 
 /* Palette (existing): ivory #f6f1ea / #f7f3ee, sand #CBAC7C, bronze #9a7352,
    gold text #8a7350 / #a68456, ink #2c2926. New, matched to the set: marigold
@@ -375,6 +377,7 @@ export function Hero({
   const resolvedOffer = content?.offer ?? offer;
   const resolvedEvergreen = content?.evergreen ?? evergreen;
   const reduced = usePrefersReducedMotion();
+  const shipping = useShippingDisplay();
   const items = buildCarouselItems(resolvedOffer, resolvedEvergreen, campaignBanners);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
@@ -528,7 +531,7 @@ export function Hero({
 
                   <ul className="mt-7 hidden flex-wrap gap-x-6 gap-y-2 text-[13px] text-[#5c5348] md:flex">
                     <li className="inline-flex items-center gap-2">
-                      <Truck size={16} strokeWidth={1.5} className="text-[#9a7352]" /> Free shipping over ₹999
+                      <Truck size={16} strokeWidth={1.5} className="text-[#9a7352]" /> Free shipping over {formatPrice(shipping.freeShippingAt)}
                     </li>
                     <li className="inline-flex items-center gap-2">
                       <ShieldCheck size={16} strokeWidth={1.5} className="text-[#9a7352]" /> Cancel before dispatch

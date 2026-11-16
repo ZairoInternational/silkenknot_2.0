@@ -54,7 +54,7 @@ test("policy answers follow return policy and shipping sources", () => {
 
   const shipping = faqById("shipping_how_long");
   assert.ok(shipping);
-  assert.match(shipping.answer, /\u20B9999/);
+  assert.match(shipping.answer, /\{\{freeShipping\}\}/);
   assert.match(shipping.answer, /PIN/);
   assert.match(shipping.answer, /India/);
 

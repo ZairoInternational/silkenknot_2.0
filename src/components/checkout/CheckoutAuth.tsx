@@ -6,10 +6,18 @@ import { CheckoutPageSkeleton } from "@/components/storefront/PageSkeletons";
 import { needsName } from "@/lib/auth/browser";
 import { useStore } from "@/lib/store";
 
+function isPostOrderCheckout(pathname: string | null) {
+  return Boolean(
+    pathname?.startsWith("/checkout/thank-you") || pathname?.startsWith("/checkout/confirmation"),
+  );
+}
+
 export function CheckoutAuth({ children }: { children: React.ReactNode }) {
   const store = useStore();
   const router = useRouter();
   const pathname = usePathname();
+  const postOrder = isPostOrderCheckout(pathname);
+  const emptyBag = store.ready && !postOrder && store.cart.length === 0;
 
   useEffect(() => {
     if (!store.ready) return;
@@ -19,10 +27,14 @@ export function CheckoutAuth({ children }: { children: React.ReactNode }) {
     }
     if (needsName(store.currentUser)) {
       router.replace(`/account?next=${encodeURIComponent(pathname || "/checkout/shipping")}`);
+      return;
     }
-  }, [store.ready, store.currentUser, router, pathname]);
+    if (!postOrder && store.cart.length === 0) {
+      router.replace("/shop");
+    }
+  }, [store.ready, store.currentUser, store.cart.length, postOrder, router, pathname]);
 
-  if (!store.ready || !store.currentUser || needsName(store.currentUser)) {
+  if (!store.ready || !store.currentUser || needsName(store.currentUser) || emptyBag) {
     return <CheckoutPageSkeleton />;
   }
   return <>{children}</>;

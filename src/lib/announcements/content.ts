@@ -20,7 +20,7 @@ export const DEFAULT_ANNOUNCEMENTS: AnnouncementSettings = {
   enabled: true,
   notes: [
     { id: "note-1", text: "New seasonal scents are here", href: "/shop?category=aromatherapy", icon: "sparkles", active: true },
-    { id: "note-2", text: "Free shipping on orders over ₹999", href: "/shipping", icon: "truck", active: true },
+    { id: "note-2", text: "Free shipping on qualifying orders", href: "/shipping", icon: "truck", active: true },
     { id: "note-3", text: "Save 10% with code RITUAL10", href: "/shop", icon: "gift", active: true },
     { id: "note-4", text: "Body butters for everyday skin", href: "/shop?category=body-care", icon: "leaf", active: true },
     { id: "note-5", text: "Candles for the last hour of the day", href: "/shop?category=aromatherapy", icon: "flame", active: true },
