@@ -252,12 +252,12 @@ function ProductLayout({
   };
 
   return (
-    <div className="bg-[#f6f3ee] pb-28 pt-[var(--nav-h)] text-[#2c2926] md:pb-0">
+    <div className="bg-[#ffffff] pb-28 pt-[var(--nav-h)] text-[#2c2926] md:pb-0">
       <section className="mx-auto grid max-w-[1200px] items-start gap-6 px-4 pb-8 pt-0 md:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)] md:items-stretch md:gap-10 md:px-8 md:py-12">
         <div className="flex flex-col gap-3 md:h-150">
           <div className="relative aspect-[5/4] max-h-[42svh] overflow-hidden rounded-xl bg-white md:aspect-auto md:max-h-none md:min-h-0 md:flex-1">
             <Media src={images[activeImage] ?? images[0]} alt={product.name} sizes="(min-width: 1024px) 42vw, 90vw" className="object-contain p-6" />
-            {product.bestseller ? <span className="absolute left-3 top-3 z-10 rounded-full border border-[#e3dbd1] bg-white px-3 py-1 text-xs text-[#2c2926]">Bestseller</span> : null}
+            {product.bestseller ? <span className="absolute left-3 top-3 z-10 rounded-full border border-[#e8e8e6] bg-white px-3 py-1 text-xs text-[#2c2926]">Bestseller</span> : null}
             <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center">
               <div className="pointer-events-auto flex items-center gap-2">
                 {images.map((_, index) => (
@@ -279,7 +279,7 @@ function ProductLayout({
                 type="button"
                 aria-label={`View image ${index + 1}`}
                 onClick={() => setActiveImage(index)}
-                className={`relative size-16 shrink-0 overflow-hidden rounded-md bg-white sm:size-20 ${activeImage === index ? "ring-2 ring-[#CBAC7C]" : "ring-1 ring-[#e6e0d6]"}`}
+                className={`relative size-16 shrink-0 overflow-hidden rounded-md bg-white sm:size-20 ${activeImage === index ? "ring-2 ring-[#61A2AF]" : "ring-1 ring-[#efefed]"}`}
               >
                 <Media src={image} alt={`${product.name} view ${index + 1}`} sizes="80px" className="object-contain p-1" />
               </button>
@@ -305,9 +305,9 @@ function ProductLayout({
           </div>
           <p className="mt-1 hidden text-lg capitalize text-[#4e4943] md:block">{product.scent}</p>
           {SHOW_STORE_REVIEWS ? (
-            <p className="mt-3 text-base text-[#8a7350]">
+            <p className="mt-3 text-base text-[#3A6B75]">
               {"★".repeat(full)}
-              <span className="text-[#cfc4b6]">{"★".repeat(Math.max(0, 5 - full))}</span>
+              <span className="text-[#d4d4d2]">{"★".repeat(Math.max(0, 5 - full))}</span>
               <span className="ml-2 text-[#4e4943]">{product.rating.toFixed(1)} ({product.reviewCount} reviews)</span>
             </p>
           ) : null}
@@ -322,16 +322,16 @@ function ProductLayout({
                     <button
                       type="button"
                       onClick={() => setVariantLabel(item.label)}
-                      className={`h-10 rounded-lg border bg-white px-4 text-sm text-[#2c2926] ${item.label === variant?.label ? "border-[#2c2926]" : "border-[#e3dbd1]"}`}
+                      className={`h-10 rounded-lg border bg-white px-4 text-sm text-[#2c2926] ${item.label === variant?.label ? "border-[#2c2926]" : "border-[#e8e8e6]"}`}
                     >
                       {item.label}
                     </button>
                     <p className="mt-1 text-sm">
                       {formatPrice(priceAfterOffer(item.price, applied))}
                       {applied && priceAfterOffer(item.price, applied) < item.price ? (
-                        <span className="ml-1 text-[#8a7350] line-through">{formatPrice(item.price)}</span>
+                        <span className="ml-1 text-[#3A6B75] line-through">{formatPrice(item.price)}</span>
                       ) : item.compareAtPrice ? (
-                        <span className="ml-1 text-[#8a7350] line-through">{formatPrice(item.compareAtPrice)}</span>
+                        <span className="ml-1 text-[#3A6B75] line-through">{formatPrice(item.compareAtPrice)}</span>
                       ) : null}
                     </p>
                   </div>
@@ -345,10 +345,10 @@ function ProductLayout({
               <p className="text-sm text-[#4e4943]">Offers</p>
               <ul className="mt-2 space-y-2">
                 {offers.map((offer) => (
-                  <li key={offer.id} className="flex items-center justify-between gap-3 rounded-lg border border-[#e3dbd1] bg-white px-3 py-2">
+                  <li key={offer.id} className="flex items-center justify-between gap-3 rounded-lg border border-[#e8e8e6] bg-white px-3 py-2">
                     <span>
                       <span className="block text-sm font-medium">{offer.label}</span>
-                      <span className="text-xs tracking-[0.08em] text-[#8a7350]">{offer.code}</span>
+                      <span className="text-xs tracking-[0.08em] text-[#3A6B75]">{offer.code}</span>
                     </span>
                     <button
                       type="button"
@@ -362,7 +362,7 @@ function ProductLayout({
                         const result = store.applyCoupon(offer.code);
                         if (result.ok && result.message) store.notify(result.message);
                       }}
-                      className="shrink-0 text-sm text-[#8a7350]"
+                      className="shrink-0 text-sm text-[#3A6B75]"
                     >
                       {applied?.id === offer.id ? "Remove" : "Apply"}
                     </button>
@@ -375,17 +375,17 @@ function ProductLayout({
           <p className="mt-6 text-lg font-medium">
             {formatPrice(lineTotal)}
             {applied && lineTotal < price ? (
-              <span className="ml-2 text-sm font-normal text-[#8a7350] line-through">{formatPrice(price)}</span>
+              <span className="ml-2 text-sm font-normal text-[#3A6B75] line-through">{formatPrice(price)}</span>
             ) : variant?.compareAtPrice ? (
-              <span className="ml-2 text-sm font-normal text-[#8a7350] line-through">{formatPrice(variant.compareAtPrice)}</span>
+              <span className="ml-2 text-sm font-normal text-[#3A6B75] line-through">{formatPrice(variant.compareAtPrice)}</span>
             ) : null}
           </p>
           <div className="mt-3 hidden grid-cols-2 gap-3 md:grid">
-            <button type="button" onClick={() => add()} className="flex h-12 items-center justify-center gap-2 rounded-lg bg-[#CBAC7C] text-base text-white hover:bg-[#B39668]">
+            <button type="button" onClick={() => add()} className="flex h-12 items-center justify-center gap-2 rounded-lg bg-[#61A2AF] text-base text-white hover:bg-[#4F8A96]">
               <ShoppingBag size={16} />
               Add to cart
             </button>
-            <button type="button" onClick={() => add(onBuyNow)} className="flex h-12 items-center justify-center rounded-lg border border-[#e3dbd1] bg-white text-base text-[#4e4943]">
+            <button type="button" onClick={() => add(onBuyNow)} className="flex h-12 items-center justify-center rounded-lg border border-[#e8e8e6] bg-white text-base text-[#4e4943]">
               Buy it now
             </button>
           </div>
@@ -397,7 +397,7 @@ function ProductLayout({
         <DeliveryChoice />
       </section>
 
-      <section className="overflow-hidden border-y border-[#e6e0d6] bg-[#fbf9f6]">
+      <section className="overflow-hidden border-y border-[#efefed] bg-[#ffffff]">
         <div className="py-6 md:hidden" aria-label="Product benefits">
           <ul className="silk-marquee flex w-max items-center">
             {[0, 1].map((copy) => (
@@ -409,7 +409,7 @@ function ProductLayout({
                   ["Made in India", Truck],
                 ].map(([label, Icon]) => (
                   <span key={String(label)} className="mx-8 inline-flex items-center gap-2 text-base font-medium text-[#2c2926]">
-                    <Icon size={18} strokeWidth={1.4} className="text-[#8a7350]" />
+                    <Icon size={18} strokeWidth={1.4} className="text-[#3A6B75]" />
                     {String(label)}
                   </span>
                 ))}
@@ -425,7 +425,7 @@ function ProductLayout({
             ["Made in India", Truck],
           ].map(([label, Icon]) => (
             <li key={String(label)} className="text-center">
-              <span className="mx-auto grid size-10 place-items-center text-[#8a7350]">
+              <span className="mx-auto grid size-10 place-items-center text-[#3A6B75]">
                 <Icon size={22} strokeWidth={1.3} />
               </span>
               <h2 className="mt-3 text-base font-medium">{String(label)}</h2>
@@ -436,7 +436,7 @@ function ProductLayout({
 
       {detailTabs.length ? (
       <section className="mx-auto max-w-[1200px] px-4 py-14 md:px-8">
-        <div className="flex gap-6 overflow-x-auto border-b border-[#e6e0d6] text-base [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist">
+        <div className="flex gap-6 overflow-x-auto border-b border-[#efefed] text-base [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist">
           {detailTabs.map(([id, label]) => (
             <button key={id} type="button" role="tab" aria-selected={detail === id} onClick={() => setDetail(id)} className={`shrink-0 pb-3 ${detail === id ? "border-b-2 border-[#2c2926] font-medium" : "text-[#6f675d]"}`}>
               {label}
@@ -453,14 +453,14 @@ function ProductLayout({
                 <ul className={`space-y-3 ${productShowsSection(product, "description") ? "mt-5" : ""}`}>
                   {product.benefits.filter((benefit) => benefit.trim()).map((benefit) => (
                     <li key={benefit} className="flex items-start gap-2 text-base text-[#2c2926]">
-                      <Check size={16} className="mt-1 shrink-0 text-[#8a7350]" />
+                      <Check size={16} className="mt-1 shrink-0 text-[#3A6B75]" />
                       <span>{benefit}</span>
                     </li>
                   ))}
                 </ul>
               ) : null}
             </div>
-            <div className="relative min-h-[220px] overflow-hidden rounded-xl bg-[#eee8de]">
+            <div className="relative min-h-[220px] overflow-hidden rounded-xl bg-[#efefed]">
               <Media src={images[0]} alt={product.name} sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" />
             </div>
           </div>
@@ -468,7 +468,7 @@ function ProductLayout({
         {detail === "ingredients" && productShowsSection(product, "ingredients") ? (
           <ul className="mt-8 grid gap-3 sm:grid-cols-2">
             {product.ingredients.filter((item) => item.trim()).map((item) => (
-              <li key={item} className="rounded-lg border border-[#e6e0d6] bg-white px-4 py-3 text-base text-[#2c2926]">
+              <li key={item} className="rounded-lg border border-[#efefed] bg-white px-4 py-3 text-base text-[#2c2926]">
                 {item}
               </li>
             ))}
@@ -478,7 +478,7 @@ function ProductLayout({
           <ol className="mt-8 space-y-4">
             {product.howToUse.filter((step) => step.trim()).map((step, index) => (
               <li key={step} className="flex items-start gap-3 text-base leading-7 text-[#2c2926]">
-                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#CBAC7C] text-sm text-white">{index + 1}</span>
+                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#61A2AF] text-sm text-white">{index + 1}</span>
                 <span>{step}</span>
               </li>
             ))}
@@ -490,12 +490,12 @@ function ProductLayout({
       {SHOW_STORE_REVIEWS ? (
       <section id="customer-reviews" className="mx-auto max-w-[1200px] px-4 pb-14 md:px-8">
         <h2 className="text-lg font-medium md:text-3xl">Reviews and rating</h2>
-        <div className="mt-4 grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-b border-[#e6e0d6] pb-6 md:max-w-xl md:gap-10">
+        <div className="mt-4 grid w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-b border-[#efefed] pb-6 md:max-w-xl md:gap-10">
           <div className="pr-1">
             <p className="text-4xl font-medium md:text-5xl">{reviewAverage.toFixed(1)}</p>
-            <p className="mt-1 text-sm text-[#8a7350] md:text-base">
+            <p className="mt-1 text-sm text-[#3A6B75] md:text-base">
               {"★".repeat(Math.round(reviewAverage))}
-              <span className="text-[#cfc4b6]">{"★".repeat(Math.max(0, 5 - Math.round(reviewAverage)))}</span>
+              <span className="text-[#d4d4d2]">{"★".repeat(Math.max(0, 5 - Math.round(reviewAverage)))}</span>
             </p>
             <p className="mt-1 text-xs text-[#6f675d] md:text-sm">{reviews.length} reviews</p>
           </div>
@@ -503,8 +503,8 @@ function ProductLayout({
             {reviewBars.map((bar) => (
               <li key={bar.star} className="grid grid-cols-[2.4rem_minmax(0,1fr)_1rem] items-center gap-2 text-xs md:grid-cols-[4.5rem_minmax(0,1fr)_2rem] md:gap-3 md:text-sm">
                 <span className="whitespace-nowrap">{bar.star} ★</span>
-                <span className="h-1.5 overflow-hidden rounded-full bg-[#e6e0d6] md:h-2">
-                  <span className="block h-full rounded-full bg-[#CBAC7C]" style={{ width: `${reviews.length ? (bar.count / reviews.length) * 100 : 0}%` }} />
+                <span className="h-1.5 overflow-hidden rounded-full bg-[#efefed] md:h-2">
+                  <span className="block h-full rounded-full bg-[#61A2AF]" style={{ width: `${reviews.length ? (bar.count / reviews.length) * 100 : 0}%` }} />
                 </span>
                 <span className="text-right text-[#6f675d]">{bar.count}</span>
               </li>
@@ -532,7 +532,7 @@ function ProductLayout({
         </div>
         {writing ? (
           <form
-            className="mt-5 space-y-3 rounded-xl border border-[#e6e0d6] bg-white p-4"
+            className="mt-5 space-y-3 rounded-xl border border-[#efefed] bg-white p-4"
             onSubmit={(event) => {
               event.preventDefault();
               submitReview();
@@ -540,20 +540,20 @@ function ProductLayout({
           >
             <div className="flex gap-1" role="radiogroup" aria-label="Your rating">
               {[1, 2, 3, 4, 5].map((value) => (
-                <button key={value} type="button" aria-label={`${value} star`} onClick={() => setDraft({ ...draft, rating: value })} className={`text-lg ${value <= draft.rating ? "text-[#8a7350]" : "text-[#cfc4b6]"}`}>
+                <button key={value} type="button" aria-label={`${value} star`} onClick={() => setDraft({ ...draft, rating: value })} className={`text-lg ${value <= draft.rating ? "text-[#3A6B75]" : "text-[#d4d4d2]"}`}>
                   ★
                 </button>
               ))}
             </div>
             <input value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} placeholder="Summary" className="h-11 w-full rounded-lg border border-black/15 bg-white px-3 text-base outline-none focus:border-black/40 focus:shadow-[0_0_0_1px_rgba(0,0,0,0.28)] focus-visible:outline-none" />
             <textarea value={draft.body} onChange={(event) => setDraft({ ...draft, body: event.target.value })} placeholder="Your review" className="min-h-24 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-base outline-none focus:border-black/40 focus:shadow-[0_0_0_1px_rgba(0,0,0,0.28)] focus-visible:outline-none" />
-            <button type="submit" className="h-11 rounded-lg bg-[#CBAC7C] px-5 text-base text-white hover:bg-[#B39668]">
+            <button type="submit" className="h-11 rounded-lg bg-[#61A2AF] px-5 text-base text-white hover:bg-[#4F8A96]">
               Submit review
             </button>
             {reviewNote ? <p className="text-sm text-[#4e4943]">{reviewNote}</p> : null}
           </form>
         ) : reviewNote ? <p className="mt-3 text-sm text-[#4e4943]">{reviewNote}</p> : null}
-        <ul className="mt-6 divide-y divide-[#e6e0d6] border-y border-[#e6e0d6]">
+        <ul className="mt-6 divide-y divide-[#efefed] border-y border-[#efefed]">
           {visibleReviews.map((review) => {
             const helpfulCount = helpfulCounts[review.id] ?? review.helpful ?? 0;
             const onlyYou = helpful[review.id] === "yes" && helpfulCount === 1;
@@ -572,9 +572,9 @@ function ProductLayout({
               </div>
               <p className="mt-2 flex items-center justify-between gap-3 text-sm">
                 <span className="text-[#4e4943]">{review.name.trim() || "Anonymous"}</span>
-                <span className="text-[#8a7350]">
+                <span className="text-[#3A6B75]">
                   {"★".repeat(review.rating)}
-                  <span className="text-[#cfc4b6]">{"★".repeat(Math.max(0, 5 - review.rating))}</span>
+                  <span className="text-[#d4d4d2]">{"★".repeat(Math.max(0, 5 - review.rating))}</span>
                 </span>
               </p>
               <p className="mt-3 text-base leading-7 text-[#4e4943]">{review.body}</p>
@@ -589,7 +589,7 @@ function ProductLayout({
                   type="button"
                   aria-pressed={helpful[review.id] === "yes"}
                   onClick={() => castVote(review, "yes")}
-                  className={`h-8 shrink-0 rounded-full border px-3 ${helpful[review.id] === "yes" ? "border-[#CBAC7C] bg-[#CBAC7C] text-white" : "border-[#e3dbd1] bg-white"}`}
+                  className={`h-8 shrink-0 rounded-full border px-3 ${helpful[review.id] === "yes" ? "border-[#61A2AF] bg-[#61A2AF] text-white" : "border-[#e8e8e6] bg-white"}`}
                 >
                   Yes
                 </button>
@@ -597,7 +597,7 @@ function ProductLayout({
                   type="button"
                   aria-pressed={helpful[review.id] === "no"}
                   onClick={() => castVote(review, "no")}
-                  className={`h-8 shrink-0 rounded-full border px-3 ${helpful[review.id] === "no" ? "border-[#2c2926] bg-[#2c2926] text-white" : "border-[#e3dbd1] bg-white"}`}
+                  className={`h-8 shrink-0 rounded-full border px-3 ${helpful[review.id] === "no" ? "border-[#2c2926] bg-[#2c2926] text-white" : "border-[#e8e8e6] bg-white"}`}
                 >
                   No
                 </button>
@@ -617,9 +617,9 @@ function ProductLayout({
       {product.faqs.length ? (
         <section className="mx-auto max-w-[1200px] px-4 pb-14 md:px-8">
           <h2 className="text-3xl font-medium">FAQ</h2>
-          <div className="mt-4 border-t border-[#e6e0d6]">
+          <div className="mt-4 border-t border-[#efefed]">
             {product.faqs.map((faq, index) => (
-              <div key={faq.question} className="border-b border-[#e6e0d6]">
+              <div key={faq.question} className="border-b border-[#efefed]">
                 <button
                   type="button"
                   className="flex w-full items-center justify-between gap-4 py-4 text-left text-base"
@@ -658,7 +658,7 @@ function ProductLayout({
               };
               return (
                 <li key={item.id}>
-                  <Link href={`/products/${item.slug}`} className="relative block aspect-square overflow-hidden rounded-lg bg-[#eee8de]">
+                  <Link href={`/products/${item.slug}`} className="relative block aspect-square overflow-hidden rounded-lg bg-[#efefed]">
                     <Media src={item.images[0]} alt={item.name} sizes="(min-width: 1024px) 22vw, 46vw" className="object-cover" />
                   </Link>
                   <div className="mt-3 flex items-start gap-1">
@@ -667,14 +667,14 @@ function ProductLayout({
                   </div>
                   <p className="mt-1 truncate text-sm capitalize text-[#6f675d]">{item.scent}</p>
                   {SHOW_STORE_REVIEWS ? (
-                    <p className="mt-2 text-sm text-[#8a7350]">
+                    <p className="mt-2 text-sm text-[#3A6B75]">
                       {"★".repeat(full)}
-                      <span className="text-[#cfc4b6]">{"★".repeat(Math.max(0, 5 - full))}</span>
+                      <span className="text-[#d4d4d2]">{"★".repeat(Math.max(0, 5 - full))}</span>
                       <span className="ml-2 text-[#4e4943]">({item.reviewCount})</span>
                     </p>
                   ) : null}
                   <p className="mt-2 text-sm">{formatPrice(item.price)}</p>
-                  <button type="button" onClick={inCart ? store.openCart : addRelated} className={`mt-3 h-11 w-full rounded-full text-sm ${inCart ? "border border-[#CBAC7C] bg-white text-[#2c2926]" : "bg-[#CBAC7C] text-white hover:bg-[#B39668]"}`}>
+                  <button type="button" onClick={inCart ? store.openCart : addRelated} className={`mt-3 h-11 w-full rounded-full text-sm ${inCart ? "border border-[#61A2AF] bg-white text-[#2c2926]" : "bg-[#61A2AF] text-white hover:bg-[#4F8A96]"}`}>
                     {inCart ? "Go to cart" : "Add to cart"}
                   </button>
                 </li>
@@ -685,18 +685,18 @@ function ProductLayout({
       ) : null}
 
       {!store.cartOpen ? (
-        <div className="fixed inset-x-0 bottom-[calc(3.75rem+env(safe-area-inset-bottom))] z-30 translate-y-[var(--mobile-nav-shift,0px)] border-t border-[#e6e0d6] bg-[#fbf9f6]/95 px-4 py-3 backdrop-blur transition-transform duration-200 md:bottom-0 md:hidden md:translate-y-0">
+        <div className="fixed inset-x-0 bottom-[calc(3.75rem+env(safe-area-inset-bottom))] z-30 translate-y-[var(--mobile-nav-shift,0px)] border-t border-[#efefed] bg-[#ffffff]/95 px-4 py-3 backdrop-blur transition-transform duration-200 md:bottom-0 md:hidden md:translate-y-0">
           <p className="mb-2 text-lg font-medium">
             <span className="font-medium">{formatPrice(lineTotal)}</span>
-            {applied && lineTotal < price ? <span className="ml-1 text-[#8a7350] line-through">{formatPrice(price)}</span> : null}
+            {applied && lineTotal < price ? <span className="ml-1 text-[#3A6B75] line-through">{formatPrice(price)}</span> : null}
             {variant ? <span className="text-[#6f675d]"> · {variant.label}</span> : null}
           </p>
           <div className="grid grid-cols-2 gap-3">
-            <button type="button" onClick={() => add()} className="flex h-12 items-center justify-center gap-2 rounded-lg bg-[#CBAC7C] text-base text-white">
+            <button type="button" onClick={() => add()} className="flex h-12 items-center justify-center gap-2 rounded-lg bg-[#61A2AF] text-base text-white">
               <ShoppingBag size={16} />
               Add to cart
             </button>
-            <button type="button" onClick={() => add(onBuyNow)} className="flex h-12 items-center justify-center rounded-lg border border-[#e3dbd1] bg-white text-base text-[#4e4943]">
+            <button type="button" onClick={() => add(onBuyNow)} className="flex h-12 items-center justify-center rounded-lg border border-[#e8e8e6] bg-white text-base text-[#4e4943]">
               Buy it now
             </button>
           </div>

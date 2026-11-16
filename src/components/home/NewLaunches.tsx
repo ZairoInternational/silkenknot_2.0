@@ -14,7 +14,7 @@ export function NewLaunches() {
     .slice(0, 4);
 
   return (
-    <section aria-labelledby="new-launches-heading" className="bg-[#F7F3EE] px-5 py-14 md:px-8 md:py-20">
+    <section aria-labelledby="new-launches-heading" className="bg-[#ffffff] px-5 py-14 md:px-8 md:py-20">
       <div className="mx-auto max-w-[1200px]">
         <LaunchHeader />
         {launches.length ? (

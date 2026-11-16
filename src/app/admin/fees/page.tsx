@@ -94,7 +94,7 @@ export default function PlatformFeeSettingsPage() {
 
       <div className="mx-auto max-w-2xl space-y-4 xl:mx-0">
         <AdminPanel title="Fee amount" hint="Shown at checkout as Platform fee" defaultOpen>
-          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#faf7f2] px-4 py-3 text-sm">
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#ffffff] px-4 py-3 text-sm">
             <input
               type="checkbox"
               className="mt-0.5"
@@ -121,7 +121,7 @@ export default function PlatformFeeSettingsPage() {
         </AdminPanel>
 
         <AdminPanel title="Waiver rules" hint="If any matching rule applies, the fee becomes free" defaultOpen>
-          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#faf7f2] px-4 py-3 text-sm">
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#ffffff] px-4 py-3 text-sm">
             <input
               type="checkbox"
               className="mt-0.5"

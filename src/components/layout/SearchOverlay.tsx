@@ -166,10 +166,10 @@ export function SearchOverlay() {
                     /* Skeleton rows while the first response loads */
                     Array.from({ length: 3 }, (_, i) => (
                       <li key={i} className="grid grid-cols-[44px_1fr] items-center gap-3 px-4 py-2.5">
-                        <span className="relative block aspect-square animate-pulse rounded bg-[#eee8de]" />
+                        <span className="relative block aspect-square animate-pulse rounded bg-[#efefed]" />
                         <span className="space-y-2">
-                          <span className="block h-4 w-3/4 animate-pulse rounded bg-[#eee8de]" />
-                          <span className="block h-3 w-1/3 animate-pulse rounded bg-[#eee8de]" />
+                          <span className="block h-4 w-3/4 animate-pulse rounded bg-[#efefed]" />
+                          <span className="block h-3 w-1/3 animate-pulse rounded bg-[#efefed]" />
                         </span>
                       </li>
                     ))

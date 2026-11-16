@@ -38,7 +38,7 @@ export function BestSeller1() {
   const x = useTransform(scrollYProgress, (value) => -distance * value);
 
   return (<>
-  <section className="mt-6 bg-[#efeae3] px-6 py-10 md:hidden">
+  <section className="mt-6 bg-[#f7f7f6] px-6 py-10 md:hidden">
         <ShelfHeader />
         <div className="shelf-scroll mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2">
           {products.map((product, index) => (
@@ -46,7 +46,7 @@ export function BestSeller1() {
           ))}
         </div>
       </section>
-      <section ref={ref} className="relative mt-6 hidden h-[165vh] bg-[#efeae3] md:block">
+      <section ref={ref} className="relative mt-6 hidden h-[165vh] bg-[#f7f7f6] md:block">
         <div ref={frameRef} className="sticky top-[var(--nav-h)] overflow-hidden py-6">
           <div className="px-8 pt-4">
             <ShelfHeader />
@@ -71,7 +71,7 @@ function ShelfHeader() {
     <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
       <div className="max-w-2xl">
         <p className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.24em] text-[#8a7350]">
-          <span className="h-px w-8 bg-[#CBAC7C]" aria-hidden />
+          <span className="h-px w-8 bg-[#61A2AF]" aria-hidden />
           Featured collection
         </p>
         <h2 className="mt-3 text-[2.35rem] font-medium leading-[1.05] tracking-[-0.03em] text-[#2c2926] md:text-6xl">
@@ -83,7 +83,7 @@ function ShelfHeader() {
       </div>
       <Link
         href="/shop?bestseller=1"
-        className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-[#CBAC7C] bg-white px-5 py-2.5 text-sm text-[#2c2926] transition-colors duration-300 hover:bg-[#CBAC7C] hover:text-white"
+        className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-[#61A2AF] bg-white px-5 py-2.5 text-sm text-[#2c2926] transition-colors duration-300 hover:bg-[#61A2AF] hover:text-white"
       >
         View all products
         <ArrowRight size={16} />
@@ -104,7 +104,7 @@ function ShelfCard({ product, image, className }: { product: Product; image: str
 
   return (
     <article className={`flex h-full flex-col rounded-2xl border border-[#ece6de] bg-white p-3 shadow-[0_10px_30px_rgba(44,41,38,0.04)] ${className}`}>
-      <Link href={`/products/${product.slug}`} className="relative block aspect-square overflow-hidden rounded-xl bg-[#f7f3ee]">
+      <Link href={`/products/${product.slug}`} className="relative block aspect-square overflow-hidden rounded-xl bg-[#ffffff]">
         <Media src={image} alt={product.name} sizes="270px" className="object-contain p-2" />
       </Link>
       <div className="mt-3 flex items-start gap-1">
@@ -127,7 +127,7 @@ function ShelfCard({ product, image, className }: { product: Product; image: str
         <button
           type="button"
           onClick={store.openCart}
-          className="mt-3 h-11 w-full rounded-lg border border-mist-ink bg-white text-sm text-mist-ink transition-colors duration-300 hover:bg-[#CBAC7C] hover:text-white"
+          className="mt-3 h-11 w-full rounded-lg border border-mist-ink bg-white text-sm text-mist-ink transition-colors duration-300 hover:bg-[#61A2AF] hover:text-white"
         >
           Go to cart
         </button>
@@ -135,7 +135,7 @@ function ShelfCard({ product, image, className }: { product: Product; image: str
         <button
           type="button"
           onClick={add}
-          className="mt-3 h-11 w-full rounded-lg bg-[#CBAC7C] text-sm text-white transition-colors duration-300 hover:bg-[#B39668]"
+          className="mt-3 h-11 w-full rounded-lg bg-[#61A2AF] text-sm text-white transition-colors duration-300 hover:bg-[#4F8A96]"
         >
           Add to Cart
         </button>

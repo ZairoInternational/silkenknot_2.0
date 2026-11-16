@@ -162,7 +162,7 @@ function ProductDetail({ product }: { product: Product }) {
               </div>
             </div>
             <div className="mt-8 flex flex-wrap gap-3">
-              <button type="button" disabled={soldOut} onClick={() => add(false)} className="h-12 bg-[#CBAC7C] px-8 text-[11px] uppercase tracking-[0.2em] text-white hover:bg-[#B39668] disabled:opacity-40">
+              <button type="button" disabled={soldOut} onClick={() => add(false)} className="h-12 bg-[#61A2AF] px-8 text-[11px] uppercase tracking-[0.2em] text-white hover:bg-[#4F8A96] disabled:opacity-40">
                 {soldOut ? "Sold out" : "Add to cart"}
               </button>
               <button type="button" disabled={soldOut} onClick={() => add(true)} className="h-12 border border-ink px-8 text-[11px] uppercase tracking-[0.2em] disabled:opacity-40">
@@ -318,7 +318,7 @@ function ProductDetail({ product }: { product: Product }) {
       {!store.cartOpen ? <div className="fixed inset-x-0 bottom-[calc(3.75rem+env(safe-area-inset-bottom))] z-40 border-t border-line bg-paper/95 px-4 py-3 backdrop-blur md:bottom-0 md:hidden">
         <div className="flex items-center justify-between gap-3">
           <PriceTag price={variant?.price ?? product.price} compare={variant?.compareAtPrice} />
-          <button type="button" disabled={soldOut} onClick={() => add(false)} className="h-12 bg-[#CBAC7C] px-6 text-[11px] uppercase tracking-[0.18em] text-white hover:bg-[#B39668] disabled:opacity-40">
+          <button type="button" disabled={soldOut} onClick={() => add(false)} className="h-12 bg-[#61A2AF] px-6 text-[11px] uppercase tracking-[0.18em] text-white hover:bg-[#4F8A96] disabled:opacity-40">
             {soldOut ? "Sold out" : "Add to cart"}
           </button>
         </div>

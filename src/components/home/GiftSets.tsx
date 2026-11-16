@@ -45,7 +45,7 @@ function productImage(product: Product, index: number, fallbackShots: string[]) 
 }
 
 const FOCUS =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]";
 
 export function GiftSets() {
   const media = useSiteMedia();
@@ -69,7 +69,7 @@ export function GiftSets() {
 
   return (
     <section
-      className="relative overflow-hidden bg-[#f7f3ee] text-[#2c2926]"
+      className="relative overflow-hidden bg-blush text-ink"
       aria-label="Gifts by budget"
     >
       <div
@@ -77,19 +77,19 @@ export function GiftSets() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(45% 50% at 100% 0%, rgba(232,185,106,0.22), transparent 70%)",
+            "radial-gradient(45% 50% at 100% 0%, rgba(199,173,135,0.28), transparent 70%)",
         }}
       />
       <div className="relative mx-auto max-w-7xl px-5 py-14 sm:px-8 md:py-20">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full border border-[#e6dfd4] bg-white/60 px-3.5 py-1.5 text-[13px] text-[#8a7350]">
+            <p className="inline-flex items-center gap-2 rounded-full border border-line bg-paper/60 px-3.5 py-1.5 text-[13px] text-mute">
               <Gift size={14} /> Gift wrap available at checkout
             </p>
             <h2 className="mt-4 text-4xl font-medium leading-[1.05] tracking-[-0.035em] md:text-5xl">
               Gifts for every budget
             </h2>
-            <p className="mt-2 max-w-md text-base text-[#6f675d]">
+            <p className="mt-2 max-w-md text-base text-ink/70">
               Pick what you want to spend and we will show what is worth giving.
             </p>
           </div>
@@ -110,9 +110,8 @@ export function GiftSets() {
                   onClick={() => setTier(t.id)}
                   className={`rounded-full border px-4 py-2.5 text-sm transition-colors duration-300 ${FOCUS} ${
                     selected
-                      ? "border-[#2c2926] bg-[#2c2926] text-[#f7f3ee]"
-                      : "border-[#2c2926]/20 hover:border-[#2c2926]"
-                  }`}
+                      ? "border-ink bg-ink text-paper"
+                      : "border-ink/20 hover:border-ink"                  }`}
                 >
                   {t.label}
                 </button>
@@ -145,7 +144,7 @@ export function GiftSets() {
 
         <Link
           href="/shop"
-          className={`group mt-8 inline-flex items-center gap-2 text-sm underline decoration-[#CBAC7C] decoration-2 underline-offset-[6px] ${FOCUS}`}
+          className={`group mt-8 inline-flex items-center gap-2 text-sm underline decoration-[#61A2AF] decoration-2 underline-offset-[6px] ${FOCUS}`}
         >
           See every gift idea
           <ArrowRight
@@ -170,11 +169,11 @@ function GiftCard({ product, image }: { product: Product; image: string }) {
   const needsChoice = product.variants.length > 1;
 
   return (
-    <article className="group flex h-full flex-col rounded-3xl bg-white/70 p-3 ring-1 ring-[#e6dfd4] transition-shadow duration-300 hover:shadow-[0_24px_50px_-28px_rgba(110,80,40,0.45)]">
+    <article className="group flex h-full flex-col rounded-3xl bg-white/70 p-3 ring-1 ring-[#e8e8e6] transition-shadow duration-300 hover:shadow-[0_24px_50px_-28px_rgba(110,80,40,0.45)]">
       <Link
         href={`/products/${product.slug}`}
         aria-label={`View ${product.name}`}
-        className={`relative block aspect-[4/5] overflow-hidden rounded-2xl bg-gradient-to-b from-[#faf7f2] to-[#efe4d2] ${FOCUS}`}
+        className={`relative block aspect-[4/5] overflow-hidden rounded-2xl bg-gradient-to-b from-[#ffffff] to-[#f0f0ef] ${FOCUS}`}
       >
         <Media
           src={image}
@@ -193,7 +192,7 @@ function GiftCard({ product, image }: { product: Product; image: string }) {
           {needsChoice ? (
             <Link
               href={`/products/${product.slug}`}
-              className={`inline-flex h-10 items-center rounded-full bg-[#CBAC7C] px-4 text-sm font-medium text-[#1c1b19] hover:bg-[#b39668] ${FOCUS}`}
+              className={`inline-flex h-10 items-center rounded-full bg-mist px-4 text-sm font-medium text-ink hover:bg-mist-hover ${FOCUS}`}
             >
               Choose option
             </Link>
@@ -201,7 +200,7 @@ function GiftCard({ product, image }: { product: Product; image: string }) {
             <button
               type="button"
               onClick={store.openCart}
-              className={`inline-flex h-10 items-center gap-2 rounded-full border border-[#2c2926]/25 px-4 text-sm hover:bg-[#2c2926] hover:text-[#f7f3ee] ${FOCUS}`}
+              className={`inline-flex h-10 items-center gap-2 rounded-full border border-ink/25 px-4 text-sm hover:bg-ink hover:text-paper ${FOCUS}`}
             >
               <Check size={15} /> In bag
             </button>
@@ -213,7 +212,7 @@ function GiftCard({ product, image }: { product: Product; image: string }) {
                 const result = store.addToCart(product.id, variant.label, 1);
                 if (!result.ok && result.message) store.notify(result.message);
               }}
-              className={`inline-flex h-10 items-center gap-2 rounded-full bg-[#2c2926] px-4 text-sm text-[#f7f3ee] transition-colors hover:bg-[#9a7352] active:scale-[0.98] ${FOCUS}`}
+              className={`inline-flex h-10 items-center gap-2 rounded-full bg-ink px-4 text-sm text-paper transition-colors hover:bg-mist hover:text-ink active:scale-[0.98] ${FOCUS}`}
             >
               <ShoppingBag size={15} /> Add
             </button>

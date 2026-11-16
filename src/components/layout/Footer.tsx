@@ -131,7 +131,7 @@ function FooterNavLink({ label, href, icon: Icon }: FooterLink) {
 
 export function Footer({ mobileNavPad = false }: { mobileNavPad?: boolean }) {
   return (
-    <footer className={`bg-ink text-paper${mobileNavPad ? " pb-20 md:pb-0" : ""}`}>
+    <footer className={`bg-midnight text-paper${mobileNavPad ? " pb-20 md:pb-0" : ""}`}>
       <div className="mx-auto grid max-w-[1440px] grid-cols-2 gap-x-6 gap-y-8 px-5 py-10 md:grid-cols-[1.3fr_1fr_1fr_1.2fr] md:gap-10 md:px-10 md:py-14">
         <div className="col-span-2 md:col-span-1">
           <p className="font-serif text-3xl">

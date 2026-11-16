@@ -20,17 +20,17 @@ export function ChatMessageView({ message, busy, onAction }: Props) {
       <div
         className={`max-w-[92%] ${
           isUser
-            ? "rounded-2xl rounded-br-md bg-[#CBAC7C] px-3.5 py-2.5 text-sm text-white"
-            : "rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 text-sm text-[#2c2926] shadow-[0_1px_0_rgba(44,41,38,0.04)] ring-1 ring-[#e3dbd1]"
+            ? "rounded-2xl rounded-br-md bg-[#61A2AF] px-3.5 py-2.5 text-sm text-white"
+            : "rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 text-sm text-[#2c2926] shadow-[0_1px_0_rgba(44,41,38,0.04)] ring-1 ring-[#e8e8e6]"
         }`}
       >
         <p className="whitespace-pre-wrap leading-6">{message.text}</p>
         {message.loading ? (
-          <p className="mt-2 text-xs text-[#8a7350]" aria-live="polite">
+          <p className="mt-2 text-xs text-[#3A6B75]" aria-live="polite">
             <span className="inline-flex gap-1">
-              <span className="size-1.5 animate-pulse rounded-full bg-[#CBAC7C]" />
-              <span className="size-1.5 animate-pulse rounded-full bg-[#CBAC7C] [animation-delay:120ms]" />
-              <span className="size-1.5 animate-pulse rounded-full bg-[#CBAC7C] [animation-delay:240ms]" />
+              <span className="size-1.5 animate-pulse rounded-full bg-[#61A2AF]" />
+              <span className="size-1.5 animate-pulse rounded-full bg-[#61A2AF] [animation-delay:120ms]" />
+              <span className="size-1.5 animate-pulse rounded-full bg-[#61A2AF] [animation-delay:240ms]" />
             </span>
           </p>
         ) : null}
@@ -51,13 +51,13 @@ export function ChatMessageView({ message, busy, onAction }: Props) {
                       orderId: order.id,
                     })
                   }
-                  className="flex w-full items-center justify-between gap-2 rounded-xl border border-[#e3dbd1] bg-[#F7F3EE] px-3 py-2 text-left text-sm hover:border-[#CBAC7C] disabled:opacity-50"
+                  className="flex w-full items-center justify-between gap-2 rounded-xl border border-[#e8e8e6] bg-[#ffffff] px-3 py-2 text-left text-sm hover:border-[#61A2AF] disabled:opacity-50"
                 >
                   <span>
                     <span className="font-medium">{order.number}</span>
                     <span className="mt-0.5 block text-xs text-[#6f675d]">{formatDate(order.createdAt)}</span>
                   </span>
-                  <span className="text-xs text-[#8a7350]">{order.statusLabel}</span>
+                  <span className="text-xs text-[#3A6B75]">{order.statusLabel}</span>
                 </button>
               </li>
             ))}
@@ -79,7 +79,7 @@ export function ChatMessageView({ message, busy, onAction }: Props) {
                       productId: product.id,
                     })
                   }
-                  className="w-full rounded-xl border border-[#e3dbd1] bg-[#F7F3EE] px-3 py-2 text-left text-sm hover:border-[#CBAC7C] disabled:opacity-50"
+                  className="w-full rounded-xl border border-[#e8e8e6] bg-[#ffffff] px-3 py-2 text-left text-sm hover:border-[#61A2AF] disabled:opacity-50"
                 >
                   {product.name}
                 </button>
@@ -88,7 +88,7 @@ export function ChatMessageView({ message, busy, onAction }: Props) {
           </ul>
         ) : null}
         {message.product ? (
-          <div className="mt-2 rounded-xl border border-[#e3dbd1] bg-[#F7F3EE] p-3 text-sm">
+          <div className="mt-2 rounded-xl border border-[#e8e8e6] bg-[#ffffff] p-3 text-sm">
             <p className="font-medium">{message.product.name}</p>
             {message.product.ingredients?.length ? (
               <ul className="mt-2 list-disc space-y-1 pl-4 text-[#6f675d]">
@@ -104,7 +104,7 @@ export function ChatMessageView({ message, busy, onAction }: Props) {
                 ))}
               </ol>
             ) : null}
-            <Link href={message.product.href} className="mt-2 inline-block text-xs text-[#8a7350] underline underline-offset-2">
+            <Link href={message.product.href} className="mt-2 inline-block text-xs text-[#3A6B75] underline underline-offset-2">
               View product
             </Link>
           </div>

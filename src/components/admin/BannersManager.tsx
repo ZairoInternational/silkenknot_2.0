@@ -202,7 +202,7 @@ function BannerPreview({ draft, mode }: { draft: BannerDraft; mode: "desktop" | 
         <span>Preview · {mode}</span>
         <span>{PLACEMENT_LABEL[draft.placement]}</span>
       </div>
-      <div className={`relative ${mode === "mobile" ? "aspect-[4/5] max-w-sm mx-auto" : "aspect-[21/9]"} bg-[#e7dfd4]`}>
+      <div className={`relative ${mode === "mobile" ? "aspect-[4/5] max-w-sm mx-auto" : "aspect-[21/9]"} bg-[#efefed]`}>
         {src ? (
           <Media src={src} alt={draft.image.alt || draft.name || "Preview"} sizes="600px" className="object-cover" />
         ) : (
@@ -211,11 +211,11 @@ function BannerPreview({ draft, mode }: { draft: BannerDraft; mode: "desktop" | 
         {!isHero ? (
           <>
             <div className="absolute inset-0 bg-gradient-to-r from-[#2c2926]/50 via-[#2c2926]/20 to-transparent" />
-            <div className="absolute inset-0 flex flex-col justify-end p-5 text-[#f7f3ee]">
+            <div className="absolute inset-0 flex flex-col justify-end p-5 text-[#ffffff]">
               {draft.title ? <p className="font-serif text-2xl">{draft.title}</p> : null}
               {draft.subtitle ? <p className="mt-1 text-sm opacity-90">{draft.subtitle}</p> : null}
               {draft.ctaEnabled ? (
-                <span className="mt-3 inline-flex w-fit rounded-full bg-[#9a7352] px-4 py-1.5 text-sm">{draft.ctaLabel || "CTA"}</span>
+                <span className="mt-3 inline-flex w-fit rounded-full bg-[#61A2AF] px-4 py-1.5 text-sm">{draft.ctaLabel || "CTA"}</span>
               ) : (
                 <span className="mt-3 text-xs uppercase tracking-[0.14em] opacity-70">No CTA</span>
               )}
@@ -454,7 +454,7 @@ export function BannersList() {
                 <tr key={banner.id} className="border-b border-line/70 align-top">
                   <td className="py-4 pr-4">
                     <div className="flex gap-3">
-                      <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-[#e7dfd4]">
+                      <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-[#efefed]">
                         {banner.image.desktopUrl ? (
                           <Media src={banner.image.desktopUrl} alt="" sizes="80px" className="object-cover" />
                         ) : null}
@@ -837,7 +837,7 @@ export function BannerEditor({ id }: { id?: string }) {
             <div className="grid gap-6 md:grid-cols-2">
               <div>
                 <p className="text-sm">Desktop image <span className="text-red-700">*</span></p>
-                <div className="relative mt-2 aspect-video overflow-hidden rounded-xl bg-[#e7dfd4]">
+                <div className="relative mt-2 aspect-video overflow-hidden rounded-xl bg-[#efefed]">
                   {draft.image.desktopUrl ? (
                     <Media src={draft.image.desktopUrl} alt="" sizes="320px" className="object-cover" />
                   ) : (
@@ -857,7 +857,7 @@ export function BannerEditor({ id }: { id?: string }) {
               </div>
               <div>
                 <p className="text-sm">Mobile image (optional)</p>
-                <div className="relative mt-2 aspect-[4/5] max-w-xs overflow-hidden rounded-xl bg-[#e7dfd4]">
+                <div className="relative mt-2 aspect-[4/5] max-w-xs overflow-hidden rounded-xl bg-[#efefed]">
                   {draft.image.mobileUrl ? (
                     <Media src={draft.image.mobileUrl} alt="" sizes="240px" className="object-cover" />
                   ) : (

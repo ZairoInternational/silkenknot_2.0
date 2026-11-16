@@ -17,7 +17,7 @@ export type HeroOffer = {
   cardName: string;
   chips: string[];
   couponCode: string;
-  /** Short phrase repeated on the rotating seal, e.g. "DIWALI GLOW SALE" */
+  /** Short phrase repeated on the rotating seal, e.g. "WINTER GLOW SALE" */
   sealLabel: string;
   /** Center of the seal, e.g. "25%" */
   sealPercent: string;
@@ -49,21 +49,21 @@ export type HeroContent = {
 
 export const DEFAULT_HERO_OFFER: HeroOffer = {
   enabled: true,
-  pill: "Diwali glow sale",
-  titleLine1: "Glow brighter",
-  titleLine2: "this Diwali.",
+  pill: "Winter glow sale",
+  titleLine1: "Glow through",
+  titleLine2: "the cold.",
   note: "Up to 25% off selected body care, bath, and candles.",
   cta: "Shop the sale",
   href: "/shop",
   secondaryCta: "See best sellers",
   secondaryHref: "/shop?bestseller=1",
   image: "/silknknot/new_updates/all_combined.png",
-  alt: "Silken Knot body butter with marigolds and diyas",
+  alt: "Silken Knot body care for winter skin",
   cardTag: "Sale edit",
-  cardName: "Diwali glow",
-  chips: ["25% off", "DIWALI20"],
-  couponCode: "DIWALI20",
-  sealLabel: "DIWALI GLOW SALE",
+  cardName: "Winter glow",
+  chips: ["25% off", "WINTER20"],
+  couponCode: "WINTER20",
+  sealLabel: "WINTER GLOW SALE",
   sealPercent: "25%",
 };
 

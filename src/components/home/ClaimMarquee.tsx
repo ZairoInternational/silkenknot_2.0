@@ -17,14 +17,14 @@ const claims = [
 
 export function ClaimMarquee() {
   return (
-    <section className="claim-strip group mt-6 overflow-hidden bg-[#efeae3] py-5 text-ink/70" aria-label="How Silken Knot is made">
+    <section className="claim-strip group mt-6 overflow-hidden bg-[#100E09] py-5 text-mist" aria-label="How Silken Knot is made">
       <div className="silk-marquee claim-marquee flex w-max items-center group-hover:[animation-play-state:paused]">
         {[0, 1].map((copy) => (
           <ul key={copy} className="flex items-center" aria-hidden={copy === 1}>
             {claims.map((claim) => (
               <li key={claim.label} className="flex items-center gap-4 px-8">
                 <span className="text-[13px] font-medium uppercase tracking-[0.16em]">{claim.label}</span>
-                <span className="grid size-11 place-items-center rounded-full border border-current">
+                <span className="grid size-11 place-items-center rounded-full border border-mist/70 text-mist">
                   <claim.icon size={18} strokeWidth={1.25} />
                 </span>
               </li>

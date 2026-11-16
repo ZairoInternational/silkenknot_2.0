@@ -1,5 +1,9 @@
-import type { Address } from "@/lib/types";
-import { SHIPPING_QUOTE_CACHE_KEY } from "@/lib/checkout/shippingQuoteCache";
+import type { Address, User } from "@/lib/types";
+import {
+  SHIPPING_QUOTE_CACHE_KEY,
+  isShippingQuoteFresh,
+  type ShippingQuoteBody,
+} from "@/lib/checkout/shippingQuoteCache";
 
 export { SHIPPING_QUOTE_CACHE_KEY };
 
@@ -80,6 +84,39 @@ const CHECKOUT_DRAFT_KEYS = [
 
 export function noteCheckoutOwner(userId: string | null) {
   sessionStorage.setItem(CHECKOUT_OWNER_KEY, userId || "guest");
+}
+
+function validPin(value: string | undefined | null) {
+  return Boolean(value && /^\d{6}$/.test(String(value).trim()));
+}
+
+/** Prefer checkout session address, then default account address, then any saved address with a PIN. */
+export function assumedAccountAddress(user: User | null | undefined): Address | null {
+  if (!user?.addresses?.length) return null;
+  return user.addresses.find((item) => item.isDefault && item.line1 && validPin(item.postal))
+    ?? user.addresses.find((item) => item.line1 && validPin(item.postal))
+    ?? null;
+}
+
+export function readSessionDeliveryAddress(): ShippingAddress | null {
+  try {
+    const raw = sessionStorage.getItem(ADDRESS_STORAGE_KEY);
+    if (!raw) return null;
+    const saved = JSON.parse(raw) as ShippingAddress;
+    if (!validPin(saved?.postalCode)) return null;
+    return saved;
+  } catch {
+    sessionStorage.removeItem(ADDRESS_STORAGE_KEY);
+    return null;
+  }
+}
+
+/** PIN used to estimate delivery on contact before the shopper confirms address. */
+export function assumedDeliveryPin(user: User | null | undefined): string {
+  const session = readSessionDeliveryAddress();
+  if (session) return String(session.postalCode).trim();
+  const account = assumedAccountAddress(user);
+  return account?.postal?.trim() || "";
 }
 
 export function retainCheckoutDraft(userId: string | null) {
@@ -199,4 +236,46 @@ export function rememberPrepaidShipping() {
   } catch {
     sessionStorage.removeItem(SHIPPING_SELECTION_KEY);
   }
+}
+
+/** Display-only selection from a cached quote (standard option preferred). Not a committed shipping choice. */
+export function estimateSelectionFromQuote(
+  body: ShippingQuoteBody,
+  subtotalPaise: number,
+  discountPaise: number,
+): ShippingSelection | null {
+  if (!isShippingQuoteFresh(body) || body.error) return null;
+  const option = body.options?.find((entry) => entry.id === "standard" && entry.available)
+    ?? body.options?.find((entry) => entry.available);
+  if (!option || !body.quoteId) return null;
+  const goods = Number.isInteger(body.subtotalPaise) ? body.subtotalPaise! : subtotalPaise;
+  const off = Number.isInteger(body.discountPaise) ? body.discountPaise! : discountPaise;
+  const platformFeeListPaise = body.platformFeeListPaise ?? body.platformFeePaise ?? 0;
+  const platformFeePaise = body.platformFeePaise ?? platformFeeListPaise;
+  return {
+    quoteId: body.quoteId,
+    optionId: option.id,
+    label: option.label,
+    chargePaise: option.chargePaise,
+    prepaidChargePaise: option.chargePaise,
+    codChargePaise: option.codChargePaise,
+    estimateRupees: option.estimateRupees,
+    codEstimateRupees: option.codEstimateRupees,
+    shippingDiscountPaise: option.shippingDiscountPaise,
+    freeShippingPaise: body.freeShippingPaise,
+    platformFeeListPaise,
+    platformFeePaise,
+    platformFeeWaiveAbovePaise: body.platformFeeWaiveAbovePaise,
+    platformFeeWaiveFirstOrder: body.platformFeeWaiveFirstOrder,
+    platformFeeFirstOrderEnabled: body.platformFeeFirstOrderEnabled,
+    codFeePaise: 0,
+    subtotalPaise: goods,
+    discountPaise: off,
+    amountPaise: goods - off + option.chargePaise + platformFeePaise,
+    expiresAt: body.expiresAt,
+    codEligible: Boolean(body.codEligible),
+    availableCodFeePaise: body.codFeePaise ?? 0,
+    estimate: option.estimate,
+    serviceability: "available",
+  };
 }

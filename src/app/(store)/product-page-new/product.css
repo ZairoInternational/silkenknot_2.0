@@ -1,15 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap');
 
 :root {
-  --cream: #f8f6f0;
-  --paper: #fffdf8;
-  --sand: #eee9de;
-  --olive: #424b39;
-  --olive-dark: #202a20;
-  --ink: #20251f;
-  --muted: #73766e;
-  --line: #e4dfd4;
-  --gold: #c58d2e
+  --cream: #ffffff;
+  --paper: #ffffff;
+  --sand: #f0ebe3;
+  --olive: #3d7380;
+  --olive-dark: #1f3b40;
+  --ink: #292b2b;
+  --muted: #3d7380;
+  --line: #e5dfd6;
+  --gold: #c7ad87;
+  --brand: #61a2af;
+  --champagne: #c7ad87;
+  --berry: #a4414e;
+  --sage: #6f8f72;
+  --mist-cool: #e3eef0;
+  --blush: #e4c3b8;
 }
 
 * {
@@ -654,7 +660,7 @@
   border: 1px solid #e8e3d9;
   border-radius: 4px;
   overflow: hidden;
-  background: #fffdf9;
+  background: #ffffff;
   transition: transform .2s, box-shadow .2s
 }
 
@@ -724,7 +730,7 @@
 }
 
 .site-footer {
-  background: linear-gradient(115deg, #202a20, #2e382a);
+  background: linear-gradient(115deg, #2f5a63, #3a6b75);
   color: #f8f6ef;
   padding: 24px clamp(22px, 7.3vw, 100px) 0
 }
@@ -824,7 +830,7 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 30;
-  background: #202a20;
+  background: #2f5a63;
   color: white;
   padding: 13px 20px;
   border-radius: 30px;

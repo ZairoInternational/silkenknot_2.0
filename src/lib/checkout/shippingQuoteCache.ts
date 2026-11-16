@@ -1,6 +1,13 @@
 import { csrfHeaders } from "@/lib/auth/browser";
 
 export const SHIPPING_QUOTE_CACHE_KEY = "silkknot.checkout.shippingQuote";
+/** Fired when a contact/shipping quote prefetch starts, finishes, or has nothing to fetch. */
+export const SHIPPING_QUOTE_EVENT = "silkknot-shipping-quote";
+
+export type ShippingQuoteEventDetail = {
+  status: "idle" | "loading" | "ready";
+  postalCode?: string;
+};
 
 export type ShippingQuoteItem = {
   productId: string;
@@ -101,6 +108,15 @@ export function writeShippingQuote(cacheKey: string, body: ShippingQuoteBody) {
 export function clearShippingQuoteCache() {
   sessionStorage.removeItem(SHIPPING_QUOTE_CACHE_KEY);
   inflight.clear();
+}
+
+export function notifyShippingQuote(detail: ShippingQuoteEventDetail) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(SHIPPING_QUOTE_EVENT, { detail }));
+}
+
+export function isShippingQuoteFresh(body: ShippingQuoteBody) {
+  return quoteFresh(body);
 }
 
 export async function prefetchShippingQuote(input: {

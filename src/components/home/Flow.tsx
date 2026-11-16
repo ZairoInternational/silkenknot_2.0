@@ -29,7 +29,7 @@ export function ProductShowcase() {
 
   return (
     <>
-      <section className="bg-[#f3eee6] px-5 py-20 md:hidden">
+      <section className="bg-[#f7f7f6] px-5 py-20 md:hidden">
         <p className="eyebrow text-mute">In focus</p>
         <h2 className="mt-3 font-serif text-5xl">One object at a time.</h2>
         <div className="mt-10 space-y-16">
@@ -38,7 +38,7 @@ export function ProductShowcase() {
           ))}
         </div>
       </section>
-      <section ref={ref} className="relative hidden h-[320vh] bg-[#f3eee6] md:block">
+      <section ref={ref} className="relative hidden h-[320vh] bg-[#f7f7f6] md:block">
         <div className="sticky top-0 grid h-screen grid-cols-2">
           <div className="relative overflow-hidden">
             {products.map((product, index) => (
@@ -116,7 +116,7 @@ function ShowcaseCopy({ product }: { product: (typeof seedProducts)[number] }) {
       </div>
       <button
         type="button"
-        className="mt-8 h-12 bg-[#CBAC7C] px-7 text-[11px] uppercase tracking-[0.2em] text-white hover:bg-[#B39668]"
+        className="mt-8 h-12 bg-[#61A2AF] px-7 text-[11px] uppercase tracking-[0.2em] text-white hover:bg-[#4F8A96]"
         onClick={() => {
           const result = store.addToCart(product.id, product.variants[0].label, 1);
           if (result.message) store.notify(result.message);
@@ -150,7 +150,7 @@ export function HorizontalStory() {
 
   return (
     <>
-      <section className="bg-ink py-16 text-paper md:hidden">
+      <section className="bg-midnight py-16 text-paper md:hidden">
         <div className="px-5">
           <p className="eyebrow text-paper/50">In the hand</p>
           <h2 className="mt-3 font-serif text-5xl">From cleanse to quiet.</h2>
@@ -161,7 +161,7 @@ export function HorizontalStory() {
           ))}
         </div>
       </section>
-      <section ref={ref} className="relative hidden h-[280vh] bg-ink text-paper md:block">
+      <section ref={ref} className="relative hidden h-[280vh] bg-midnight text-paper md:block">
         <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden">
           <div className="px-[8vw]">
             <p className="eyebrow text-paper/50">In the hand</p>
@@ -282,7 +282,7 @@ export function BestSellers() {
   const store = useStore();
   const products = (store.products.length ? store.products : seedProducts).filter((product) => product.bestseller && product.active);
   return (
-    <section className="bg-[#fbf9f6] px-5 py-24 md:px-10 md:py-32">
+    <section className="bg-[#ffffff] px-5 py-24 md:px-10 md:py-32">
       <Reveal className="flex items-end justify-between gap-6">
         <div>
           <p className="eyebrow text-mute">Most loved</p>
@@ -306,9 +306,9 @@ export function BestSellers() {
 export function BrandStory() {
   const media = useSiteMedia();
   return (
-    <section className="mt-6 hidden bg-[#fbf9f6] px-5 py-8 md:block md:px-8 md:py-10">
+    <section className="mt-6 hidden bg-[#ffffff] px-5 py-8 md:block md:px-8 md:py-10">
       <div className="site-container grid items-center gap-10 md:grid-cols-2 md:gap-16">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] bg-[#e7dfd4]">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] bg-[#efefed]">
           <Media src={media.brandStory} alt="A Silken Knot candle" sizes="(min-width: 768px) 46vw, 90vw" className="object-cover" />
         </div>
         <div>
@@ -317,7 +317,7 @@ export function BrandStory() {
           <p className="mt-4 max-w-md text-[15px] leading-7 text-[#5e574e]">
             Silken Knot began as a small studio ritual: slow formulas, honest scents, and objects meant to be used every day — not saved for later.
           </p>
-          <Link href="/about" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#CBAC7C] px-6 py-3 text-sm text-white transition-colors duration-300 hover:bg-[#B39668]">
+          <Link href="/about" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#61A2AF] px-6 py-3 text-sm text-white transition-colors duration-300 hover:bg-[#4F8A96]">
             Read the story
             <ArrowRight size={16} />
           </Link>
@@ -371,7 +371,7 @@ export function Newsletter() {
           </div>
           <button
             type="submit"
-            className={`h-14 w-full shrink-0 rounded-full px-6 text-base text-white transition-colors duration-300 md:h-12 md:w-auto md:text-sm ${done ? "bg-[#B39668]" : "bg-[#CBAC7C] hover:bg-[#B39668]"}`}
+            className={`h-14 w-full shrink-0 rounded-full px-6 text-base text-white transition-colors duration-300 md:h-12 md:w-auto md:text-sm ${done ? "bg-[#4F8A96]" : "bg-[#61A2AF] hover:bg-[#4F8A96]"}`}
           >
             {done ? "Subscribed" : "Subscribe"}
           </button>

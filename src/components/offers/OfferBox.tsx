@@ -30,24 +30,24 @@ export function OfferBox({ onOpenAll }: { onOpenAll: () => void }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#e3dbd1] bg-[#fbf9f6]">
+    <div className="overflow-hidden rounded-2xl border border-[#e8e8e6] bg-[#ffffff]">
       <div className="flex items-center gap-3 px-3 py-3">
-        <Tag size={18} className="shrink-0 text-[#CBAC7C]" />
+        <Tag size={18} className="shrink-0 text-mist" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold tracking-wide text-[#2c2926]">{featured.code}</p>
-          <p className="truncate text-xs text-[#6f675d]">{featured.label}</p>
+          <p className="text-sm font-semibold tracking-wide text-ink">{featured.code}</p>
+          <p className="truncate text-xs text-mute">{featured.label}</p>
         </div>
         <button
           type="button"
           onClick={() => apply(featured)}
-          className={`h-8 shrink-0 rounded-md px-3 text-xs ${store.couponCode === featured.code ? "border border-[#2c2926] bg-white text-[#2c2926]" : "bg-[#CBAC7C] text-white hover:bg-[#B39668]"}`}
+          className={`h-8 shrink-0 rounded-md px-3 text-xs ${store.couponCode === featured.code ? "border border-ink bg-paper text-ink" : "bg-ink text-paper hover:bg-midnight"}`}
         >
           {store.couponCode === featured.code ? "Remove" : "Apply"}
         </button>
       </div>
-      <button type="button" onClick={() => setCodeOpen((open) => !open)} className="flex w-full items-center gap-2 border-t border-[#e3dbd1] px-3 py-2.5 text-left text-sm text-[#4e4943]">
+      <button type="button" onClick={() => setCodeOpen((open) => !open)} className="flex w-full items-center gap-2 border-t border-line px-3 py-2.5 text-left text-sm text-ink/80">
         Enter coupon code
-        <ChevronDown size={16} className={`text-[#8a7350] transition ${codeOpen ? "rotate-180" : ""}`} />
+        <ChevronDown size={16} className={`text-mute transition ${codeOpen ? "rotate-180" : ""}`} />
       </button>
       {codeOpen ? (
         <form
@@ -59,20 +59,20 @@ export function OfferBox({ onOpenAll }: { onOpenAll: () => void }) {
             if (result.ok) setCode("");
           }}
         >
-          <input value={code} onChange={(event) => setCode(event.target.value)} placeholder="Code" className="h-10 min-w-0 flex-1 rounded-lg border border-[#e3dbd1] bg-white px-3 text-sm outline-none" />
-          <button type="submit" className="h-10 rounded-md bg-[#CBAC7C] px-4 text-xs text-white hover:bg-[#B39668]">Apply</button>
+          <input value={code} onChange={(event) => setCode(event.target.value)} placeholder="Code" className="h-10 min-w-0 flex-1 rounded-lg border border-line bg-paper px-3 text-sm outline-none" />
+          <button type="submit" className="h-10 rounded-md bg-ink px-4 text-xs text-paper hover:bg-midnight">Apply</button>
         </form>
       ) : null}
-      <button type="button" onClick={onOpenAll} className="flex w-full items-center gap-3 border-t border-[#e3dbd1] px-3 py-3 text-left">
-        <Gift size={18} className="shrink-0 text-[#CBAC7C]" />
+      <button type="button" onClick={onOpenAll} className="flex w-full items-center gap-3 border-t border-line px-3 py-3 text-left">
+        <Gift size={18} className="shrink-0 text-mist" />
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium text-[#2c2926]">View all offers</span>
-          <span className="block text-xs text-[#6f675d]">Coupons</span>
+          <span className="block text-sm font-medium text-ink">View all offers</span>
+          <span className="block text-xs text-mute">Coupons</span>
         </span>
-        <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[#2c2926] px-1.5 text-xs text-white">{offers.length}</span>
-        <ChevronRight size={16} className="text-[#2c2926]" />
+        <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-ink px-1.5 text-xs text-paper">{offers.length}</span>
+        <ChevronRight size={16} className="text-ink" />
       </button>
-      {note ? <p className="border-t border-[#e3dbd1] px-3 py-2 text-xs text-[#6f675d]">{note}</p> : null}
+      {note ? <p className="border-t border-[#e8e8e6] px-3 py-2 text-xs text-[#6f675d]">{note}</p> : null}
     </div>
   );
 }
@@ -104,16 +104,16 @@ export function OfferList({ onClose }: { onClose: () => void }) {
         {offers.map((offer) => {
           const applied = store.couponCode === offer.code;
           return (
-            <li key={offer.id} className={`flex items-center gap-3 rounded-2xl border px-3 py-3 ${applied ? "border-[#2c2926] bg-[#fbf9f6]" : "border-[#e3dbd1] bg-white"}`}>
-              <Tag size={18} className="shrink-0 text-[#CBAC7C]" />
+            <li key={offer.id} className={`flex items-center gap-3 rounded-2xl border px-3 py-3 ${applied ? "border-ink bg-paper" : "border-line bg-paper"}`}>
+              <Tag size={18} className="shrink-0 text-mist" />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold tracking-wide text-[#2c2926]">{offer.code}</p>
-                <p className="text-xs text-[#6f675d]">{offer.label}</p>
+                <p className="text-sm font-semibold tracking-wide text-ink">{offer.code}</p>
+                <p className="text-xs text-mute">{offer.label}</p>
               </div>
               <button
                 type="button"
                 onClick={() => apply(offer)}
-                className={`h-8 shrink-0 rounded-md px-3 text-xs ${applied ? "border border-[#2c2926] bg-white text-[#2c2926]" : "bg-[#CBAC7C] text-white hover:bg-[#B39668]"}`}
+                className={`h-8 shrink-0 rounded-md px-3 text-xs ${applied ? "border border-ink bg-paper text-ink" : "bg-ink text-paper hover:bg-midnight"}`}
               >
                 {applied ? "Remove" : "Apply"}
               </button>

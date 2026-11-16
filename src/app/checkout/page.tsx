@@ -6,8 +6,14 @@ import { ArrowRight, Leaf, LockKeyhole, Mail, Phone, Truck, User } from "lucide-
 import CheckoutShell from "@/components/checkout/CheckoutShell";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { trackBeginCheckout } from "@/lib/analytics";
-import { CONTACT_STORAGE_KEY, noteCheckoutOwner, retainCheckoutDraft, type CheckoutContact } from "@/lib/checkout";
-import { prefetchShippingQuote } from "@/lib/checkout/shippingQuoteCache";
+import {
+  assumedDeliveryPin,
+  CONTACT_STORAGE_KEY,
+  noteCheckoutOwner,
+  retainCheckoutDraft,
+  type CheckoutContact,
+} from "@/lib/checkout";
+import { notifyShippingQuote, prefetchShippingQuote } from "@/lib/checkout/shippingQuoteCache";
 import { useStore } from "@/lib/store";
 
 function localPhone(value: string) {
@@ -15,6 +21,14 @@ function localPhone(value: string) {
   if (digits.length === 12 && digits.startsWith("91")) return digits.slice(2);
   if (digits.length === 11 && digits.startsWith("0")) return digits.slice(1);
   return digits;
+}
+
+function quoteItems(cart: { productId: string; variantLabel: string; quantity: number }[]) {
+  return cart.map((item) => ({
+    productId: item.productId,
+    variantLabel: item.variantLabel,
+    quantity: item.quantity,
+  }));
 }
 
 export default function CheckoutContactPage() {
@@ -25,6 +39,7 @@ export default function CheckoutContactPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
+  const bagKey = store.cart.map((item) => `${item.productId}:${item.variantLabel}:${item.quantity}`).join("|");
 
   useEffect(() => {
     if (!store.ready) return;
@@ -56,6 +71,30 @@ export default function CheckoutContactPage() {
     trackBeginCheckout({ cart: store.cart, categories: store.categories });
   }, [store.ready, store.cart, store.categories]);
 
+  useEffect(() => {
+    if (!store.ready) return;
+    const pin = assumedDeliveryPin(user);
+    if (!/^\d{6}$/.test(pin) || !store.cart.length) {
+      notifyShippingQuote({ status: "idle" });
+      return;
+    }
+    const controller = new AbortController();
+    notifyShippingQuote({ status: "loading", postalCode: pin });
+    void prefetchShippingQuote({
+      postalCode: pin,
+      couponCode: store.couponCode,
+      items: quoteItems(store.cart),
+      signal: controller.signal,
+    }).then((body) => {
+      if (controller.signal.aborted) return;
+      notifyShippingQuote({ status: body && !body.error ? "ready" : "idle", postalCode: pin });
+      window.dispatchEvent(new Event("silkknot-shipping"));
+    });
+    return () => {
+      controller.abort();
+    };
+  }, [store.ready, user, bagKey, store.couponCode]);
+
   function submit(event: React.FormEvent) {
     event.preventDefault();
     const contact: CheckoutContact = {
@@ -77,17 +116,12 @@ export default function CheckoutContactPage() {
     }
     noteCheckoutOwner(user?.id ?? null);
     sessionStorage.setItem(CONTACT_STORAGE_KEY, JSON.stringify(contact));
-    const home = user?.addresses.find((item) => item.isDefault && item.line1 && /^\d{6}$/.test(item.postal))
-      ?? user?.addresses.find((item) => item.line1 && /^\d{6}$/.test(item.postal));
-    if (home && store.cart.length) {
+    const pin = assumedDeliveryPin(user);
+    if (/^\d{6}$/.test(pin) && store.cart.length) {
       void prefetchShippingQuote({
-        postalCode: home.postal,
+        postalCode: pin,
         couponCode: store.couponCode,
-        items: store.cart.map((item) => ({
-          productId: item.productId,
-          variantLabel: item.variantLabel,
-          quantity: item.quantity,
-        })),
+        items: quoteItems(store.cart),
       });
     }
     router.push("/checkout/shipping");

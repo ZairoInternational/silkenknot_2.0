@@ -67,7 +67,7 @@ export function BestSeller2() {
   return (
     <>
       {/* MOBILE + TABLET: native swipe carousel */}
-      <section className="relative mt-6 overflow-hidden bg-[#efeae3] py-12 lg:hidden">
+      <section className="relative mt-6 overflow-hidden bg-[#f7f7f6] py-12 lg:hidden">
         <Glow />
         <div className="relative px-5 sm:px-8">
           <ShelfHeader />
@@ -94,7 +94,7 @@ export function BestSeller2() {
       {/* DESKTOP: pinned horizontal scroll with 3D depth */}
       <section
         ref={ref}
-        className="relative mt-6 hidden h-[220vh] bg-[#efeae3] lg:block"
+        className="relative mt-6 hidden h-[220vh] bg-[#f7f7f6] lg:block"
       >
         <div
           ref={frameRef}
@@ -134,7 +134,7 @@ export function BestSeller2() {
           <div className="relative mx-12 mt-6 h-[3px] overflow-hidden rounded-full bg-[#dcd3c6]">
             <motion.div
               style={{ scaleX: barScale }}
-              className="h-full origin-left rounded-full bg-[#CBAC7C]"
+              className="h-full origin-left rounded-full bg-[#61A2AF]"
             />
           </div>
         </div>
@@ -147,7 +147,7 @@ export function BestSeller2() {
 function Glow() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0">
-      <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-[#CBAC7C]/20 blur-3xl" />
+      <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-[#61A2AF]/20 blur-3xl" />
       <div className="absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-white/70 blur-3xl" />
     </div>
   );
@@ -202,7 +202,7 @@ function ShelfHeader() {
     <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
       <div className="max-w-2xl">
         <p className="flex items-center gap-3 text-sm font-medium text-[#8a7350]">
-          <span className="h-px w-8 bg-[#CBAC7C]" aria-hidden />
+          <span className="h-px w-8 bg-[#61A2AF]" aria-hidden />
           Featured collection
         </p>
         <h2 className="mt-3 text-[2.5rem] font-medium leading-[1.02] tracking-[-0.035em] text-[#2c2926] md:text-6xl lg:text-7xl">
@@ -214,7 +214,7 @@ function ShelfHeader() {
       </div>
       <Link
         href="/shop?bestseller=1"
-        className="group inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-[#CBAC7C] bg-white px-6 py-3 text-sm text-[#2c2926] transition-colors duration-300 hover:bg-[#CBAC7C] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
+        className="group inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-[#61A2AF] bg-white px-6 py-3 text-sm text-[#2c2926] transition-colors duration-300 hover:bg-[#61A2AF] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]"
       >
         View all products
         <ArrowRight
@@ -300,7 +300,7 @@ function ShelfCard({
       {/* image stage */}
       <Link
         href={`/products/${product.slug}`}
-        className="relative block aspect-[4/5] overflow-hidden rounded-[20px] bg-gradient-to-b from-[#faf7f2] to-[#eee6da] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8a7350]"
+        className="relative block aspect-[4/5] overflow-hidden rounded-[20px] bg-gradient-to-b from-[#ffffff] to-[#f0f0ef] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#61A2AF]"
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* floor shadow */}
@@ -328,7 +328,7 @@ function ShelfCard({
         )}
         <span
           aria-hidden
-          className="absolute bottom-3 right-4 font-serif text-5xl leading-none text-[#CBAC7C]/40"
+          className="absolute bottom-3 right-4 font-serif text-5xl leading-none text-[#61A2AF]/40"
         >
           {String(rank).padStart(2, "0")}
         </span>
@@ -375,7 +375,7 @@ function ShelfCard({
             <button
               type="button"
               onClick={store.openCart}
-              className="inline-flex h-11 items-center gap-2 rounded-full border border-[#CBAC7C] bg-white px-4 text-sm text-[#2c2926] transition-colors duration-300 hover:bg-[#CBAC7C] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
+              className="inline-flex h-11 items-center gap-2 rounded-full border border-[#61A2AF] bg-white px-4 text-sm text-[#2c2926] transition-colors duration-300 hover:bg-[#61A2AF] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]"
             >
               <Check size={16} />
               Go to cart
@@ -384,7 +384,7 @@ function ShelfCard({
             <button
               type="button"
               onClick={add}
-              className="inline-flex h-11 items-center gap-2 rounded-full bg-[#CBAC7C] pl-4 pr-5 text-sm font-medium text-white transition-all duration-300 hover:bg-[#B39668] active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-[#61A2AF] pl-4 pr-5 text-sm font-medium text-white transition-all duration-300 hover:bg-[#4F8A96] active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]"
             >
               <Plus size={16} />
               Add

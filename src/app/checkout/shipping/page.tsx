@@ -1,11 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, Leaf, MapPin, Plus } from "lucide-react";
 import CheckoutShell from "@/components/checkout/CheckoutShell";
 import OrderSummary from "@/components/checkout/OrderSummary";
-import { ADDRESS_STORAGE_KEY, CONTACT_STORAGE_KEY, PAYMENT_STORAGE_KEY, SHIPPING_SELECTION_KEY, retainCheckoutDraft, type CheckoutContact, type ShippingAddress, type ShippingSelection } from "@/lib/checkout";
+import {
+  ADDRESS_STORAGE_KEY,
+  assumedAccountAddress,
+  CONTACT_STORAGE_KEY,
+  PAYMENT_STORAGE_KEY,
+  readSessionDeliveryAddress,
+  SHIPPING_SELECTION_KEY,
+  retainCheckoutDraft,
+  type CheckoutContact,
+  type ShippingAddress,
+  type ShippingSelection,
+} from "@/lib/checkout";
 import {
   cartItemsFromKey,
   prefetchShippingQuote,
@@ -98,8 +109,26 @@ export default function ShippingPage() {
   const [selected, setSelected] = useState<"standard" | "express" | "">("");
   const [checking, setChecking] = useState(false);
   const [contact, setContact] = useState<CheckoutContact | null>(null);
-  const home = user?.addresses.find((item) => item.isDefault && item.line1) ?? user?.addresses.find((item) => item.line1);
-  const chosen = user && home ? toChoice(home, user) : null;
+  const [sessionAddress, setSessionAddress] = useState<ShippingAddress | null>(null);
+  const chosen = useMemo<SavedChoice | null>(() => {
+    if (!user) return null;
+    if (sessionAddress && /^\d{6}$/.test(sessionAddress.postalCode.trim())) {
+      return {
+        id: "session",
+        label: "Previous delivery",
+        fullName: sessionAddress.fullName || user.name || "",
+        email: sessionAddress.email || user.email || "",
+        phone: sessionAddress.phone || user.phone || "",
+        address1: sessionAddress.address1,
+        address2: sessionAddress.address2 || "",
+        city: sessionAddress.city || "",
+        postalCode: sessionAddress.postalCode || "",
+        country: sessionAddress.country || "India",
+      };
+    }
+    const home = assumedAccountAddress(user) ?? user.addresses.find((item) => item.line1) ?? null;
+    return home ? toChoice(home, user) : null;
+  }, [user, sessionAddress]);
   const addressPage = "/account/addresses?next=/checkout/shipping";
   const pin = chosen?.postalCode || "";
   const addressReady = Boolean(chosen && addressReadyForDelivery(chosen));
@@ -109,6 +138,7 @@ export default function ShippingPage() {
   useEffect(() => {
     if (!store.ready) return;
     retainCheckoutDraft(user?.id ?? null);
+    setSessionAddress(readSessionDeliveryAddress());
     const saved = readContact();
     if (!saved) {
       router.replace("/checkout");

@@ -30,8 +30,8 @@ import type { Order } from "@/lib/types";
 
 /** Brand tokens mapped to the mock layout (cream paper + bronze accent). */
 const CARD =
-  "rounded-2xl border border-[#e3dbd1] bg-white p-5 shadow-[0_10px_40px_-24px_rgba(44,41,38,0.35)] md:p-6";
-const ACCENT = "#9a7352";
+  "rounded-2xl border border-[#e8e8e6] bg-white p-5 shadow-[0_10px_40px_-24px_rgba(44,41,38,0.35)] md:p-6";
+const ACCENT = "#61A2AF";
 
 function OrderDecor() {
   return (
@@ -186,51 +186,51 @@ function OrderDetailsSkeleton() {
     <div className="mt-5" aria-busy="true" aria-label="Loading order details">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1 space-y-3">
-          <div className="h-9 w-52 animate-pulse rounded bg-[#e6e0d6]" />
-          <div className="h-4 w-72 max-w-full animate-pulse rounded bg-[#eee8de]" />
+          <div className="h-9 w-52 animate-pulse rounded bg-[#efefed]" />
+          <div className="h-4 w-72 max-w-full animate-pulse rounded bg-[#efefed]" />
         </div>
-        <div className="h-7 w-24 shrink-0 animate-pulse rounded-full bg-[#eee8de]" />
+        <div className="h-7 w-24 shrink-0 animate-pulse rounded-full bg-[#efefed]" />
       </div>
-      <section className="mt-6 rounded-2xl border border-[#e3dbd1] bg-white p-5 md:p-6">
-        <div className="h-6 w-28 animate-pulse rounded bg-[#e6e0d6]" />
+      <section className="mt-6 rounded-2xl border border-[#e8e8e6] bg-white p-5 md:p-6">
+        <div className="h-6 w-28 animate-pulse rounded bg-[#efefed]" />
         <div className="relative mt-8">
-          <span className="absolute left-[10%] right-[10%] top-[18px] h-0.5 bg-[#e6e0d6]" />
+          <span className="absolute left-[10%] right-[10%] top-[18px] h-0.5 bg-[#efefed]" />
           <ol className="relative grid grid-cols-5 gap-1">
             {Array.from({ length: 5 }, (_, step) => (
               <li className="flex flex-col items-center gap-2" key={step}>
-                <span className="size-9 animate-pulse rounded-full bg-[#e6e0d6]" />
-                <span className="h-3 w-14 animate-pulse rounded bg-[#eee8de]" />
-                <span className="h-3 w-16 animate-pulse rounded bg-[#eee8de]" />
+                <span className="size-9 animate-pulse rounded-full bg-[#efefed]" />
+                <span className="h-3 w-14 animate-pulse rounded bg-[#efefed]" />
+                <span className="h-3 w-16 animate-pulse rounded bg-[#efefed]" />
               </li>
             ))}
           </ol>
         </div>
-        <div className="mt-8 grid gap-4 border-t border-[#e3dbd1] pt-5 md:grid-cols-3">
-          <div className="h-12 animate-pulse rounded bg-[#eee8de]" />
-          <div className="h-12 animate-pulse rounded bg-[#eee8de]" />
-          <div className="h-12 animate-pulse rounded bg-[#e6e0d6]" />
+        <div className="mt-8 grid gap-4 border-t border-[#e8e8e6] pt-5 md:grid-cols-3">
+          <div className="h-12 animate-pulse rounded bg-[#efefed]" />
+          <div className="h-12 animate-pulse rounded bg-[#efefed]" />
+          <div className="h-12 animate-pulse rounded bg-[#efefed]" />
         </div>
       </section>
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.85fr)]">
-        <section className="rounded-2xl border border-[#e3dbd1] bg-white p-5">
-          <div className="h-6 w-40 animate-pulse rounded bg-[#e6e0d6]" />
+        <section className="rounded-2xl border border-[#e8e8e6] bg-white p-5">
+          <div className="h-6 w-40 animate-pulse rounded bg-[#efefed]" />
           {Array.from({ length: 3 }, (_, row) => (
             <div className="flex items-start gap-3 border-b border-[#efede6] py-4 last:border-0" key={row}>
-              <span className="size-16 shrink-0 animate-pulse rounded-xl bg-[#eee8de]" />
+              <span className="size-16 shrink-0 animate-pulse rounded-xl bg-[#efefed]" />
               <span className="min-w-0 flex-1 space-y-2">
-                <span className="block h-4 w-3/4 animate-pulse rounded bg-[#e6e0d6]" />
-                <span className="block h-3 w-1/2 animate-pulse rounded bg-[#eee8de]" />
+                <span className="block h-4 w-3/4 animate-pulse rounded bg-[#efefed]" />
+                <span className="block h-3 w-1/2 animate-pulse rounded bg-[#efefed]" />
               </span>
-              <span className="h-4 w-14 shrink-0 animate-pulse rounded bg-[#eee8de]" />
+              <span className="h-4 w-14 shrink-0 animate-pulse rounded bg-[#efefed]" />
             </div>
           ))}
         </section>
-        <aside className="h-fit rounded-2xl border border-[#e3dbd1] bg-white p-5">
-          <div className="h-6 w-40 animate-pulse rounded bg-[#e6e0d6]" />
+        <aside className="h-fit rounded-2xl border border-[#e8e8e6] bg-white p-5">
+          <div className="h-6 w-40 animate-pulse rounded bg-[#efefed]" />
           <div className="mt-4 space-y-3">
-            <div className="h-4 w-full animate-pulse rounded bg-[#eee8de]" />
-            <div className="h-4 w-full animate-pulse rounded bg-[#eee8de]" />
-            <div className="h-6 w-full animate-pulse rounded bg-[#e6e0d6]" />
+            <div className="h-4 w-full animate-pulse rounded bg-[#efefed]" />
+            <div className="h-4 w-full animate-pulse rounded bg-[#efefed]" />
+            <div className="h-6 w-full animate-pulse rounded bg-[#efefed]" />
           </div>
         </aside>
       </div>
@@ -243,7 +243,7 @@ function CopyAwb({ awb }: { awb: string }) {
   return (
     <button
       type="button"
-      className="inline-flex items-center gap-1.5 text-[#8a7350] transition-colors hover:text-[#6f5a3e]"
+      className="inline-flex items-center gap-1.5 text-[#3A6B75] transition-colors hover:text-[#6f5a3e]"
       aria-label={copied ? "Copied" : "Copy tracking number"}
       onClick={async () => {
         try {
@@ -397,7 +397,7 @@ export function OrderDetails({ id }: { id: string }) {
       <div className="page-pad relative z-10 mx-auto w-full max-w-6xl px-4 pb-32 sm:px-5 lg:px-8">
         <Link
           href="/account/orders"
-          className="inline-flex items-center gap-1.5 text-sm text-[#8a7350] transition-colors hover:text-[#6f5a3e]"
+          className="inline-flex items-center gap-1.5 text-sm text-[#3A6B75] transition-colors hover:text-[#6f5a3e]"
         >
           <ArrowLeft size={15} strokeWidth={1.75} /> Back to orders
         </Link>
@@ -450,7 +450,7 @@ export function OrderDetails({ id }: { id: string }) {
                 className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium ${
                   progress.alert
                     ? "bg-[#f6ece8] text-[#8a4b3c]"
-                    : "bg-[#f3ead8] text-[#8a7350]"
+                    : "bg-[#f7f7f6] text-[#3A6B75]"
                 }`}
               >
                 {!progress.alert ? (
@@ -466,7 +466,7 @@ export function OrderDetails({ id }: { id: string }) {
               </h2>
 
               <div className="relative mt-8 md:mt-9">
-                <span className="absolute left-[10%] right-[10%] top-[17px] h-[2px] bg-[#e6e0d6] md:top-[19px]" />
+                <span className="absolute left-[10%] right-[10%] top-[17px] h-[2px] bg-[#efefed] md:top-[19px]" />
                 {progress.index > 0 ? (
                   <span
                     className="absolute left-[10%] top-[17px] h-[2px] md:top-[19px]"
@@ -493,8 +493,8 @@ export function OrderDetails({ id }: { id: string }) {
                         <span
                           className={`grid size-9 place-items-center rounded-full border md:size-10 ${
                             reached
-                              ? "border-[#9a7352] bg-[#9a7352] text-[#fbf9f6]"
-                              : "border-[#e3dbd1] bg-[#fbf9f6] text-[#b5aa9c]"
+                              ? "border-[#61A2AF] bg-[#61A2AF] text-[#ffffff]"
+                              : "border-[#e8e8e6] bg-[#ffffff] text-[#b5aa9c]"
                           }`}
                         >
                           {showHouse ? (
@@ -525,17 +525,17 @@ export function OrderDetails({ id }: { id: string }) {
                 </ol>
               </div>
 
-              <div className="mt-8 flex flex-col gap-5 border-t border-[#e3dbd1] pt-5 md:flex-row md:items-end md:justify-between md:gap-6">
+              <div className="mt-8 flex flex-col gap-5 border-t border-[#e8e8e6] pt-5 md:flex-row md:items-end md:justify-between md:gap-6">
                 <div className="flex flex-wrap items-start gap-x-12 gap-y-4 text-sm">
                   <div>
-                    <p className="text-[11px] text-[#8a7350]">
+                    <p className="text-[11px] text-[#3A6B75]">
                       Courier partner
                     </p>
                     <p className="mt-1.5 inline-flex items-center gap-2 font-medium text-[#2c2926]">
                       <Truck
                         size={15}
                         strokeWidth={1.75}
-                        className="text-[#9a7352]"
+                        className="text-[#61A2AF]"
                         aria-hidden
                       />
                       {courierLabel()}
@@ -545,7 +545,7 @@ export function OrderDetails({ id }: { id: string }) {
 
                 {awb ? (
                   <div>
-                    <p className="text-[11px] text-[#8a7350]">
+                    <p className="text-[11px] text-[#3A6B75]">
                       AWB / Tracking number
                     </p>
                     <p className="mt-1.5 inline-flex items-center gap-2 font-medium tracking-wide text-[#2c2926]">
@@ -555,7 +555,7 @@ export function OrderDetails({ id }: { id: string }) {
                   </div>
                 ) : (
                   <div>
-                    <p className="text-[11px] text-[#8a7350]">Tracking</p>
+                    <p className="text-[11px] text-[#3A6B75]">Tracking</p>
                     <p className="mt-1.5 text-[#6f675d]">
                       Waybill will appear once the order ships.
                     </p>
@@ -569,7 +569,7 @@ export function OrderDetails({ id }: { id: string }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       title="View live shipment updates on Delhivery"
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#9a7352] px-5 text-sm font-medium text-white transition-colors hover:bg-[#85603f]"
+                      className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#61A2AF] px-5 text-sm font-medium text-white transition-colors hover:bg-[#4F8A96]"
                     >
                       <Info size={15} strokeWidth={2} aria-hidden />
                       Track on Delhivery
@@ -603,7 +603,7 @@ export function OrderDetails({ id }: { id: string }) {
                       className="flex items-center gap-3 border-b border-[#efede6] py-4 last:border-0 sm:gap-5"
                       key={`${item.productId}-${item.variant}`}
                     >
-                      <span className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-[#f6f3ee] sm:size-[4.25rem]">
+                      <span className="relative grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-[#ffffff] sm:size-[4.25rem]">
                         {item.image ? (
                           <Media
                             src={item.image}
@@ -612,7 +612,7 @@ export function OrderDetails({ id }: { id: string }) {
                             className="object-cover"
                           />
                         ) : (
-                          <Package size={18} className="text-[#CBAC7C]" />
+                          <Package size={18} className="text-[#61A2AF]" />
                         )}
                       </span>
                       <span className="min-w-0 flex-1">
@@ -636,13 +636,13 @@ export function OrderDetails({ id }: { id: string }) {
                   ))}
                 </ul>
 
-                <div className="mt-5 flex flex-col gap-5 border-t border-[#e3dbd1] pt-5 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
+                <div className="mt-5 flex flex-col gap-5 border-t border-[#e8e8e6] pt-5 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
                   <div className="min-w-0 flex-1">
                     <h2 className="inline-flex items-center gap-2 text-base font-medium text-[#2c2926]">
                       <MapPin
                         size={15}
                         strokeWidth={1.75}
-                        className="text-[#9a7352]"
+                        className="text-[#61A2AF]"
                         aria-hidden
                       />
                       Shipping to
@@ -673,7 +673,7 @@ export function OrderDetails({ id }: { id: string }) {
                           <Phone
                             size={15}
                             strokeWidth={1.75}
-                            className="shrink-0 text-[#9a7352]"
+                            className="shrink-0 text-[#61A2AF]"
                             aria-hidden
                           />
                           <span className="break-all">{order.address.phone}</span>
@@ -684,7 +684,7 @@ export function OrderDetails({ id }: { id: string }) {
                           <Mail
                             size={15}
                             strokeWidth={1.75}
-                            className="shrink-0 text-[#9a7352]"
+                            className="shrink-0 text-[#61A2AF]"
                             aria-hidden
                           />
                           <span className="break-all">{order.address.email}</span>
@@ -726,7 +726,7 @@ export function OrderDetails({ id }: { id: string }) {
                         : formatPrice(order.shipping)}
                     </span>
                   </div>
-                  <div className="flex justify-between gap-4 border-t border-[#e3dbd1] pt-3 text-[#2c2926]">
+                  <div className="flex justify-between gap-4 border-t border-[#e8e8e6] pt-3 text-[#2c2926]">
                     <span className="font-medium">Total</span>
                     <strong className="text-lg font-semibold">
                       {formatPrice(order.total)}
@@ -734,15 +734,15 @@ export function OrderDetails({ id }: { id: string }) {
                   </div>
                 </div>
 
-                <div className="mt-5 space-y-3.5 border-t border-[#e3dbd1] pt-4 text-sm">
+                <div className="mt-5 space-y-3.5 border-t border-[#e8e8e6] pt-4 text-sm">
                   <div className="flex items-start gap-2.5 text-[#4e4943]">
                     <CreditCard
                       size={16}
                       strokeWidth={1.75}
-                      className="mt-0.5 shrink-0 text-[#9a7352]"
+                      className="mt-0.5 shrink-0 text-[#61A2AF]"
                     />
                     <div>
-                      <p className="text-[11px] text-[#8a7350]">
+                      <p className="text-[11px] text-[#3A6B75]">
                         Payment method
                       </p>
                       <p className="mt-0.5 font-medium text-[#2c2926]">
@@ -757,10 +757,10 @@ export function OrderDetails({ id }: { id: string }) {
                     <Check
                       size={16}
                       strokeWidth={2}
-                      className={`mt-0.5 shrink-0 ${paidOnline ? "text-[#4f6b45]" : "text-[#9a7352]"}`}
+                      className={`mt-0.5 shrink-0 ${paidOnline ? "text-[#4f6b45]" : "text-[#61A2AF]"}`}
                     />
                     <div>
-                      <p className="text-[11px] text-[#8a7350]">
+                      <p className="text-[11px] text-[#3A6B75]">
                         Payment status
                       </p>
                       <p className="mt-0.5 font-medium text-[#2c2926]">
@@ -776,7 +776,7 @@ export function OrderDetails({ id }: { id: string }) {
                 </div>
 
                 {serverOrder && customerCanCancel(serverOrder) ? (
-                  <div className="mt-5 border-t border-[#e3dbd1] pt-4">
+                  <div className="mt-5 border-t border-[#e8e8e6] pt-4">
                     {confirmCancel ? (
                       <div>
                         <p className="text-sm leading-6 text-[#4e4943]">
@@ -832,7 +832,7 @@ export function OrderDetails({ id }: { id: string }) {
                               setConfirmCancel(false);
                               setCancelError("");
                             }}
-                            className="h-10 flex-1 rounded-full border border-[#e3dbd1] text-sm text-[#2c2926]"
+                            className="h-10 flex-1 rounded-full border border-[#e8e8e6] text-sm text-[#2c2926]"
                           >
                             Keep order
                           </button>
@@ -842,7 +842,7 @@ export function OrderDetails({ id }: { id: string }) {
                       <button
                         type="button"
                         onClick={() => setConfirmCancel(true)}
-                        className="h-10 w-full rounded-full border border-[#e3dbd1] text-sm text-[#8a4b3c] transition-colors hover:bg-[#faf6f1]"
+                        className="h-10 w-full rounded-full border border-[#e8e8e6] text-sm text-[#8a4b3c] transition-colors hover:bg-[#faf6f1]"
                       >
                         Cancel order
                       </button>
@@ -850,11 +850,11 @@ export function OrderDetails({ id }: { id: string }) {
                   </div>
                 ) : null}
 
-                <div className="mt-5 flex items-start gap-2.5 rounded-xl bg-[#f6efe4] px-3.5 py-3 text-sm leading-5 text-[#6f5a3e]">
+                <div className="mt-5 flex items-start gap-2.5 rounded-xl bg-[#f7f7f6] px-3.5 py-3 text-sm leading-5 text-[#6f5a3e]">
                   <Leaf
                     size={15}
                     strokeWidth={1.75}
-                    className="mt-0.5 shrink-0 text-[#9a7352]"
+                    className="mt-0.5 shrink-0 text-[#61A2AF]"
                     aria-hidden
                   />
                   <p>Thank you for supporting sustainable beauty.</p>

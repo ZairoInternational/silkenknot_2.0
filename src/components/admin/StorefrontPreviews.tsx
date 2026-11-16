@@ -135,7 +135,7 @@ function BrandContextStage({
           <BrandMarkSample brand={brand} placement={placement} wordmarkClassName="text-base text-ink" />
           <span className="text-xs text-mute">Back to shop</span>
         </div>
-        <div className="border-t border-line bg-[#faf7f2] px-5 py-8 text-center text-xs text-mute">
+        <div className="border-t border-line bg-[#ffffff] px-5 py-8 text-center text-xs text-mute">
           Checkout steps
         </div>
       </div>
@@ -153,7 +153,7 @@ function BrandContextStage({
     );
   }
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-[#fbf9f6] px-5 py-8 text-center shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-line bg-[#ffffff] px-5 py-8 text-center shadow-sm">
       <div className="flex justify-center">
         <BrandMarkSample brand={brand} placement={placement} />
       </div>
@@ -178,7 +178,7 @@ export function BrandDraftPreview({
     <DraftPreviewFrame
       title="Live preview"
       hint={`${meta.title} · ${spot.height}×${spot.maxWidth}px`}
-      bodyClassName="bg-[#f3eee6]"
+      bodyClassName="bg-[#f7f7f6]"
     >
       <div className="space-y-4 p-4">
         <BrandContextStage brand={brand} placement={activePlacement} />
@@ -272,13 +272,13 @@ export function SiteMediaDraftPreview({ media }: { media: SiteMediaSettings }) {
 function ShopSurfacePreview({ media }: { media: SiteMediaSettings }) {
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden rounded-xl border border-line bg-[#f6f3ee]">
+      <div className="overflow-hidden rounded-xl border border-line bg-[#ffffff]">
         <div className="grid md:grid-cols-[0.9fr_1.1fr]">
           <div className="relative order-first min-h-[160px] md:order-last md:min-h-[220px]">
             <Media src={media.shopHero} alt="Shop hero" sizes="600px" className="object-cover" />
           </div>
           <div className="flex flex-col justify-center px-5 py-6">
-            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350]">Shop our collections</p>
+            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#3A6B75]">Shop our collections</p>
             <p className="mt-2 font-serif text-2xl leading-tight text-[#2c2926]">Natural care for your everyday rituals</p>
             <p className="mt-2 text-sm text-[#4e4943]">Shop page top banner uses this photo.</p>
           </div>
@@ -286,7 +286,7 @@ function ShopSurfacePreview({ media }: { media: SiteMediaSettings }) {
       </div>
       <div className="relative min-h-[140px] overflow-hidden rounded-xl border border-line">
         <Media src={media.shopEditorial} alt="Shop editorial" sizes="800px" className="object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#f6f3ee]/90 via-[#f6f3ee]/55 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#ffffff]/90 via-[#ffffff]/55 to-transparent" />
         <p className="absolute bottom-4 left-4 text-sm font-medium text-ink">Lower shop story banner</p>
       </div>
     </div>
@@ -299,7 +299,7 @@ function CategoryStripPreview({ items }: { items: SiteMediaSettings["categoryStr
       <ul className="flex min-w-max items-start gap-5">
         {items.map((item) => (
           <li key={item.id || item.name} className="w-[100px] shrink-0 text-center">
-            <span className="relative mx-auto block size-[88px] overflow-hidden rounded-full bg-[#e7dfd4] ring-4 ring-white">
+            <span className="relative mx-auto block size-[88px] overflow-hidden rounded-full bg-[#efefed] ring-4 ring-white">
               <Media src={item.image} alt="" sizes="88px" className="object-cover" />
             </span>
             <span className="mt-3 block text-sm font-medium text-ink">{item.name || "Untitled"}</span>
@@ -415,7 +415,7 @@ function CheckoutPreview({ media }: { media: SiteMediaSettings }) {
         backgroundPosition: "center",
       }}
     >
-      <p className="text-[10px] uppercase tracking-[0.16em] text-[#8a7350]">Checkout</p>
+      <p className="text-[10px] uppercase tracking-[0.16em] text-[#3A6B75]">Checkout</p>
       <p className="mt-2 font-serif text-2xl text-ink">Complete your order</p>
       <p className="mt-2 max-w-sm text-sm text-mute">Header banner behind the checkout title.</p>
     </div>
@@ -441,7 +441,7 @@ function AuthPreview({ media }: { media: SiteMediaSettings }) {
       <div className="relative min-h-[180px]">
         <Media src={media.authBackground} alt="Sign-in background" sizes="500px" className="object-cover" />
       </div>
-      <div className="flex flex-col justify-center bg-[#f7f3ee] px-5 py-6">
+      <div className="flex flex-col justify-center bg-[#ffffff] px-5 py-6">
         <p className="font-serif text-2xl text-ink">Welcome back</p>
         <p className="mt-2 text-sm text-mute">Sign-in page background on the left.</p>
         <div className="mt-4 h-10 rounded-full border border-line bg-white" />
@@ -456,7 +456,7 @@ export function CategoryDraftPreview({ category }: { category: Category }) {
     <DraftPreviewFrame title="Category preview" hint="How this group can appear in search and menu fallbacks.">
       <div className="p-4">
         <div className="overflow-hidden rounded-2xl border border-line bg-paper">
-          <div className="relative aspect-[5/3] bg-[#e7dfd4]">
+          <div className="relative aspect-[5/3] bg-[#efefed]">
             {category.image ? (
               <Media src={category.image} alt={category.name || "Category"} sizes="480px" className="object-cover" />
             ) : (
@@ -484,8 +484,8 @@ export function ProductDraftPreview({ product }: { product: Product }) {
   return (
     <DraftPreviewFrame title="Product preview" hint="Shop-card style view. Full product page updates after you save.">
       <div className="p-4">
-        <article className="overflow-hidden rounded-2xl border border-line bg-[#f7f4ef]">
-          <div className="relative aspect-[4/4.4] bg-[#eee5d9]">
+        <article className="overflow-hidden rounded-2xl border border-line bg-[#ffffff]">
+          <div className="relative aspect-[4/4.4] bg-[#efefed]">
             {image ? (
               <Media src={image} alt={product.name || "Product"} sizes="360px" className="object-contain p-4" />
             ) : (
@@ -493,14 +493,14 @@ export function ProductDraftPreview({ product }: { product: Product }) {
             )}
           </div>
           <div className="space-y-1 px-4 py-4">
-            <p className="truncate text-[11px] uppercase tracking-[0.14em] text-[#8a7350]">{product.type || "Type"}</p>
+            <p className="truncate text-[11px] uppercase tracking-[0.14em] text-[#3A6B75]">{product.type || "Type"}</p>
             <p className="truncate font-serif text-xl text-ink">{product.name || "Product name"}</p>
             <p className="text-sm font-medium text-ink">{typeof price === "number" ? formatPrice(price) : "Add a price"}</p>
             {product.shortDescription ? (
               <p className="line-clamp-2 text-sm text-mute">{product.shortDescription}</p>
             ) : null}
             <div className="flex flex-wrap gap-2 pt-2">
-              {product.bestseller ? <span className="rounded-full bg-[#CBAC7C]/25 px-2.5 py-1 text-[10px] uppercase tracking-[0.12em] text-[#8a7350]">Bestseller</span> : null}
+              {product.bestseller ? <span className="rounded-full bg-[#61A2AF]/25 px-2.5 py-1 text-[10px] uppercase tracking-[0.12em] text-[#3A6B75]">Bestseller</span> : null}
               {product.newArrival ? <span className="rounded-full bg-ink/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.12em] text-ink">New</span> : null}
               {!product.active ? <span className="rounded-full bg-red-50 px-2.5 py-1 text-[10px] uppercase tracking-[0.12em] text-red-700">Hidden</span> : null}
             </div>

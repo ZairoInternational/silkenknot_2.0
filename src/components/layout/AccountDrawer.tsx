@@ -15,12 +15,12 @@ function ProfileMeter({ user }: { user: NonNullable<ReturnType<typeof useStore>[
   const { percent } = profileCompletion(user);
   return (
     <span className="mt-2 block">
-      <span className="flex items-center justify-between text-[11px] font-medium text-[#8a7350]">
+      <span className="flex items-center justify-between text-[11px] font-medium text-[#3A6B75]">
         <span>{percent === 100 ? "Profile complete" : "Profile completion"}</span>
         <span>{percent}%</span>
       </span>
-      <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-[#efe6d8]">
-        <span className="block h-full rounded-full bg-[#c6a15e]" style={{ width: `${percent}%` }} />
+      <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-[#efefed]">
+        <span className="block h-full rounded-full bg-[#61A2AF]" style={{ width: `${percent}%` }} />
       </span>
     </span>
   );
@@ -46,10 +46,10 @@ function MenuRow({
   detail: string;
   onClick: () => void;
 }) {
-  const className = "flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-[#fbf9f6]";
+  const className = "flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-[#ffffff]";
   const body = (
     <>
-      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#f3efe8] text-[#2c2926]">
+      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#f7f7f6] text-[#2c2926]">
         <Icon size={18} strokeWidth={1.7} />
       </span>
       <span className="min-w-0 flex-1">
@@ -112,7 +112,7 @@ export function AccountDrawer({ open, onClose, next, returnTo }: { open: boolean
           role="dialog"
           aria-modal="true"
           aria-label="My Account"
-          className="fixed inset-y-0 right-0 z-[70] flex w-full max-w-[420px] flex-col overflow-hidden bg-[#f7f4ef] text-[#2c2926] shadow-[-12px_0_40px_rgba(28,27,25,0.16)]"
+          className="fixed inset-y-0 right-0 z-[70] flex w-full max-w-[420px] flex-col overflow-hidden bg-[#ffffff] text-[#2c2926] shadow-[-12px_0_40px_rgba(28,27,25,0.16)]"
           initial={{ x: "100%" }}
           animate={{ x: 0 }}
           exit={{ x: "100%" }}
@@ -153,7 +153,7 @@ export function AccountDrawer({ open, onClose, next, returnTo }: { open: boolean
                   onClick={onClose}
                   className="flex items-center gap-3 rounded-2xl bg-white px-4 py-4 shadow-[0_1px_2px_rgba(28,27,25,0.04)]"
                 >
-                  <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#f3efe8] text-[#8a7350]">
+                  <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#eef5f6] text-[#61A2AF]">
                     <User size={22} strokeWidth={1.6} />
                   </span>
                   <span className="min-w-0 flex-1">
@@ -173,13 +173,13 @@ export function AccountDrawer({ open, onClose, next, returnTo }: { open: boolean
                   <ChevronRight size={16} className="shrink-0 text-[#c4bdb4]" />
                 </Link>
 
-                <div className="divide-y divide-[#efeae3] overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(28,27,25,0.04)]">
+                <div className="divide-y divide-[#f7f7f6] overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(28,27,25,0.04)]">
                   {accountRows.map((row) => (
                     <MenuRow key={row.title} {...row} onClick={onClose} />
                   ))}
                 </div>
 
-                <div className="divide-y divide-[#efeae3] overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(28,27,25,0.04)]">
+                <div className="divide-y divide-[#f7f7f6] overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(28,27,25,0.04)]">
                   <MenuRow
                     href="/contact"
                     icon={Headphones}

@@ -19,7 +19,7 @@ export function Skeleton({ className = "", style, rounded = "md" }: SkeletonProp
   return (
     <div
       aria-hidden="true"
-      className={`animate-pulse bg-[#e6e0d6] ${roundedClass[rounded]} ${className}`}
+      className={`animate-pulse bg-[#efefed] ${roundedClass[rounded]} ${className}`}
       style={style}
     />
   );

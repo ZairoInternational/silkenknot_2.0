@@ -35,7 +35,7 @@ export function WishlistButton({ productId, name, className = "" }: { productId:
         store.toggleWishlist(productId);
         if (saved) store.notify(`${name} removed`);
       }}
-      className={`grid size-10 shrink-0 place-items-center bg-transparent text-[#CBAC7C] ${className}`}
+      className={`grid size-10 shrink-0 place-items-center bg-transparent text-[#61A2AF] ${className}`}
     >
       <Heart size={24} strokeWidth={1.5} fill={saved ? "currentColor" : "none"} />
     </button>
@@ -198,9 +198,9 @@ export function Media({
 export function Stars({ rating }: { rating: number }) {
   const full = Math.round(rating);
   return (
-    <span className="text-[11px] tracking-[0.18em] text-ink" aria-label={`${rating} out of 5 stars`}>
+    <span className="text-[11px] tracking-[0.18em] text-champagne" aria-label={`${rating} out of 5 stars`}>
       {"★★★★★".slice(0, full)}
-      <span className="text-stone">{"★★★★★".slice(full)}</span>
+      <span className="text-champagne/35">{"★★★★★".slice(full)}</span>
     </span>
   );
 }
@@ -213,7 +213,7 @@ export function PriceTag({ price, compare }: { price: number; compare?: number }
       {off > 0 && compare ? (
         <>
           <s className="text-[12px] font-normal text-mute md:text-[0.92em]">{formatPrice(compare)}</s>
-          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-olive">
+          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-berry">
             {off}% off
           </span>
         </>
@@ -277,7 +277,7 @@ export function Field({
         id={id}
         {...props}
         className={[
-          "mt-2 h-12 w-full rounded-xl border border-[#e3dbd1] bg-white px-3.5 text-base text-[#2c2926] outline-none ring-0 transition-[border-color,box-shadow] placeholder:text-[#9a948b] focus:border-[#CBAC7C] focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_rgba(203,172,124,0.18)] focus-visible:outline-none md:text-sm",
+          "mt-2 h-12 w-full rounded-xl border border-[#e8e8e6] bg-white px-3.5 text-base text-[#2c2926] outline-none ring-0 transition-[border-color,box-shadow] placeholder:text-[#9a948b] focus:border-[#61A2AF] focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,162,175,0.18)] focus-visible:outline-none md:text-sm",
           className,
         ]
           .filter(Boolean)
@@ -368,7 +368,7 @@ export function Toast({
         ? "bg-[#2f6b3c]"
         : tone === "ok"
           ? "bg-ink"
-          : "bg-[#CBAC7C]";
+          : "bg-[#61A2AF]";
   return (
     <div
       role="status"

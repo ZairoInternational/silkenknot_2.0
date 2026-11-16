@@ -42,24 +42,24 @@ export function PromotionalStrip({ banners }: { banners: PublicBanner[] }) {
 
   const copy = (
     <div className="relative z-10 flex h-full max-w-[1440px] flex-col justify-center px-5 md:px-12">
-      {banner.title ? <p className="font-serif text-2xl text-[#f7f3ee] md:text-3xl">{banner.title}</p> : null}
+      {banner.title ? <p className="font-serif text-2xl text-[#ffffff] md:text-3xl">{banner.title}</p> : null}
       {banner.subtitle || banner.promotionalText ? (
-        <p className="mt-1 max-w-xl text-sm text-[#f7f3ee]/90">{banner.subtitle || banner.promotionalText}</p>
+        <p className="mt-1 max-w-xl text-sm text-[#ffffff]/90">{banner.subtitle || banner.promotionalText}</p>
       ) : null}
       {banner.cta.enabled && !banner.wholeBannerClickable && href ? (
-        <span className="mt-3 inline-flex w-fit rounded-full bg-[#9a7352] px-5 py-2 text-sm text-white">{banner.cta.label}</span>
+        <span className="mt-3 inline-flex w-fit rounded-full bg-ink px-5 py-2 text-sm text-paper">{banner.cta.label}</span>
       ) : null}
     </div>
   );
 
   if (banner.wholeBannerClickable && href) {
     return (
-      <section className="relative h-36 overflow-hidden bg-[#efeae3] md:h-44" aria-label={label}>
+      <section className="relative h-36 overflow-hidden bg-[#f7f7f6] md:h-44" aria-label={label}>
         <Link
           href={href}
           aria-label={label}
           {...linkProps}
-          className="absolute inset-0 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9a7352]"
+          className="absolute inset-0 block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]"
         >
           {media}
           {copy}
@@ -69,18 +69,18 @@ export function PromotionalStrip({ banners }: { banners: PublicBanner[] }) {
   }
 
   return (
-    <section className="relative h-36 overflow-hidden bg-[#efeae3] md:h-44" aria-label={banner.title || banner.image.alt || "Promotion"}>
+    <section className="relative h-36 overflow-hidden bg-[#f7f7f6] md:h-44" aria-label={banner.title || banner.image.alt || "Promotion"}>
       {media}
       <div className="relative z-10 flex h-full max-w-[1440px] flex-col justify-center px-5 md:px-12">
-        {banner.title ? <p className="font-serif text-2xl text-[#f7f3ee] md:text-3xl">{banner.title}</p> : null}
+        {banner.title ? <p className="font-serif text-2xl text-[#ffffff] md:text-3xl">{banner.title}</p> : null}
         {banner.subtitle || banner.promotionalText ? (
-          <p className="mt-1 max-w-xl text-sm text-[#f7f3ee]/90">{banner.subtitle || banner.promotionalText}</p>
+          <p className="mt-1 max-w-xl text-sm text-[#ffffff]/90">{banner.subtitle || banner.promotionalText}</p>
         ) : null}
         {banner.cta.enabled && href ? (
           <Link
             href={href}
             {...linkProps}
-            className="mt-3 inline-flex w-fit rounded-full bg-[#9a7352] px-5 py-2 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9a7352]"
+            className="mt-3 inline-flex w-fit rounded-full bg-champagne px-5 py-2 text-sm text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
           >
             {banner.cta.label}
           </Link>

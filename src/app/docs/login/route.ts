@@ -23,7 +23,7 @@ const HTML = `<!DOCTYPE html>
         display: grid;
         gap: 0.85rem;
         padding: 1.75rem 1.5rem;
-        background: #fffdf9;
+        background: #ffffff;
         border: 1px solid #d9cfc2;
       }
       .eyebrow {
@@ -31,7 +31,7 @@ const HTML = `<!DOCTYPE html>
         font: 11px/1.2 system-ui, sans-serif;
         letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: #8a7350;
+        color: #3A6B75;
       }
       h1 { margin: 0; font-size: 1.75rem; font-weight: 500; }
       .lede {

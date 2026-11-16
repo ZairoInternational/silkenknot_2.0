@@ -14,7 +14,7 @@ export function CategoryStrip() {
         {circles.map((item) => (
           <li key={item.id || item.name} className="shrink-0">
             <Link href={item.href} className="group flex w-[112px] flex-col items-center gap-4 text-center md:w-[140px]">
-              <span className="relative block size-[104px] overflow-hidden rounded-full bg-[#e7dfd4] shadow-[0_10px_28px_-16px_rgba(28,27,25,0.55)] ring-4 ring-white transition duration-300 group-hover:scale-105 md:size-[128px]">
+              <span className="relative block size-[104px] overflow-hidden rounded-full bg-[#efefed] shadow-[0_10px_28px_-16px_rgba(28,27,25,0.55)] ring-4 ring-white transition duration-300 group-hover:scale-105 md:size-[128px]">
                 <Media src={item.image} alt="" sizes="128px" className="object-cover" />
               </span>
               <span className="text-sm font-medium tracking-wide text-ink md:text-base">{item.name}</span>

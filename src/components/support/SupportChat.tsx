@@ -508,12 +508,12 @@ export function SupportChat() {
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
-          className="pointer-events-auto mb-3 flex h-[min(32rem,calc(100dvh-7rem))] w-[min(22.5rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-[#e3dbd1] bg-[#F7F3EE] shadow-[0_12px_40px_rgba(44,41,38,0.12)]"
+          className="pointer-events-auto mb-3 flex h-[min(32rem,calc(100dvh-7rem))] w-[min(22.5rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-[#e8e8e6] bg-[#ffffff] shadow-[0_12px_40px_rgba(44,41,38,0.12)]"
         >
-          <header className="flex items-center gap-2 border-b border-[#e3dbd1] bg-[#fffcf8] px-3 py-2.5">
+          <header className="flex items-center gap-2 border-b border-[#e8e8e6] bg-[#ffffff] px-3 py-2.5">
             <button
               type="button"
-              className="grid size-9 place-items-center rounded-full text-[#2c2926] hover:bg-[#F7F3EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
+              className="grid size-9 place-items-center rounded-full text-[#2c2926] hover:bg-[#ffffff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]"
               aria-label="Back to topics"
               disabled={busy}
               onClick={() => {
@@ -526,11 +526,11 @@ export function SupportChat() {
               <h2 id={titleId} className="truncate text-sm font-medium text-[#2c2926]">
                 Ziva
               </h2>
-              <p className="truncate text-[11px] text-[#8a7350]">Silken Knot care</p>
+              <p className="truncate text-[11px] text-[#3A6B75]">Silken Knot care</p>
             </div>
             <button
               type="button"
-              className="grid size-9 place-items-center rounded-full text-[#2c2926] hover:bg-[#F7F3EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350] [&:hover_svg]:-rotate-90"
+              className="grid size-9 place-items-center rounded-full text-[#2c2926] hover:bg-[#ffffff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF] [&:hover_svg]:-rotate-90"
               aria-label="Restart conversation"
               onClick={restart}
             >
@@ -538,7 +538,7 @@ export function SupportChat() {
             </button>
             <button
               type="button"
-              className="grid size-9 place-items-center rounded-full text-[#2c2926] hover:bg-[#F7F3EE] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350] [&:hover_svg]:rotate-90"
+              className="grid size-9 place-items-center rounded-full text-[#2c2926] hover:bg-[#ffffff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF] [&:hover_svg]:rotate-90"
               aria-label="Close chat"
               onClick={closePanel}
             >
@@ -552,7 +552,7 @@ export function SupportChat() {
             ))}
           </div>
 
-          <footer className="border-t border-[#e3dbd1] bg-[#fffcf8] px-3 py-2 text-center text-[10px] uppercase tracking-[0.14em] text-[#8a7350]">
+          <footer className="border-t border-[#e8e8e6] bg-[#ffffff] px-3 py-2 text-center text-[10px] uppercase tracking-[0.14em] text-[#3A6B75]">
             Ziva · Silken Knot
           </footer>
         </div>
@@ -562,12 +562,12 @@ export function SupportChat() {
         <button
           ref={launcherRef}
           type="button"
-          className="support-chat-launcher pointer-events-auto relative ml-auto flex size-14 items-center justify-center rounded-full bg-[#3e5a72] text-[#f6f3ee] shadow-[0_10px_28px_rgba(62,90,114,0.35)] transition hover:bg-[#334b60] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3e5a72] motion-safe:animate-[support-chat-pulse_2.8s_ease-in-out_infinite]"
+          className="support-chat-launcher pointer-events-auto relative ml-auto flex size-14 items-center justify-center rounded-full bg-[#3A6B75] text-[#ffffff] shadow-[0_10px_28px_rgba(97,162,175,0.35)] transition hover:bg-[#2F5A63] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3A6B75] motion-safe:animate-[support-chat-pulse_2.8s_ease-in-out_infinite]"
           aria-label="Chat with Ziva"
           aria-expanded={false}
           onClick={openPanel}
         >
-          <span className="support-chat-sparkle pointer-events-none absolute -right-0.5 -top-0.5 grid size-5 place-items-center rounded-full bg-[#efeae3] text-[#3e5a72] shadow-sm" aria-hidden>
+          <span className="support-chat-sparkle pointer-events-none absolute -right-0.5 -top-0.5 grid size-5 place-items-center rounded-full bg-[#f7f7f6] text-[#3A6B75] shadow-sm" aria-hidden>
             <Sparkles size={11} strokeWidth={2} className="motion-safe:animate-[support-chat-twinkle_1.6s_ease-in-out_infinite]" />
           </span>
           <span className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_25%,rgba(246,243,238,0.22),transparent_55%)]" aria-hidden />

@@ -244,7 +244,7 @@ export function SiteHeader() {
         {announceOpen && currentNote ? (
           <motion.div
             ref={announceRef}
-            className="announcement relative z-55 overflow-hidden bg-black text-white"
+            className="announcement relative z-55 overflow-hidden bg-ink text-paper"
             initial={false}
             animate={{ height: narrow ? 52 : 35, opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -291,7 +291,7 @@ export function SiteHeader() {
                         <NoteIcon
                           size={13}
                           strokeWidth={1.75}
-                          className="shrink-0 text-[#f0c9a0]"
+                          className="shrink-0 text-champagne"
                           aria-hidden
                         />
                         {currentNote.text}
@@ -402,7 +402,7 @@ export function SiteHeader() {
             >
               <EscalatorIcon icon={Heart} />
               {store.wishlist.length > 0 ? (
-                <span className="absolute right-1.5 top-1.5 h-1.25 w-1.25 rounded-full bg-[#d21f2b]" />
+                <span className="absolute right-1.5 top-1.5 h-1.25 w-1.25 rounded-full bg-mist" />
               ) : null}
             </Link>
             <button
@@ -415,7 +415,7 @@ export function SiteHeader() {
               {itemCount(store.cart) > 0 ? (
                 <span
                   key={itemCount(store.cart)}
-                  className="cart-count absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#d21f2b] px-1 text-[10px] leading-none text-white"
+                  className="cart-count absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-mist px-1 text-[10px] leading-none text-ink"
                 >
                   {itemCount(store.cart)}
                 </span>
@@ -543,7 +543,7 @@ function MegaMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
             <Link
               href={active ? `/shop?category=${active.id}` : "/shop"}
               onClick={onClose}
-              className="relative block aspect-[4/5] overflow-hidden rounded-xl bg-[#e7dfd4]"
+              className="relative block aspect-[4/5] overflow-hidden rounded-xl bg-sand"
             >
               <Media key={image} src={image} alt={active?.name ?? ""} sizes="240px" className="object-contain" />
             </Link>
@@ -623,8 +623,8 @@ function MobileMenu({ onAccount }: { onAccount: () => void }) {
                     className={row}
                     aria-current={active ? "page" : undefined}
                   >
-                    <span className={active ? "text-[#8a7350]" : ""}>{link.label}</span>
-                    <span className={`h-1.5 w-1.5 rounded-full ${active ? "bg-[#CBAC7C]" : "bg-transparent"}`} />
+                    <span className={active ? "text-[#3A6B75]" : ""}>{link.label}</span>
+                    <span className={`h-1.5 w-1.5 rounded-full ${active ? "bg-[#61A2AF]" : "bg-transparent"}`} />
                   </Link>
                 );
               })}
@@ -632,26 +632,26 @@ function MobileMenu({ onAccount }: { onAccount: () => void }) {
             <div className="border-t border-line px-5 pb-6 pt-2">
               <Link href="/wishlist" onClick={store.closeMenu} className={row}>
                 <span className="inline-flex items-center gap-2">
-                  <Heart size={16} strokeWidth={1.6} className="text-[#CBAC7C]" fill={store.wishlist.length > 0 ? "currentColor" : "none"} />
+                  <Heart size={16} strokeWidth={1.6} className="text-[#61A2AF]" fill={store.wishlist.length > 0 ? "currentColor" : "none"} />
                   Wishlist
                 </span>
-                {store.wishlist.length > 0 ? <span className="text-[11px] tracking-normal text-[#8a7350]">{store.wishlist.length}</span> : null}
+                {store.wishlist.length > 0 ? <span className="text-[11px] tracking-normal text-[#3A6B75]">{store.wishlist.length}</span> : null}
               </Link>
               {user && user.role !== "admin" ? (
                 <Link href="/account" onClick={store.closeMenu} className={row}>
                   <span>Account</span>
-                  <User size={16} strokeWidth={1.6} className="text-[#8a7350]" />
+                  <User size={16} strokeWidth={1.6} className="text-[#61A2AF]" />
                 </Link>
               ) : (
                 <button type="button" onClick={onAccount} className={row}>
                   <span>Account</span>
-                  <User size={16} strokeWidth={1.6} className="text-[#8a7350]" />
+                  <User size={16} strokeWidth={1.6} className="text-[#61A2AF]" />
                 </button>
               )}
               {user && user.role !== "admin" ? (
                 <button
                   type="button"
-                  className="mt-4 flex h-12 w-full items-center justify-center rounded-full border border-[#e3dbd1] bg-white text-[11px] uppercase tracking-[0.16em] text-[#8a7350]"
+                  className="mt-4 flex h-12 w-full items-center justify-center rounded-full border border-[#e8e8e6] bg-white text-[11px] uppercase tracking-[0.16em] text-[#3A6B75]"
                   onClick={() => setConfirmLogout(true)}
                 >
                   Log out

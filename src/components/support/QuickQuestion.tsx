@@ -10,7 +10,7 @@ type Props = {
 
 export function QuickQuestion({ action, disabled, onAction }: Props) {
   const className =
-    "max-w-full rounded-full border border-[#e3dbd1] bg-[#fffcf8] px-3.5 py-2 text-left text-sm text-[#2c2926] transition-colors hover:border-[#CBAC7C] hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350] disabled:cursor-not-allowed disabled:opacity-50";
+    "max-w-full rounded-full border border-[#e8e8e6] bg-[#ffffff] px-3.5 py-2 text-left text-sm text-[#2c2926] transition-colors hover:border-[#61A2AF] hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF] disabled:cursor-not-allowed disabled:opacity-50";
 
   if (action.kind === "link" && action.href) {
     return (

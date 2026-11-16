@@ -26,13 +26,13 @@ export function BestsellerScroll() {
   const shopHref = bestsellers.length ? "/shop?bestseller=1" : "/shop";
 
   return (
-    <section aria-labelledby="bestsellers-heading" className="bg-[#F7F3EE] px-4 py-16 text-[#2c2926] sm:px-6 sm:py-20 lg:px-10 lg:py-24">
+    <section aria-labelledby="bestsellers-heading" className="bg-[#ffffff] px-4 py-16 text-[#2c2926] sm:px-6 sm:py-20 lg:px-10 lg:py-24">
       <div className="mx-auto max-w-[1440px]">
         <Reveal>
           <div className="mb-9 flex flex-col gap-6 sm:mb-11 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl">
               <p className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#8a7350]">
-                <span className="h-px w-8 bg-[#CBAC7C]" aria-hidden />
+                <span className="h-px w-8 bg-[#61A2AF]" aria-hidden />
                 The Silken Knot edit
               </p>
               <h2
@@ -47,7 +47,7 @@ export function BestsellerScroll() {
             </div>
             <Link
               href={shopHref}
-              className="group inline-flex w-fit shrink-0 items-center gap-3 rounded-full bg-[#9a7352] py-1.5 pl-6 pr-1.5 text-sm font-medium text-white shadow-[0_10px_28px_rgba(154,115,82,0.28)] transition-colors duration-300 hover:bg-[#85603f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
+              className="group inline-flex w-fit shrink-0 items-center gap-3 rounded-full bg-[#61A2AF] py-1.5 pl-6 pr-1.5 text-sm font-medium text-white shadow-[0_10px_28px_rgba(97,162,175,0.28)] transition-colors duration-300 hover:bg-[#4F8A96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]"
             >
               Explore all
               <span className="inline-flex size-9 items-center justify-center rounded-full bg-white text-[#1c1b19] transition-transform duration-300 ease-out group-hover:rotate-45 motion-reduce:transition-none motion-reduce:group-hover:rotate-0">
@@ -95,7 +95,7 @@ function BestsellerCard({ product, rank }: { product: Product; rank: number }) {
   }
 
   return (
-    <article className="group flex h-full min-w-0 flex-col md:rounded-[1.35rem] md:border md:border-[#e8e0d6]/90 md:bg-[#fffcf8] md:p-2 md:shadow-[0_2px_10px_rgba(44,41,38,0.05)] md:transition-[box-shadow,border-color] md:duration-300 md:ease-out md:hover:border-[#CBAC7C]/55 md:hover:shadow-[0_14px_34px_rgba(44,41,38,0.12)]">
+    <article className="group flex h-full min-w-0 flex-col md:rounded-[1.35rem] md:border md:border-[#e8e8e6]/90 md:bg-[#ffffff] md:p-2 md:shadow-[0_2px_10px_rgba(44,41,38,0.05)] md:transition-[box-shadow,border-color] md:duration-300 md:ease-out md:hover:border-[#61A2AF]/55 md:hover:shadow-[0_14px_34px_rgba(44,41,38,0.12)]">
       <div className="relative">
         <ListingCardMedia
           href={`/products/${product.slug}`}
@@ -108,11 +108,11 @@ function BestsellerCard({ product, rank }: { product: Product; rank: number }) {
           wishlist={<WishlistButton productId={product.id} name={product.name} />}
           badge={
             product.bestseller ? (
-              <span className="bg-[#F7F3EE]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm md:rounded-full md:border md:border-[#CBAC7C]/35 md:px-2.5 md:shadow-[0_2px_8px_rgba(44,41,38,0.06)]">
+              <span className="bg-[#ffffff]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm md:rounded-full md:border md:border-[#61A2AF]/35 md:px-2.5 md:shadow-[0_2px_8px_rgba(44,41,38,0.06)]">
                 Bestseller
               </span>
             ) : product.newArrival ? (
-              <span className="bg-[#F7F3EE]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm md:rounded-full md:border md:border-[#CBAC7C]/35 md:px-2.5 md:shadow-[0_2px_8px_rgba(44,41,38,0.06)]">
+              <span className="bg-[#ffffff]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm md:rounded-full md:border md:border-[#61A2AF]/35 md:px-2.5 md:shadow-[0_2px_8px_rgba(44,41,38,0.06)]">
                 New
               </span>
             ) : null
@@ -136,7 +136,7 @@ function BestsellerCard({ product, rank }: { product: Product; rank: number }) {
         <h3 className="truncate text-[15px] font-medium leading-snug text-[#2c2926] md:line-clamp-2 md:whitespace-normal md:text-lg">
           <Link
             href={`/products/${product.slug}`}
-            className="transition-colors duration-200 hover:text-[#85603f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
+            className="transition-colors duration-200 hover:text-[#4F8A96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]"
           >
             {product.name}
           </Link>

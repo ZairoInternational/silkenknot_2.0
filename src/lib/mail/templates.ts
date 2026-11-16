@@ -12,14 +12,14 @@ function escapeHtml(value: string) {
 function layout(title: string, body: string) {
   return `<!doctype html>
 <html>
-  <body style="margin:0;background:#f7f4ef;color:#2c2926;font-family:Georgia,serif;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f4ef;padding:28px 12px;">
+  <body style="margin:0;background:#ffffff;color:#2c2926;font-family:Georgia,serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:28px 12px;">
       <tr>
         <td align="center">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #efe6d8;border-radius:18px;padding:28px 24px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e8e8e6;border-radius:18px;padding:28px 24px;">
             <tr>
               <td>
-                <p style="margin:0 0 18px;font-family:Arial,sans-serif;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#8a7350;">Silken Knot</p>
+                <p style="margin:0 0 18px;font-family:Arial,sans-serif;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#3A6B75;">Silken Knot</p>
                 <h1 style="margin:0 0 12px;font-size:28px;font-weight:500;line-height:1.2;">${title}</h1>
                 ${body}
               </td>
@@ -62,8 +62,8 @@ export function orderEmail(order: {
   const pay = order.payment === "cod" ? "Pay on delivery" : "Paid online";
   const rows = order.items
     .map((item) => `<tr>
-      <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;border-top:1px solid #efe6d8;">${escapeHtml(item.name)} × ${item.quantity}</td>
-      <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;text-align:right;border-top:1px solid #efe6d8;">${escapeHtml(formatPrice(item.price * item.quantity))}</td>
+      <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;border-top:1px solid #e8e8e6;">${escapeHtml(item.name)} × ${item.quantity}</td>
+      <td style="padding:8px 0;font-family:Arial,sans-serif;font-size:14px;text-align:right;border-top:1px solid #e8e8e6;">${escapeHtml(formatPrice(item.price * item.quantity))}</td>
     </tr>`)
     .join("");
   return {

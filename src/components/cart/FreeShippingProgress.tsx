@@ -118,7 +118,7 @@ export function FreeShippingProgress({
       <div className="relative z-[2] flex items-start gap-2.5">
         <motion.span
           className={`mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full transition-colors duration-300 ${
-            unlocked ? "bg-[#5f7d57] text-white" : "bg-[#CBAC7C]/18 text-[#8a7350]"
+            unlocked ? "bg-[#5f7d57] text-white" : "bg-[#61A2AF]/18 text-[#3A6B75]"
           }`}
           animate={celebrate && !reduceMotion ? { scale: [1, 1.18, 1], rotate: [0, -8, 8, 0] } : { scale: 1, rotate: 0 }}
           transition={{ duration: 0.55 }}
@@ -149,7 +149,7 @@ export function FreeShippingProgress({
               )
             ) : (
               <>
-                Add <span className="font-medium text-[#8a7350]">{formatPrice(remaining)}</span> more for{" "}
+                Add <span className="font-medium text-[#3A6B75]">{formatPrice(remaining)}</span> more for{" "}
                 <span className="font-medium">free delivery</span>
               </>
             )}
@@ -167,7 +167,7 @@ export function FreeShippingProgress({
             }
           >
             <motion.div
-              className={`h-full rounded-full ${unlocked ? "bg-[#5f7d57]" : "bg-[#CBAC7C]"}`}
+              className={`h-full rounded-full ${unlocked ? "bg-[#5f7d57]" : "bg-[#61A2AF]"}`}
               initial={false}
               animate={{ width: `${percent}%` }}
               transition={{ duration: reduceMotion ? 0 : 0.5, ease: [0.22, 1, 0.36, 1] }}

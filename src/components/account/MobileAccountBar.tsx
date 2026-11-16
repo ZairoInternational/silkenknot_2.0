@@ -90,7 +90,7 @@ export function MobileAccountBar() {
   const items = itemsFor(pathname, store.cartOpen, store.accountOpen);
 
   return (
-    <nav aria-label="Mobile" className={`fixed inset-x-0 bottom-0 z-40 border-t border-[#efe6d8] bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur transition-transform duration-200 md:hidden ${shown ? "translate-y-0" : "translate-y-full"}`}>
+    <nav aria-label="Mobile" className={`fixed inset-x-0 bottom-0 z-40 border-t border-[#e8e8e6] bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur transition-transform duration-200 md:hidden ${shown ? "translate-y-0" : "translate-y-full"}`}>
       <div className="grid grid-cols-4">
         {items.map((item) => {
           const Icon = item.icon;

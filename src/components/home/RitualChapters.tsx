@@ -77,13 +77,13 @@ export function CategorySection() {
   ];
 
   return (
-    <section className="bg-[#f7f4ef] px-4 py-16 sm:px-6 sm:py-20 lg:px-10 lg:py-24">
+    <section className="bg-[#ffffff] px-4 py-16 sm:px-6 sm:py-20 lg:px-10 lg:py-24">
       <div className="mx-auto max-w-[1440px]">
         <Reveal>
           <div className="mb-9 flex flex-col gap-6 sm:mb-11 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl">
               <p className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#8a7350]">
-                <span className="h-px w-8 bg-[#CBAC7C]" aria-hidden />
+                <span className="h-px w-8 bg-[#61A2AF]" aria-hidden />
                 Explore the collections
               </p>
               <h2 className="mt-3 font-serif text-3xl leading-[1.05] tracking-tight text-[#292d25] sm:text-4xl lg:text-5xl">
@@ -95,7 +95,7 @@ export function CategorySection() {
             </div>
             <Link
               href="/shop"
-              className="group/all inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-[#CBAC7C] bg-white px-5 py-2.5 text-sm text-[#2c2926] shadow-[0_2px_8px_rgba(44,41,38,0.04)] transition-colors duration-300 hover:bg-[#CBAC7C] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
+              className="group/all inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-[#61A2AF] bg-white px-5 py-2.5 text-sm text-[#2c2926] shadow-[0_2px_8px_rgba(44,41,38,0.04)] transition-colors duration-300 hover:bg-[#61A2AF] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]"
             >
               Shop all
               <ArrowUpRight
@@ -111,7 +111,7 @@ export function CategorySection() {
             <Link
               key={collection.number}
               href={collection.href}
-              className={`group relative min-h-[300px] cursor-pointer overflow-hidden rounded-2xl bg-[#ded5c8] shadow-[0_2px_10px_rgba(44,41,38,0.06)] transition-[box-shadow,transform] duration-300 ease-out hover:shadow-[0_14px_36px_rgba(44,41,38,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350] motion-reduce:transition-colors md:min-h-0 ${collection.className}`}
+              className={`group relative min-h-[300px] cursor-pointer overflow-hidden rounded-2xl bg-[#ded5c8] shadow-[0_2px_10px_rgba(44,41,38,0.06)] transition-[box-shadow,transform] duration-300 ease-out hover:shadow-[0_14px_36px_rgba(44,41,38,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF] motion-reduce:transition-colors md:min-h-0 ${collection.className}`}
             >
               <Media
                 src={collection.image}
@@ -132,7 +132,7 @@ export function CategorySection() {
                 <p className="mt-2 max-w-[28ch] text-sm leading-6 text-white/88 sm:text-[15px]">
                   {collection.description}
                 </p>
-                <span className="mt-5 inline-flex w-fit items-center gap-3 rounded-full bg-[#9a7352] py-1.5 pl-5 pr-1.5 text-sm font-medium tracking-[0.02em] text-white shadow-[0_8px_24px_rgba(0,0,0,0.28)] transition-colors duration-300 group-hover:bg-[#85603f] sm:pl-6">
+                <span className="mt-5 inline-flex w-fit items-center gap-3 rounded-full bg-[#61A2AF] py-1.5 pl-5 pr-1.5 text-sm font-medium tracking-[0.02em] text-white shadow-[0_8px_24px_rgba(0,0,0,0.28)] transition-colors duration-300 group-hover:bg-[#4F8A96] sm:pl-6">
                   Explore Collection
                   <span className="inline-flex size-9 items-center justify-center rounded-full bg-white text-[#1c1b19] transition-transform duration-300 ease-out group-hover:rotate-45 motion-reduce:transition-none motion-reduce:group-hover:rotate-0">
                     <ArrowUpRight size={16} />

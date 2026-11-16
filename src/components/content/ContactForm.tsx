@@ -5,7 +5,7 @@ import Link from "next/link";
 import { PolicyGlance, PolicyRows, PolicySection } from "@/components/content/PolicyDoc";
 
 const fieldShell =
-  "mt-2 flex w-full items-center rounded-xl border border-[#e3dbd1] bg-white px-3.5 transition-[border-color,box-shadow] focus-within:border-[#CBAC7C] focus-within:shadow-[0_0_0_3px_rgba(203,172,124,0.18)]";
+  "mt-2 flex w-full items-center rounded-xl border border-[#e8e8e6] bg-white px-3.5 transition-[border-color,box-shadow] focus-within:border-[#61A2AF] focus-within:shadow-[0_0_0_3px_rgba(97,162,175,0.18)]";
 const control =
   "h-11 w-full bg-transparent text-base text-[#2c2926] outline-none ring-0 placeholder:text-[#9a948b] focus:outline-none focus:ring-0 focus-visible:outline-none md:text-sm";
 
@@ -187,7 +187,7 @@ export function ContactForm() {
                 <button
                   type="submit"
                   disabled={busy}
-                  className="h-12 rounded-full bg-[#CBAC7C] px-7 text-[11px] uppercase tracking-[0.18em] text-white transition hover:bg-[#B39668] disabled:opacity-60"
+                  className="h-12 rounded-full bg-[#61A2AF] px-7 text-[11px] uppercase tracking-[0.18em] text-white transition hover:bg-[#4F8A96] disabled:opacity-60"
                 >
                   {busy ? "Sending…" : "Send message"}
                 </button>

@@ -113,14 +113,14 @@ export default function ShippingSettingsPage() {
       </div>
 
       {policy.mode === "mock" ? (
-        <p className="rounded-xl border border-[#e8d9b5] bg-[#fbf6ea] px-4 py-3 text-sm text-[#7a5a28]">
+        <p className="rounded-xl border border-[#e8d9b5] bg-[#f7f7f6] px-4 py-3 text-sm text-[#7a5a28]">
           Mock mode is on. Paid orders get a test waybill. Refresh tracking steps the status. Nothing is sent to Delhivery.
         </p>
       ) : null}
 
       <div className="mx-auto max-w-2xl space-y-4 xl:mx-0">
         <AdminPanel title="Courier" hint="Delhivery connection and pickup" defaultOpen>
-          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#faf7f2] px-4 py-3 text-sm">
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#ffffff] px-4 py-3 text-sm">
             <input
               type="checkbox"
               className="mt-0.5"
@@ -191,7 +191,7 @@ export default function ShippingSettingsPage() {
         </AdminPanel>
 
         <AdminPanel title="Cash on delivery" hint="COD availability at checkout" defaultOpen={false}>
-          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#faf7f2] px-4 py-3 text-sm">
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#ffffff] px-4 py-3 text-sm">
             <input
               type="checkbox"
               className="mt-0.5"

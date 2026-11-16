@@ -8,8 +8,28 @@ import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
 import { ShippingFee } from "@/components/checkout/DeliveryChargeNote";
 import { Media } from "@/components/ui";
 import { CheckoutOfferSheet, OfferBox } from "@/components/offers/OfferBox";
-import { IDEMPOTENCY_STORAGE_KEY, PAYMENT_STORAGE_KEY, SHIPPING_SELECTION_KEY, applyBagDiscount, deliveryChargeSplit, retainCheckoutDraft, shippingForPayment, type ShippingSelection } from "@/lib/checkout";
+import {
+  IDEMPOTENCY_STORAGE_KEY,
+  PAYMENT_STORAGE_KEY,
+  SHIPPING_SELECTION_KEY,
+  applyBagDiscount,
+  assumedDeliveryPin,
+  deliveryChargeSplit,
+  estimateSelectionFromQuote,
+  retainCheckoutDraft,
+  shippingForPayment,
+  type ShippingSelection,
+} from "@/lib/checkout";
+import {
+  SHIPPING_QUOTE_EVENT,
+  readShippingQuote,
+  shippingQuoteCacheKey,
+  shippingQuoteCartKey,
+  type ShippingQuoteEventDetail,
+} from "@/lib/checkout/shippingQuoteCache";
 import { couponDiscount, couponDiscountPaise, formatPrice, subtotal } from "@/lib/format";
+import { usePlatformFeeDisplay } from "@/lib/payments/platformFeeClient";
+import { resolvePlatformFeeDisplay } from "@/lib/payments/platformFeeDisplay";
 import { useShippingDisplay } from "@/lib/shipping/client";
 import { useStore } from "@/lib/store";
 import type { CartItem } from "@/lib/types";
@@ -269,8 +289,11 @@ export default function OrderSummary() {
   const store = useStore();
   const pathname = usePathname();
   const shippingDisplay = useShippingDisplay();
+  const platformDisplay = usePlatformFeeDisplay();
   const [offersOpen, setOffersOpen] = useState(false);
   const [selection, setSelection] = useState<ShippingSelection | null>(null);
+  const [estimate, setEstimate] = useState<ShippingSelection | null>(null);
+  const [quoteStatus, setQuoteStatus] = useState<"idle" | "loading" | "ready">("idle");
   const [payCod, setPayCod] = useState(false);
   const [couponNotice, setCouponNotice] = useState("");
   const seenDiscount = useRef<number | null>(null);
@@ -284,6 +307,14 @@ export default function OrderSummary() {
   const mrpDiscount = Math.max(0, mrp - goods);
   const count = items.reduce((sum, item) => sum + item.quantity, 0);
   const bagKey = items.map((item) => `${item.productId}:${item.variantLabel}:${item.quantity}:${item.price}`).join("|");
+  const [postal, setPostal] = useState("");
+  const hasPin = /^\d{6}$/.test(postal);
+  const confirmed = Boolean(selection && items.length && quoteMatchesBag(selection, goodsPaise));
+
+  useEffect(() => {
+    if (!store.ready) return;
+    setPostal(assumedDeliveryPin(store.currentUser));
+  }, [store.ready, store.currentUser]);
 
   useEffect(() => {
     if (!store.ready || !store.couponCode) return;
@@ -299,7 +330,10 @@ export default function OrderSummary() {
   useEffect(() => {
     if (!store.ready) return;
     retainCheckoutDraft(store.currentUser?.id ?? null);
-    const read = () => {
+    const pin = assumedDeliveryPin(store.currentUser);
+    setPostal(pin);
+
+    const readSelection = () => {
       try {
         const raw = sessionStorage.getItem(SHIPPING_SELECTION_KEY);
         const parsed = raw ? JSON.parse(raw) as ShippingSelection : null;
@@ -316,10 +350,59 @@ export default function OrderSummary() {
         setSelection(null);
       }
     };
-    read();
-    window.addEventListener("silkknot-shipping", read);
-    return () => window.removeEventListener("silkknot-shipping", read);
-  }, [store.ready, store.currentUser?.id, pathname, bagKey, goodsPaise]);
+    const readEstimate = (statusHint?: ShippingQuoteEventDetail["status"]) => {
+      const nextPin = assumedDeliveryPin(store.currentUser);
+      setPostal(nextPin);
+      if (!items.length || !/^\d{6}$/.test(nextPin)) {
+        setEstimate(null);
+        setQuoteStatus("idle");
+        return;
+      }
+      const cacheKey = shippingQuoteCacheKey(
+        nextPin,
+        shippingQuoteCartKey(items.map((item) => ({
+          productId: item.productId,
+          variantLabel: item.variantLabel,
+          quantity: item.quantity,
+        }))),
+        store.couponCode,
+      );
+      const body = readShippingQuote(cacheKey);
+      if (body) {
+        setEstimate(estimateSelectionFromQuote(body, goodsPaise, discountPaise));
+        setQuoteStatus("ready");
+        return;
+      }
+      setEstimate(null);
+      // Never flip idle/ready back to loading here — only quote events start loading.
+      if (statusHint === "loading") setQuoteStatus("loading");
+      else if (statusHint === "idle") setQuoteStatus("idle");
+      else setQuoteStatus((prev) => (prev === "loading" ? "loading" : "idle"));
+    };
+    const readAll = () => {
+      readSelection();
+      readEstimate();
+    };
+    const onQuote = (event: Event) => {
+      const detail = (event as CustomEvent<ShippingQuoteEventDetail>).detail;
+      const nextPin = assumedDeliveryPin(store.currentUser);
+      if (!/^\d{6}$/.test(nextPin)) {
+        setPostal("");
+        setEstimate(null);
+        setQuoteStatus("idle");
+        return;
+      }
+      if (detail?.status) setQuoteStatus(detail.status);
+      readEstimate(detail?.status);
+    };
+    readAll();
+    window.addEventListener("silkknot-shipping", readAll);
+    window.addEventListener(SHIPPING_QUOTE_EVENT, onQuote);
+    return () => {
+      window.removeEventListener("silkknot-shipping", readAll);
+      window.removeEventListener(SHIPPING_QUOTE_EVENT, onQuote);
+    };
+  }, [store.ready, store.currentUser, store.couponCode, pathname, bagKey, goodsPaise, discountPaise, items]);
 
   useEffect(() => {
     if (seenDiscount.current === null) {
@@ -331,37 +414,76 @@ export default function OrderSummary() {
     sessionStorage.removeItem(IDEMPOTENCY_STORAGE_KEY);
   }, [discount]);
 
-  const server = selection && items.length && quoteMatchesBag(selection, goodsPaise) ? selection : null;
+  const server = confirmed
+    ? selection
+    : estimate && items.length && quoteMatchesBag(estimate, goodsPaise)
+      ? estimate
+      : null;
   const priced = server ? applyBagDiscount(server, discountPaise, payCod ? "cod" : "razorpay", goodsPaise) : null;
+  const deliveryLoading = hasPin && !priced && quoteStatus === "loading";
 
   const charges = priced ? deliveryChargeSplit(priced) : null;
   const merchandise = Math.max(0, (goodsPaise - discountPaise) / 100);
-  const total = priced ? priced.amountPaise / 100 : merchandise;
-  const platformListPaise = priced?.platformFeeListPaise ?? 0;
-  const platformChargePaise = priced?.platformFeePaise ?? 0;
+  const netPaise = goodsPaise - discountPaise;
+  const localPlatform = resolvePlatformFeeDisplay(platformDisplay, netPaise);
+  const platformListPaise = priced?.platformFeeListPaise ?? localPlatform.listPaise;
+  const platformChargePaise = priced?.platformFeePaise ?? localPlatform.chargePaise;
+  const platformWaiveAbovePaise = priced?.platformFeeWaiveAbovePaise ?? platformDisplay.waiveAbovePaise;
+  const platformWaiveFirstOrder = priced
+    ? Boolean(priced.platformFeeWaiveFirstOrder)
+    : localPlatform.reason === "first_order";
+  const threshold = priced?.freeShippingPaise ?? shippingDisplay.freeShippingPaise;
+  const shortfallPaise = threshold > 0 && netPaise < threshold ? threshold - netPaise : 0;
+  // Contact page (saved PIN, quote may lag): standard prepaid estimate from policy.
+  const estimateFree = hasPin && threshold > 0 && netPaise >= threshold && !payCod;
+  const estimatePaise = estimateFree ? 0 : shippingDisplay.standardPaise;
+  const deliveryFree = charges ? charges.shippingFree : estimateFree;
+  const deliveryPaise = charges ? charges.shippingPaise : estimatePaise;
+  const shippingInTotal = hasPin || charges
+    ? (deliveryFree ? 0 : deliveryPaise / 100)
+    : 0;
+  const total = priced
+    ? priced.amountPaise / 100
+    : merchandise + platformChargePaise / 100 + shippingInTotal;
   const platformSaved = platformListPaise > 0 && platformChargePaise === 0 ? platformListPaise / 100 : 0;
   const saved = mrpDiscount + discount + platformSaved;
-  const threshold = priced?.freeShippingPaise ?? 0;
-  const netPaise = goodsPaise - discountPaise;
-  const shortfallPaise = threshold > 0 && netPaise < threshold ? threshold - netPaise : 0;
+  const standardPath = !priced || priced.optionId === "standard";
   const freeDeliveryHint = Boolean(
-    priced
-    && charges
-    && !charges.shippingFree
-    && priced.optionId === "standard"
+    hasPin
+    && !deliveryFree
+    && standardPath
     && shortfallPaise > 0
-    && !payCod,
+    && !payCod
+    && !deliveryLoading,
   );
   const deliveryFeeHint = (() => {
-    if (!priced || !charges?.shippingFree) return null;
-    const freeAt = priced.freeShippingPaise ?? 0;
-    if (freeAt > 0) return `Waived on orders over ${formatPrice(freeAt / 100)}`;
-    return "Waived on this order";
+    if (!hasPin || deliveryLoading) return null;
+    if (deliveryFree) {
+      if (threshold > 0) return `Waived on orders over ${formatPrice(threshold / 100)}`;
+      return "Waived on this order";
+    }
+    // Parenthetical freeDeliveryHint covers standard prepaid shortfall.
+    if (freeDeliveryHint) return null;
+    if (payCod && threshold > 0) {
+      return shortfallPaise > 0
+        ? `Add ${formatPrice(shortfallPaise / 100)} more and pay online to waive delivery`
+        : "Pay online to waive delivery on this bag";
+    }
+    if (priced && priced.optionId !== "standard" && threshold > 0) {
+      return `Choose standard delivery for free delivery over ${formatPrice(threshold / 100)}`;
+    }
+    if (shortfallPaise > 0) return `Add ${formatPrice(shortfallPaise / 100)} more for free delivery`;
+    return null;
   })();
-  const platformWaiveAbovePaise = priced?.platformFeeWaiveAbovePaise ?? 0;
   const platformFeeHint = (() => {
-    if (!priced || platformListPaise <= 0 || platformChargePaise > 0) return null;
-    if (priced.platformFeeWaiveFirstOrder) return "Waived on your first order";
+    if (platformListPaise <= 0) return null;
+    if (platformChargePaise > 0) {
+      if (platformWaiveAbovePaise > 0) {
+        return `Waived on orders over ${formatPrice(platformWaiveAbovePaise / 100)}`;
+      }
+      return null;
+    }
+    if (platformWaiveFirstOrder) return "Waived on your first order";
     if (platformWaiveAbovePaise > 0) return `Waived on orders over ${formatPrice(platformWaiveAbovePaise / 100)}`;
     return null;
   })();
@@ -379,6 +501,21 @@ export default function OrderSummary() {
     sessionStorage.removeItem(SHIPPING_SELECTION_KEY);
     window.dispatchEvent(new Event("silkknot-shipping"));
     store.setQuantity(lineId, next);
+  }
+
+  function deliveryAmount() {
+    if (!hasPin) {
+      return <span className="billPending">Shown on delivery step</span>;
+    }
+    // Saved PIN: quote when ready, else standard fee / free from policy (contact page).
+    return <ShippingFee amountPaise={deliveryPaise} free={deliveryFree} />;
+  }
+
+  function platformAmount() {
+    if (platformListPaise > 0) {
+      return <ShippingFee amountPaise={platformListPaise} free={platformChargePaise === 0} />;
+    }
+    return <span className="chargeFree">Free</span>;
   }
 
   return (
@@ -444,11 +581,7 @@ export default function OrderSummary() {
         <div className={`summaryLine billDelivery${freeDeliveryHint ? " hasHint" : ""}`}>
           <span className="billLabel">Delivery charges</span>
           <span className="billAmountBlock">
-            {charges ? (
-              <ShippingFee amountPaise={charges.shippingPaise} free={charges.shippingFree} />
-            ) : (
-              <span className="billPriceSkeleton" aria-label="Updating delivery charge" role="status" />
-            )}
+            {deliveryAmount()}
             {deliveryFeeHint ? <span className="billAmountNote">{deliveryFeeHint}</span> : null}
           </span>
           {freeDeliveryHint ? (
@@ -458,22 +591,16 @@ export default function OrderSummary() {
         <div className="summaryLine billPlatform">
           <span className="summaryWithNote">
             <span className="billLabel">Platform fee</span>
-            {priced ? (
+            {platformListPaise > 0 ? (
               <PlatformFeeNote
                 chargePaise={platformChargePaise}
                 waiveAbovePaise={platformWaiveAbovePaise}
-                isFirstOrderWaiver={Boolean(priced.platformFeeWaiveFirstOrder)}
+                isFirstOrderWaiver={platformWaiveFirstOrder}
               />
             ) : null}
           </span>
           <span className="billAmountBlock">
-            {priced && platformListPaise > 0 ? (
-              <ShippingFee amountPaise={platformListPaise} free={platformChargePaise === 0} />
-            ) : priced ? (
-              <span className="chargeFree">Free</span>
-            ) : (
-              <span className="billPriceSkeleton" aria-label="Updating platform fee" role="status" />
-            )}
+            {platformAmount()}
             {platformFeeHint ? <span className="billAmountNote">{platformFeeHint}</span> : null}
           </span>
         </div>
@@ -502,8 +629,17 @@ export default function OrderSummary() {
             </span>
             <span>You&apos;ll save <strong>{formatPrice(saved)}</strong> on this order</span>
           </p>
-        ) : items.length && !priced ? (
-          <p className="summaryFoot">Delivery is added when you choose it.</p>
+        ) : items.length && !hasPin ? (
+          <p className="summaryFoot">Delivery charge appears after you add an address.</p>
+        ) : items.length && hasPin && deliveryFree ? (
+          <p className="summaryFoot">Free delivery unlocked — no delivery charge on this bag.</p>
+        ) : items.length && hasPin && shortfallPaise > 0 ? (
+          <p className="summaryFoot">
+            Add {formatPrice(shortfallPaise / 100)} more to unlock free delivery
+            {payCod ? " when you pay online" : ""}.
+          </p>
+        ) : items.length && hasPin && payCod && threshold > 0 && shortfallPaise <= 0 ? (
+          <p className="summaryFoot">Pay online to waive delivery on this bag.</p>
         ) : null}
       </div>
     </aside>

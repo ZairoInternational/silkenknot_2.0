@@ -250,7 +250,7 @@ export default function Testimonials() {
     <section
       aria-roledescription="carousel"
       aria-labelledby="testimonials-heading"
-      className="relative isolate overflow-hidden bg-[#F7F3EE] pt-16 sm:pt-20 lg:pt-24"
+      className="relative isolate overflow-hidden bg-[#ffffff] pt-16 sm:pt-20 lg:pt-24"
     >
       {/* Botanical decoration (generated SVGs in /public/silknknot/decor) */}
       <div

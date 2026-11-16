@@ -41,7 +41,7 @@ function productImage(product: Product, index: number, fallbackShots: string[]) 
 }
 
 const FOCUS =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]";
 
 export function BuildYourRitual() {
   const media = useSiteMedia();
@@ -100,7 +100,7 @@ export function BuildYourRitual() {
           <button
             type="button"
             onClick={addAll}
-            className={`inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#2c2926] px-7 text-base text-[#f7f3ee] transition-colors hover:bg-[#9a7352] active:scale-[0.98] md:w-auto ${FOCUS}`}
+            className={`inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ink px-7 text-base text-paper transition-colors hover:bg-mist hover:text-ink active:scale-[0.98] md:w-auto ${FOCUS}`}
           >
             <ShoppingBag size={18} />
             Add the whole ritual · {formatPrice(total)}
@@ -111,11 +111,11 @@ export function BuildYourRitual() {
           {/* the line that joins the steps */}
           <span
             aria-hidden
-            className="absolute left-[1.15rem] top-3 bottom-3 w-px bg-[#CBAC7C]/60 md:left-6 md:right-6 md:top-[1.15rem] md:h-px md:w-auto"
+            className="absolute left-[1.15rem] top-3 bottom-3 w-px bg-[#61A2AF]/60 md:left-6 md:right-6 md:top-[1.15rem] md:h-px md:w-auto"
           />
           {picks.map(({ step, product }, i) => (
             <li key={step.label} className="relative pl-14 md:pl-0">
-              <span className="absolute left-0 top-0 grid h-10 w-10 place-items-center rounded-full bg-[#2c2926] text-sm text-[#f7f3ee] md:relative md:mb-5">
+              <span className="absolute left-0 top-0 grid h-10 w-10 place-items-center rounded-full bg-[#2c2926] text-sm text-[#ffffff] md:relative md:mb-5">
                 {i + 1}
               </span>
               <p className="text-2xl font-medium tracking-[-0.02em]">
@@ -125,9 +125,9 @@ export function BuildYourRitual() {
 
               <Link
                 href={`/products/${product.slug}`}
-                className={`group mt-4 flex items-center gap-4 rounded-2xl bg-white/70 p-3 ring-1 ring-[#e6dfd4] transition-shadow hover:shadow-[0_20px_40px_-26px_rgba(110,80,40,0.5)] md:flex-col md:items-stretch md:gap-0 md:p-3 ${FOCUS}`}
+                className={`group mt-4 flex items-center gap-4 rounded-2xl bg-white/70 p-3 ring-1 ring-[#e8e8e6] transition-shadow hover:shadow-[0_20px_40px_-26px_rgba(110,80,40,0.5)] md:flex-col md:items-stretch md:gap-0 md:p-3 ${FOCUS}`}
               >
-                <span className="relative block h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-gradient-to-b from-[#faf7f2] to-[#efe4d2] md:aspect-square md:h-auto md:w-full">
+                <span className="relative block h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-gradient-to-b from-[#ffffff] to-[#f0f0ef] md:aspect-square md:h-auto md:w-full">
                   <Media
                     src={productImage(product, i, fallbackShots)}
                     alt=""

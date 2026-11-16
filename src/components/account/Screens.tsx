@@ -77,7 +77,7 @@ function NameStep() {
 
   return (
     <div className={shell}>
-      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#8a7350]">One step left</p>
+      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#3A6B75]">One step left</p>
       <h1 className="mt-3 text-4xl font-medium tracking-tight">What should we call you?</h1>
       <p className="mt-3 text-sm leading-7 text-mute">Your name is required. It appears on orders and deliveries.</p>
       <form
@@ -116,7 +116,7 @@ function NameStep() {
           />
         </label>
         {error ? <p role="alert" className="mt-3 text-sm text-[#8d3b32]">{error}</p> : null}
-        <button type="submit" disabled={busy} className="mt-5 h-12 w-full rounded-2xl bg-[#CBAC7C] text-[11px] font-medium uppercase tracking-[0.16em] text-white hover:bg-[#B39668] disabled:opacity-60">
+        <button type="submit" disabled={busy} className="mt-5 h-12 w-full rounded-2xl bg-[#61A2AF] text-[11px] font-medium uppercase tracking-[0.16em] text-white hover:bg-[#4F8A96] disabled:opacity-60">
           {busy ? "Saving…" : "Continue"}
         </button>
       </form>
@@ -137,7 +137,7 @@ function AccountNav({ items, className }: { items: { href: string; label: string
       {items.map((item) => {
         const Icon = item.icon;
         return (
-          <Link key={item.href} href={item.href} className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm ${item.active ? "bg-[#f6efe4] font-medium text-[#b08958]" : "border border-[#efe6d8] bg-white text-[#6f675d] md:border-0 md:bg-transparent md:py-2.5"}`}>
+          <Link key={item.href} href={item.href} className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm ${item.active ? "bg-[#f7f7f6] font-medium text-[#b08958]" : "border border-[#e8e8e6] bg-white text-[#6f675d] md:border-0 md:bg-transparent md:py-2.5"}`}>
             <Icon size={16} strokeWidth={1.7} />
             {item.label}
           </Link>
@@ -161,10 +161,10 @@ function AccountFrame({ children }: { children: ReactNode }) {
 
   return (
     <div className="page-pad mx-auto w-full max-w-6xl px-4 pb-16 pt-6 md:px-8">
-      <div className="md:grid md:grid-cols-[230px_minmax(0,1fr)] md:overflow-hidden md:rounded-[28px] md:border md:border-[#efe6d8] md:bg-white">
-        <aside className="hidden border-[#efe6d8] px-5 py-8 md:block md:border-r max-md:hidden">
+      <div className="md:grid md:grid-cols-[230px_minmax(0,1fr)] md:overflow-hidden md:rounded-[28px] md:border md:border-[#e8e8e6] md:bg-white">
+        <aside className="hidden border-[#e8e8e6] px-5 py-8 md:block md:border-r max-md:hidden">
           <div className="flex items-center gap-3">
-            <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#f6f1e8] text-[#c4a574]">
+            <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#f7f7f6] text-[#c4a574]">
               <User size={22} strokeWidth={1.6} />
             </span>
             <span className="min-w-0">
@@ -210,8 +210,8 @@ function ProfileForm() {
         onEmail={() => setLinking("link-email")}
       />
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <div className="space-y-3 rounded-[24px] border border-[#efe6d8] bg-white p-4 md:bg-[#fffcf8]">
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#efe6d8] bg-white px-4 py-3">
+        <div className="space-y-3 rounded-[24px] border border-[#e8e8e6] bg-white p-4 md:bg-[#ffffff]">
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#e8e8e6] bg-white px-4 py-3">
             {editingName ? (
               <form
                 className="flex w-full items-center gap-2"
@@ -231,10 +231,10 @@ function ProfileForm() {
                     autoComplete="name"
                     value={name}
                     onChange={(event) => setName(event.target.value)}
-                    className="mt-1 h-10 w-full rounded-lg border border-[#e3dbd1] bg-[#fffcf8] px-3 text-sm font-medium text-[#2c2926] outline-none ring-0 transition-[border-color,box-shadow] focus:border-[#CBAC7C] focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_rgba(203,172,124,0.18)] focus-visible:outline-none"
+                    className="mt-1 h-10 w-full rounded-lg border border-[#e8e8e6] bg-[#ffffff] px-3 text-sm font-medium text-[#2c2926] outline-none ring-0 transition-[border-color,box-shadow] focus:border-[#61A2AF] focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,162,175,0.18)] focus-visible:outline-none"
                   />
                 </label>
-                <button type="submit" className="h-10 shrink-0 rounded-full bg-[#c6a15e] px-4 text-xs text-white hover:bg-[#b3924f]">Save</button>
+                <button type="submit" className="h-10 shrink-0 rounded-full bg-[#61A2AF] px-4 text-xs text-white hover:bg-[#4F8A96]">Save</button>
               </form>
             ) : (
               <>
@@ -251,24 +251,24 @@ function ProfileForm() {
           <InfoRow label="Phone Number" value={user.phone ? displayPhone(user.phone) : "Not added"} onEdit={() => setLinking("link-phone")} />
           <InfoRow label="Email Address" value={user.email || "Not added"} onEdit={() => setLinking("link-email")} />
           {linking ? (
-            <div className="rounded-2xl border border-[#efe6d8] bg-[#fffcf8] p-3">
+            <div className="rounded-2xl border border-[#e8e8e6] bg-[#ffffff] p-3">
               <OtpAuth variant="inline" purpose={linking} onDone={() => setLinking(null)} />
             </div>
           ) : null}
         </div>
-        <div className="flex flex-col items-center justify-center rounded-[24px] border border-[#efe6d8] bg-white px-6 py-10 text-center md:bg-[#fffcf8]">
+        <div className="flex flex-col items-center justify-center rounded-[24px] border border-[#e8e8e6] bg-white px-6 py-10 text-center md:bg-[#ffffff]">
           {photo ? (
             <span className="relative size-20 overflow-hidden rounded-full">
               <Media src={photo} alt="" sizes="80px" className="object-cover" />
             </span>
           ) : (
-            <span className="grid size-20 place-items-center rounded-full bg-[#f6f1e8] text-[#c4a574]">
+            <span className="grid size-20 place-items-center rounded-full bg-[#f7f7f6] text-[#c4a574]">
               <User size={32} strokeWidth={1.5} />
             </span>
           )}
           <p className="mt-4 text-base font-medium text-[#2c2926]">Profile Picture</p>
           <p className="mt-1 max-w-xs text-sm text-[#8a8178]">Add a profile picture to make your account more personal.</p>
-          <label className="mt-5 inline-flex h-10 cursor-pointer items-center rounded-full bg-[#f3e6cf] px-5 text-sm font-medium text-[#8a7350]">
+          <label className="mt-5 inline-flex h-10 cursor-pointer items-center rounded-full bg-[#f3e6cf] px-5 text-sm font-medium text-[#3A6B75]">
             Change Photo
             <input
               type="file"
@@ -307,7 +307,7 @@ function ProfileCompletion({
   const next = completion.next;
 
   return (
-    <section className="mt-6 rounded-[24px] border border-[#efe6d8] bg-white p-4 md:bg-[#fffcf8]" aria-label="Profile completion">
+    <section className="mt-6 rounded-[24px] border border-[#e8e8e6] bg-white p-4 md:bg-[#ffffff]" aria-label="Profile completion">
       <div className="flex items-center gap-4">
         <ProgressRing percent={completion.percent} />
         <div className="min-w-0 flex-1">
@@ -318,19 +318,19 @@ function ProfileCompletion({
             {next ? hints[next.id] : "Name, phone, email, and a delivery address are saved."}
           </p>
           {next?.id === "phone" ? (
-            <button type="button" className="mt-3 h-9 rounded-full bg-[#c6a15e] px-4 text-sm text-white" onClick={onPhone}>Add phone</button>
+            <button type="button" className="mt-3 h-9 rounded-full bg-[#61A2AF] px-4 text-sm text-white" onClick={onPhone}>Add phone</button>
           ) : null}
           {next?.id === "email" ? (
-            <button type="button" className="mt-3 h-9 rounded-full bg-[#c6a15e] px-4 text-sm text-white" onClick={onEmail}>Add email</button>
+            <button type="button" className="mt-3 h-9 rounded-full bg-[#61A2AF] px-4 text-sm text-white" onClick={onEmail}>Add email</button>
           ) : null}
           {next?.id === "address" ? (
-            <Link href="/account/addresses" className="mt-3 inline-flex h-9 items-center rounded-full bg-[#c6a15e] px-4 text-sm text-white">Add address</Link>
+            <Link href="/account/addresses" className="mt-3 inline-flex h-9 items-center rounded-full bg-[#61A2AF] px-4 text-sm text-white">Add address</Link>
           ) : null}
         </div>
       </div>
       <ul className="mt-4 grid grid-cols-2 gap-2">
         {completion.steps.map((step) => (
-          <li key={step.id} className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm ${step.done ? "bg-[#e7f6ec] text-[#1f8a4c]" : "bg-[#f6f1e8] text-[#8a7350]"}`}>
+          <li key={step.id} className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm ${step.done ? "bg-[#e7f6ec] text-[#1f8a4c]" : "bg-[#f7f7f6] text-[#3A6B75]"}`}>
             <span className={`grid size-5 place-items-center rounded-full ${step.done ? "bg-[#1f8a4c] text-white" : "border border-[#e3d3b8] bg-white"}`}>
               {step.done ? <Check size={12} strokeWidth={2.4} /> : null}
             </span>
@@ -349,13 +349,13 @@ function ProgressRing({ percent }: { percent: number }) {
   return (
     <span className="relative grid size-16 shrink-0 place-items-center">
       <svg viewBox="0 0 72 72" className="size-16 -rotate-90" aria-hidden>
-        <circle cx="36" cy="36" r={radius} fill="none" stroke="#efe6d8" strokeWidth="6" />
+        <circle cx="36" cy="36" r={radius} fill="none" stroke="#e8e8e6" strokeWidth="6" />
         <circle
           cx="36"
           cy="36"
           r={radius}
           fill="none"
-          stroke="#c6a15e"
+          stroke="#61A2AF"
           strokeWidth="6"
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -369,7 +369,7 @@ function ProgressRing({ percent }: { percent: number }) {
 
 function InfoRow({ label, value, onEdit }: { label: string; value: string; onEdit: () => void }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#efe6d8] bg-white px-4 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#e8e8e6] bg-white px-4 py-3">
       <div className="min-w-0">
         <p className="text-xs text-[#b7a48a]">{label}</p>
         <p className="mt-0.5 truncate text-sm font-medium text-[#2c2926]">{value}</p>
@@ -503,14 +503,14 @@ function OrderList() {
         <div>
           <h1 className="text-[1.75rem] font-medium tracking-tight text-[#2c2926] md:text-3xl">Your orders</h1>
           <p className="mt-2 max-w-xl text-sm text-[#6f675d]">Track your orders, view details, and reorder your favorite products.</p>
-          <label className="mt-5 flex h-11 items-center gap-2 rounded-xl border border-[#e3dbd1] bg-white px-3 text-sm text-[#6f675d]">
-            <Search size={16} className="shrink-0 text-[#8a7350]" />
+          <label className="mt-5 flex h-11 items-center gap-2 rounded-xl border border-[#e8e8e6] bg-white px-3 text-sm text-[#6f675d]">
+            <Search size={16} className="shrink-0 text-[#3A6B75]" />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by order number…" className="min-w-0 flex-1 bg-transparent text-[#2c2926] outline-none placeholder:text-[#9a948b]" />
           </label>
           <div className="mt-4 flex items-center gap-2">
             <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1">
               {filters.map(([id, label]) => (
-                <button key={id} type="button" onClick={() => setFilter(id)} className={`h-9 shrink-0 rounded-full px-3 text-xs ${filter === id ? "bg-[#2c2926] text-white" : "border border-[#e3dbd1] bg-white text-[#4e4943]"}`}>
+                <button key={id} type="button" onClick={() => setFilter(id)} className={`h-9 shrink-0 rounded-full px-3 text-xs ${filter === id ? "bg-[#2c2926] text-white" : "border border-[#e8e8e6] bg-white text-[#4e4943]"}`}>
                   {label}
                 </button>
               ))}
@@ -518,13 +518,13 @@ function OrderList() {
             <span className="shrink-0 text-xs text-[#6f675d]">{visible.length} {visible.length === 1 ? "order" : "orders"}</span>
           </div>
           {orders.length === 0 ? (
-            <div className="mt-6 rounded-2xl border border-[#e3dbd1] bg-white px-6 py-12 text-center">
-              <Package size={28} className="mx-auto text-[#CBAC7C]" />
+            <div className="mt-6 rounded-2xl border border-[#e8e8e6] bg-white px-6 py-12 text-center">
+              <Package size={28} className="mx-auto text-[#61A2AF]" />
               <p className="mt-4 text-[#2c2926]">No orders yet.</p>
-              <Link href="/shop" className="mt-5 inline-flex h-11 items-center rounded-md bg-[#CBAC7C] px-5 text-[11px] uppercase tracking-[0.14em] text-white hover:bg-[#B39668]">Continue shopping</Link>
+              <Link href="/shop" className="mt-5 inline-flex h-11 items-center rounded-md bg-[#61A2AF] px-5 text-[11px] uppercase tracking-[0.14em] text-white hover:bg-[#4F8A96]">Continue shopping</Link>
             </div>
           ) : visible.length === 0 ? (
-            <p className="mt-6 rounded-2xl border border-[#e3dbd1] bg-white px-5 py-8 text-sm text-[#6f675d]">{needle ? "No orders match this search." : filter === "cancelled" ? "No cancelled orders." : filter === "delivered" ? "No delivered orders." : "No orders in progress."}</p>
+            <p className="mt-6 rounded-2xl border border-[#e8e8e6] bg-white px-5 py-8 text-sm text-[#6f675d]">{needle ? "No orders match this search." : filter === "cancelled" ? "No cancelled orders." : filter === "delivered" ? "No delivered orders." : "No orders in progress."}</p>
           ) : (
             <ul className="mt-4 space-y-4">
               {visible.map((order) => <OrderCard key={order.id} order={order} />)}
@@ -546,7 +546,7 @@ function OrderCard({ order }: { order: Order }) {
   const extra = order.items.length - shown.length;
   const again = group === "delivered" || group === "cancelled";
   return (
-    <li className="rounded-2xl border border-[#e3dbd1] bg-white p-4 md:p-5">
+    <li className="rounded-2xl border border-[#e8e8e6] bg-white p-4 md:p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <p className="text-sm font-medium text-[#2c2926]">Order #{order.number}</p>
@@ -559,13 +559,13 @@ function OrderCard({ order }: { order: Order }) {
           <div className="mt-4 flex gap-3 overflow-x-auto">
             {shown.map((item) => (
               <span key={`${item.productId}-${item.variantLabel}`} className="w-16 shrink-0 md:w-[4.5rem]">
-                <span className="relative grid size-16 place-items-center overflow-hidden rounded-lg bg-[#f6f3ee] md:size-[4.5rem]">
-                  {item.image ? <Media src={item.image} alt="" sizes="72px" className="object-cover" /> : <Package size={16} className="text-[#CBAC7C]" />}
+                <span className="relative grid size-16 place-items-center overflow-hidden rounded-lg bg-[#ffffff] md:size-[4.5rem]">
+                  {item.image ? <Media src={item.image} alt="" sizes="72px" className="object-cover" /> : <Package size={16} className="text-[#61A2AF]" />}
                 </span>
                 <span className="mt-1 block truncate text-[11px] text-[#4e4943]">{item.name}</span>
               </span>
             ))}
-            {extra > 0 ? <span className="grid size-16 shrink-0 place-items-center rounded-lg bg-[#f6f3ee] text-xs text-[#6f675d] md:size-[4.5rem]">+{extra}</span> : null}
+            {extra > 0 ? <span className="grid size-16 shrink-0 place-items-center rounded-lg bg-[#ffffff] text-xs text-[#6f675d] md:size-[4.5rem]">+{extra}</span> : null}
           </div>
         </div>
         <div className="lg:w-64 lg:text-right">
@@ -578,12 +578,12 @@ function OrderCard({ order }: { order: Order }) {
           <p className="mt-1 text-xs leading-5 text-[#6f675d]">{story.body}</p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row lg:justify-end">
             {group === "progress" ? (
-              <Link href={`/orders/${order.id}#tracking`} className="inline-flex h-10 items-center justify-center rounded-md bg-[#CBAC7C] px-4 text-xs text-white hover:bg-[#B39668]">Track order</Link>
+              <Link href={`/orders/${order.id}#tracking`} className="inline-flex h-10 items-center justify-center rounded-md bg-[#61A2AF] px-4 text-xs text-white hover:bg-[#4F8A96]">Track order</Link>
             ) : null}
             {again ? (
-              <button type="button" onClick={() => orderAgain(order, store)} className="inline-flex h-10 items-center justify-center rounded-md bg-[#CBAC7C] px-4 text-xs text-white hover:bg-[#B39668]">Buy again</button>
+              <button type="button" onClick={() => orderAgain(order, store)} className="inline-flex h-10 items-center justify-center rounded-md bg-[#61A2AF] px-4 text-xs text-white hover:bg-[#4F8A96]">Buy again</button>
             ) : null}
-            <Link href={`/orders/${order.id}#details`} className="inline-flex h-10 items-center justify-center rounded-md border border-[#e3dbd1] px-4 text-xs text-[#2c2926]">View details</Link>
+            <Link href={`/orders/${order.id}#details`} className="inline-flex h-10 items-center justify-center rounded-md border border-[#e8e8e6] px-4 text-xs text-[#2c2926]">View details</Link>
           </div>
         </div>
       </div>
@@ -599,25 +599,25 @@ function OrderHelp() {
   ];
   return (
     <aside className="mt-8 space-y-4 lg:sticky lg:top-24 lg:mt-0">
-      <div className="rounded-2xl border border-[#e3dbd1] bg-[#fbf9f6] p-4">
+      <div className="rounded-2xl border border-[#e8e8e6] bg-[#ffffff] p-4">
         <p className="text-sm font-medium text-[#2c2926]">Need help?</p>
         <p className="mt-1 text-xs leading-5 text-[#6f675d]">Support for your orders, shipping, and returns.</p>
         <ul className="mt-3 space-y-1">
           {links.map((link) => (
             <li key={link.label}>
               <Link href={link.href} className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-[#2c2926] hover:bg-white">
-                <span className="text-[#8a7350]">{link.icon}</span>
+                <span className="text-[#3A6B75]">{link.icon}</span>
                 {link.label}
               </Link>
             </li>
           ))}
         </ul>
       </div>
-      <div className="rounded-2xl border border-[#e3dbd1] bg-white p-4">
+      <div className="rounded-2xl border border-[#e8e8e6] bg-white p-4">
         <p className="text-sm font-medium text-[#2c2926]">Questions?</p>
         <p className="mt-1 text-xs text-[#6f675d]">Our team is happy to help.</p>
-        <Link href="/contact" className="mt-3 inline-flex h-10 items-center gap-2 rounded-md border border-[#e3dbd1] px-3 text-xs text-[#2c2926]">
-          <MessageCircle size={14} className="text-[#8a7350]" /> Contact us
+        <Link href="/contact" className="mt-3 inline-flex h-10 items-center gap-2 rounded-md border border-[#e8e8e6] px-3 text-xs text-[#2c2926]">
+          <MessageCircle size={14} className="text-[#3A6B75]" /> Contact us
         </Link>
       </div>
     </aside>
@@ -627,8 +627,8 @@ function OrderHelp() {
 function statusTone(status: string) {
   if (status === "Delivered") return "bg-[#e7f0e4] text-[#3d5c3a]";
   if (status === "Cancelled" || status === "Refunded") return "bg-[#f6ece8] text-[#8a4b3c]";
-  if (status === "Payment pending" || status === "Refund in progress") return "bg-[#f6f3ee] text-[#6f675d]";
-  return "bg-[#f3ead8] text-[#8a7350]";
+  if (status === "Payment pending" || status === "Refund in progress") return "bg-[#ffffff] text-[#6f675d]";
+  return "bg-[#f7f7f6] text-[#3A6B75]";
 }
 
 export function AddressesScreen() {
@@ -652,7 +652,7 @@ function AddressLabelChip({ label }: { label: string }) {
   const kind = normalizeAddressLabel(label);
   const Icon = kind === "Office" ? Building2 : House;
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f6efe4] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-[#b08958]">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f7f7f6] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-[#b08958]">
       <Icon size={12} strokeWidth={1.8} aria-hidden />
       {kind}
     </span>
@@ -716,21 +716,21 @@ function AddressBook() {
           <h1 className="mt-2 text-3xl font-medium tracking-tight text-[#2c2926]">Manage Addresses</h1>
           <p className="mt-2 text-sm text-[#8a8178]">Add and manage your shipping and billing addresses.</p>
         </div>
-        <button type="button" className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#c6a15e] px-5 text-sm font-medium text-white hover:bg-[#b3924f] md:w-auto" onClick={() => setEditing(emptyAddress(user.name))}>
+        <button type="button" className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#61A2AF] px-5 text-sm font-medium text-white hover:bg-[#4F8A96] md:w-auto" onClick={() => setEditing(emptyAddress(user.name))}>
           <Plus size={16} /> Add New Address
         </button>
       </div>
       {user.addresses.length === 0 && !editing ? (
-        <div className="mt-8 rounded-[24px] border border-[#efe6d8] bg-white px-6 py-12 text-center">
+        <div className="mt-8 rounded-[24px] border border-[#e8e8e6] bg-white px-6 py-12 text-center">
           <MapPin size={28} className="mx-auto text-[#c4a574]" />
           <p className="mt-4 text-[#2c2926]">No saved address yet.</p>
         </div>
       ) : (
         <ul className="mt-8 space-y-4">
           {user.addresses.map((address) => (
-            <li key={address.id} className="rounded-[24px] border border-[#efe6d8] bg-white p-5">
+            <li key={address.id} className="rounded-[24px] border border-[#e8e8e6] bg-white p-5">
               <div className="flex items-start gap-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#f6f1e8] text-[#c4a574]">
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#f7f7f6] text-[#c4a574]">
                   <MapPin size={18} />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -738,7 +738,7 @@ function AddressBook() {
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <AddressLabelChip label={address.label} />
-                        {address.isDefault ? <span className="rounded-full bg-[#efe6d8] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-[#6f675d]">Default</span> : null}
+                        {address.isDefault ? <span className="rounded-full bg-[#e8e8e6] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-[#6f675d]">Default</span> : null}
                       </div>
                       <p className="mt-1.5 font-medium text-[#2c2926]">{address.name}</p>
                     </div>
@@ -753,7 +753,7 @@ function AddressBook() {
                 {address.isDefault && fromShipping ? (
                   <button
                     type="button"
-                    className="inline-flex h-9 items-center rounded-full bg-[#c6a15e] px-4 text-sm text-white"
+                    className="inline-flex h-9 items-center rounded-full bg-[#61A2AF] px-4 text-sm text-white"
                     onClick={() => {
                       warmShippingQuote(address.postal);
                       router.push(back);
@@ -797,7 +797,7 @@ function AddressBook() {
       )}
       {editing ? (
         <form
-          className="mt-6 grid gap-4 rounded-[24px] border border-[#efe6d8] bg-white p-5 md:grid-cols-2"
+          className="mt-6 grid gap-4 rounded-[24px] border border-[#e8e8e6] bg-white p-5 md:grid-cols-2"
           onSubmit={async (event) => {
             event.preventDefault();
             const next = { ...editing, label: normalizeAddressLabel(editing.label), country: "India" };
@@ -884,8 +884,8 @@ function AddressBook() {
                     onClick={() => setEditing({ ...editing, label: option })}
                     className={`inline-flex h-11 items-center gap-2 rounded-full border px-4 text-sm transition ${
                       active
-                        ? "border-[#CBAC7C] bg-[#CBAC7C] text-white"
-                        : "border-[#e3dbd1] bg-white text-[#6f675d] hover:border-[#CBAC7C]"
+                        ? "border-[#61A2AF] bg-[#61A2AF] text-white"
+                        : "border-[#e8e8e6] bg-white text-[#6f675d] hover:border-[#61A2AF]"
                     }`}
                   >
                     <Icon size={16} strokeWidth={1.7} aria-hidden />
@@ -896,11 +896,11 @@ function AddressBook() {
             </div>
           </div>
           <label className="flex min-h-11 items-center gap-2.5 text-sm text-[#2c2926] md:col-span-2">
-            <input type="checkbox" checked={editing.isDefault} onChange={(event) => setEditing({ ...editing, isDefault: event.target.checked })} className="size-4 accent-[#CBAC7C]" />
+            <input type="checkbox" checked={editing.isDefault} onChange={(event) => setEditing({ ...editing, isDefault: event.target.checked })} className="size-4 accent-[#61A2AF]" />
             Default address
           </label>
           <div className="flex items-center gap-4 md:col-span-2">
-            <button type="submit" className="h-11 rounded-full bg-[#c6a15e] px-6 text-sm font-medium text-white hover:bg-[#b3924f]">Save address</button>
+            <button type="submit" className="h-11 rounded-full bg-[#61A2AF] px-6 text-sm font-medium text-white hover:bg-[#4F8A96]">Save address</button>
             <button type="button" onClick={() => setEditing(null)} className="text-sm text-[#8a8178]">Cancel</button>
           </div>
         </form>

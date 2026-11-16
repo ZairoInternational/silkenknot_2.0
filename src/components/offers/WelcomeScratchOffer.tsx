@@ -101,8 +101,8 @@ export function WelcomeScratchOffer() {
     const { width, height } = canvas;
     const gradient = ctx.createLinearGradient(0, 0, width, height);
     gradient.addColorStop(0, "#d4b78a");
-    gradient.addColorStop(0.45, "#cbac7c");
-    gradient.addColorStop(1, "#a68456");
+    gradient.addColorStop(0.45, "#61A2AF");
+    gradient.addColorStop(1, "#4F8A96");
     ctx.globalCompositeOperation = "source-over";
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
@@ -244,7 +244,7 @@ export function WelcomeScratchOffer() {
           transition={{ duration: 0.28, ease }}
         >
           <motion.div
-            className="pointer-events-auto relative flex max-h-[92vh] w-full max-w-[920px] flex-col overflow-y-auto rounded-t-[28px] bg-[#f6f3ee] shadow-[0_32px_90px_rgba(28,27,25,0.28)] md:max-h-[min(88vh,640px)] md:flex-row md:overflow-hidden md:rounded-[28px]"
+            className="pointer-events-auto relative flex max-h-[92vh] w-full max-w-[920px] flex-col overflow-y-auto rounded-t-[28px] bg-[#ffffff] shadow-[0_32px_90px_rgba(28,27,25,0.28)] md:max-h-[min(88vh,640px)] md:flex-row md:overflow-hidden md:rounded-[28px]"
             initial={{ y: 40, opacity: 0.85, scale: 0.98 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 28, opacity: 0, scale: 0.98 }}
@@ -264,13 +264,13 @@ export function WelcomeScratchOffer() {
             </button>
 
             {/* Product panel */}
-            <div className="relative flex shrink-0 flex-col justify-between overflow-hidden bg-[linear-gradient(160deg,#efeae3_0%,#e8dfd2_48%,#dccfb8_100%)] px-5 pb-4 pt-6 md:min-h-0 md:flex-1 md:px-8 md:pb-8 md:pt-10">
+            <div className="relative flex shrink-0 flex-col justify-between overflow-hidden bg-[linear-gradient(160deg,#f7f7f6_0%,#e8dfd2_48%,#dccfb8_100%)] px-5 pb-4 pt-6 md:min-h-0 md:flex-1 md:px-8 md:pb-8 md:pt-10">
               <p className="hidden max-w-[16rem] text-base leading-7 text-[#5c564e] md:block">
                 Soft formulas, quiet scents, and jars made in small batches.
               </p>
               <div className="relative mx-auto aspect-square w-[42%] max-w-[160px] md:mt-0 md:w-[min(86%,320px)] md:max-w-none">
                 <div
-                  className="absolute inset-[8%] rounded-full bg-[#f6f3ee]/55 blur-2xl"
+                  className="absolute inset-[8%] rounded-full bg-[#ffffff]/55 blur-2xl"
                   aria-hidden
                 />
                 <Media
@@ -287,7 +287,7 @@ export function WelcomeScratchOffer() {
                     key={claim.label}
                     className="flex flex-1 flex-col items-center gap-1.5 text-center text-[#5c564e] md:gap-2"
                   >
-                    <span className="grid size-9 place-items-center rounded-full border border-[#cfc4b6] bg-[#f6f3ee]/55 md:size-12">
+                    <span className="grid size-9 place-items-center rounded-full border border-[#d4d4d2] bg-[#ffffff]/55 md:size-12">
                       <claim.icon size={17} strokeWidth={1.25} />
                     </span>
                     <span className="text-[10px] font-medium uppercase tracking-[0.14em] md:text-[11px]">
@@ -299,7 +299,7 @@ export function WelcomeScratchOffer() {
             </div>
 
             {/* Scratch panel */}
-            <div className="flex flex-1 flex-col items-center bg-[#fbf9f6] px-6 pb-8 pt-4 md:px-10 md:pb-10 md:pt-12">
+            <div className="flex flex-1 flex-col items-center bg-[#ffffff] px-6 pb-8 pt-4 md:px-10 md:pb-10 md:pt-12">
               <div className="mb-3 md:mb-5">
                 <BrandLogo placement="welcome" />
               </div>
@@ -316,14 +316,14 @@ export function WelcomeScratchOffer() {
               </p>
 
               <div className="relative mt-5 w-full max-w-[320px] md:mt-6">
-                <div className="flex h-[120px] flex-col items-center justify-center rounded-2xl border border-[#e3dbd1] bg-white px-4 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] md:h-[148px]">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#8a7350]">
+                <div className="flex h-[120px] flex-col items-center justify-center rounded-2xl border border-[#e8e8e6] bg-white px-4 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] md:h-[148px]">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#3A6B75]">
                     Welcome offer
                   </p>
                   <p className="mt-2 text-2xl font-medium text-[#2c2926]">
                     {PRIZE_LABEL}
                   </p>
-                  <p className="mt-1 rounded-md bg-[#efeae3] px-3 py-1 text-sm tracking-[0.18em] text-[#5c564e]">
+                  <p className="mt-1 rounded-md bg-[#f7f7f6] px-3 py-1 text-sm tracking-[0.18em] text-[#5c564e]">
                     {PRIZE_CODE}
                   </p>
                 </div>
@@ -345,7 +345,7 @@ export function WelcomeScratchOffer() {
                 <button
                   type="button"
                   onClick={revealNow}
-                  className="mt-3 text-xs text-[#8a7350] underline-offset-2 hover:underline"
+                  className="mt-3 text-xs text-[#3A6B75] underline-offset-2 hover:underline"
                 >
                   Or tap to reveal
                   {scratched > 0.08 ? ` · ${Math.round(scratched * 100)}%` : ""}
@@ -356,7 +356,7 @@ export function WelcomeScratchOffer() {
                 <button
                   type="button"
                   onClick={revealNow}
-                  className="mt-6 h-12 w-full max-w-[320px] rounded-xl bg-[#CBAC7C] text-sm font-medium text-white transition hover:bg-[#B39668]"
+                  className="mt-6 h-12 w-full max-w-[320px] rounded-xl bg-[#61A2AF] text-sm font-medium text-white transition hover:bg-[#4F8A96]"
                 >
                   Reveal offer
                 </button>
@@ -367,7 +367,7 @@ export function WelcomeScratchOffer() {
                   type="button"
                   onClick={claim}
                   disabled={phase === "claimed"}
-                  className="mt-6 h-12 w-full max-w-[320px] rounded-xl bg-[#CBAC7C] text-sm font-medium text-white transition hover:bg-[#B39668] disabled:opacity-70"
+                  className="mt-6 h-12 w-full max-w-[320px] rounded-xl bg-[#61A2AF] text-sm font-medium text-white transition hover:bg-[#4F8A96] disabled:opacity-70"
                 >
                   {phase === "claimed" ? "Claimed" : "Claim offer"}
                 </button>

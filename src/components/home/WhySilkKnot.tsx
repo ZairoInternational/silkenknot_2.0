@@ -15,9 +15,9 @@ export function WhySilkKnot() {
   const media = useSiteMedia();
 
   return (
-    <section className="mt-6 hidden bg-[#fbf9f6] px-5 py-6 md:block md:px-8">
+    <section className="mt-6 hidden bg-paper px-5 py-6 md:block md:px-8">
       <div className="site-container grid gap-10 md:grid-cols-2 md:gap-16">
-        <div className="relative aspect-[3/2] overflow-hidden rounded-[1.75rem] bg-[#e7dfd4]">
+        <div className="relative aspect-[3/2] overflow-hidden rounded-[1.75rem] bg-sand">
           <Media src={media.whySilkKnot} alt="Silken Knot body butter" sizes="(min-width: 768px) 46vw, 90vw" className="object-cover" />
         </div>
         <div className="flex flex-col md:h-full">
@@ -29,7 +29,7 @@ export function WhySilkKnot() {
               Butters, sugars, salts, and wax are named on the label, and each jar is made in a small batch.
             </p>
           </div>
-          <ul className="grid w-full grid-cols-4 divide-x divide-[#e6e0d6]">
+          <ul className="grid w-full grid-cols-4 divide-x divide-[#efefed]">
             {points.map((point) => (
               <li key={point.label} className="flex flex-col items-center px-3 text-center text-[#5c564e]">
                 <span className="grid size-16 place-items-center rounded-full border border-[#d9d2c8]">

@@ -34,7 +34,7 @@ export function AnalyticsConsentBanner() {
       aria-modal="true"
       aria-labelledby="cookie-consent-title"
       aria-describedby="cookie-consent-desc"
-      className="fixed bottom-0 left-0 right-0 z-[9999] w-full border-t border-[#e3dbd1] bg-[#f6f3ee] text-[#2c2926] shadow-[0_-12px_40px_-18px_rgba(0,0,0,0.35)]"
+      className="fixed bottom-0 left-0 right-0 z-[9999] w-full border-t border-[#e8e8e6] bg-[#ffffff] text-[#2c2926] shadow-[0_-12px_40px_-18px_rgba(0,0,0,0.35)]"
     >
       <div className="flex w-full flex-col gap-4 px-4 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6 sm:pt-5 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-[max(1.25rem,env(safe-area-inset-bottom))]">
         <div className="min-w-0 space-y-1">
@@ -51,7 +51,7 @@ export function AnalyticsConsentBanner() {
         <div className="flex w-full shrink-0 gap-2 sm:w-auto">
           <button
             type="button"
-            className="inline-flex h-11 flex-1 items-center justify-center border border-[#CBAC7C] px-4 text-[11px] uppercase tracking-[0.14em] text-[#8a7350] sm:h-10 sm:flex-none"
+            className="inline-flex h-11 flex-1 items-center justify-center border border-[#61A2AF] px-4 text-[11px] uppercase tracking-[0.14em] text-[#3A6B75] sm:h-10 sm:flex-none"
             onClick={() => {
               revokeAnalyticsConsent();
               setVisible(false);
@@ -61,7 +61,7 @@ export function AnalyticsConsentBanner() {
           </button>
           <button
             type="button"
-            className="inline-flex h-11 flex-1 items-center justify-center bg-[#CBAC7C] px-4 text-[11px] uppercase tracking-[0.14em] text-white hover:bg-[#B39668] sm:h-10 sm:flex-none"
+            className="inline-flex h-11 flex-1 items-center justify-center bg-[#61A2AF] px-4 text-[11px] uppercase tracking-[0.14em] text-white hover:bg-[#4F8A96] sm:h-10 sm:flex-none"
             onClick={() => {
               grantAnalyticsConsent();
               setVisible(false);

@@ -57,7 +57,7 @@ export function LaunchCard({ product }: { product: Product }) {
         onAdd={add}
         wishlist={<WishlistButton productId={product.id} name={product.name} />}
         badge={
-          <span className="bg-[#F7F3EE]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm">
+          <span className="bg-[#ffffff]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm">
             New
           </span>
         }
@@ -66,7 +66,7 @@ export function LaunchCard({ product }: { product: Product }) {
         <h3 className="truncate text-[15px] font-medium leading-snug text-[#2c2926] md:text-base">
           <Link
             href={`/products/${product.slug}`}
-            className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
+            className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]"
           >
             {product.name}
           </Link>

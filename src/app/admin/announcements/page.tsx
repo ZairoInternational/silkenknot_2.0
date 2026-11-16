@@ -101,7 +101,7 @@ export default function AnnouncementsPage() {
       <div className="grid gap-10 xl:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] xl:items-start">
         <form onSubmit={save} className="space-y-4">
           <AdminPanel title="Visibility" hint="Show or hide the announcement bar site-wide" defaultOpen>
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#faf7f2] px-4 py-3 text-sm">
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#ffffff] px-4 py-3 text-sm">
               <input
                 type="checkbox"
                 className="mt-0.5"
@@ -180,7 +180,7 @@ export default function AnnouncementsPage() {
           <AdminTip label="Add message" className="w-full">
             <button
               type="button"
-              className="inline-flex h-11 w-full items-center justify-center gap-2 border border-dashed border-line text-sm transition hover:bg-[#faf7f2] disabled:opacity-40"
+              className="inline-flex h-11 w-full items-center justify-center gap-2 border border-dashed border-line text-sm transition hover:bg-[#ffffff] disabled:opacity-40"
               onClick={() => setDraft((current) => (
                 current.notes.length >= 8 ? current : { ...current, notes: [...current.notes, blankNote(current.notes.length)] }
               ))}

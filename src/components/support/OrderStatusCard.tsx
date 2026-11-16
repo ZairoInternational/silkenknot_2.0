@@ -6,8 +6,8 @@ import type { SupportOrderDetail } from "@/lib/support/types";
 
 export function OrderStatusCard({ order }: { order: SupportOrderDetail }) {
   return (
-    <div className="mt-2 rounded-2xl border border-[#e3dbd1] bg-[#fffcf8] p-3 text-sm text-[#2c2926]">
-      <p className="text-[11px] uppercase tracking-[0.14em] text-[#8a7350]">Order {order.number}</p>
+    <div className="mt-2 rounded-2xl border border-[#e8e8e6] bg-[#ffffff] p-3 text-sm text-[#2c2926]">
+      <p className="text-[11px] uppercase tracking-[0.14em] text-[#3A6B75]">Order {order.number}</p>
       <p className="mt-1 font-medium">{order.statusLabel}</p>
       <p className="mt-1 text-[#6f675d]">{order.story}</p>
       <dl className="mt-3 grid gap-1.5 text-[13px] text-[#6f675d]">
@@ -41,7 +41,7 @@ export function OrderStatusCard({ order }: { order: SupportOrderDetail }) {
       <div className="mt-3 flex flex-wrap gap-2">
         <Link
           href={order.detailPath}
-          className="rounded-full bg-[#CBAC7C] px-3 py-1.5 text-xs text-white hover:bg-[#B39668] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
+          className="rounded-full bg-[#61A2AF] px-3 py-1.5 text-xs text-white hover:bg-[#4F8A96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]"
         >
           Order details
         </Link>
@@ -50,7 +50,7 @@ export function OrderStatusCard({ order }: { order: SupportOrderDetail }) {
             href={order.trackingUrl}
             target="_blank"
             rel="noreferrer"
-            className="rounded-full border border-[#CBAC7C] px-3 py-1.5 text-xs text-[#8a7350] hover:bg-[#CBAC7C] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a7350]"
+            className="rounded-full border border-[#61A2AF] px-3 py-1.5 text-xs text-[#3A6B75] hover:bg-[#61A2AF] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]"
           >
             Carrier tracking
           </a>

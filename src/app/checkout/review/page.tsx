@@ -219,7 +219,7 @@ export default function ReviewPage() {
           order_id: data.razorpayOrderId,
           prefill: { name: address.fullName, email: address.email, contact: address.phone },
           notes: { address: `${address.address1}, ${address.city} ${address.postalCode}` },
-          theme: { color: "#CBAC7C" },
+          theme: { color: "#61A2AF" },
           handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
             settled.current = true;
             setHold("confirming");
@@ -304,9 +304,9 @@ export default function ReviewPage() {
               </p>
             ) : (
               <div className="space-y-2" aria-busy="true" aria-label="Loading address">
-                <div className="h-4 w-40 animate-pulse rounded bg-[#e6e0d6]" />
-                <div className="h-4 w-56 animate-pulse rounded bg-[#eee8de]" />
-                <div className="h-4 w-48 animate-pulse rounded bg-[#eee8de]" />
+                <div className="h-4 w-40 animate-pulse rounded bg-[#efefed]" />
+                <div className="h-4 w-56 animate-pulse rounded bg-[#efefed]" />
+                <div className="h-4 w-48 animate-pulse rounded bg-[#efefed]" />
               </div>
             )}
           </div>

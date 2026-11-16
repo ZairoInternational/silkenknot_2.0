@@ -4,15 +4,15 @@ import { Ban, Check, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const base =
-  "relative flex h-11 w-full items-center justify-center gap-2 overflow-hidden rounded-full px-4 text-sm font-medium transition-[filter,background-color,border-color,color] duration-300 disabled:cursor-not-allowed disabled:border disabled:border-[#e7dfd4] disabled:bg-[#e7dfd4] disabled:text-[#8a8178] disabled:shadow-none disabled:hover:bg-[#e7dfd4]";
+  "relative flex h-11 w-full items-center justify-center gap-2 overflow-hidden rounded-full px-4 text-sm font-medium transition-[filter,background-color,border-color,color] duration-300 disabled:cursor-not-allowed disabled:border disabled:border-stone disabled:bg-sand disabled:text-mute disabled:shadow-none disabled:hover:bg-sand";
 
-/** Filled bronze gradient — Add to cart */
+/** Primary on light — Charcoal + Ivory (palette Buttons sheet) */
 const addClass =
-  "border-0 bg-[linear-gradient(105deg,#6b4226_0%,#b88955_48%,#5a361c_100%)] text-white shadow-[0_10px_22px_-12px_rgba(90,54,28,0.75)] hover:brightness-[1.06]";
+  "border-0 bg-ink text-paper shadow-[0_10px_22px_-12px_rgba(41,43,43,0.45)] hover:bg-midnight";
 
-/** Cream outline — In cart */
+/** Charcoal outline — In cart; fills brand teal on hover */
 const inCartClass =
-  "border border-[#5c4033] bg-[#f7f3ee] text-[#5c4033] hover:bg-[#efe8df]";
+  "border border-ink bg-paper text-ink hover:border-mist hover:bg-mist";
 
 function Sparkle({ className }: { className?: string }) {
   return (
@@ -67,7 +67,7 @@ export function ProductCartCta({
       {addLabel}
       <span
         aria-hidden
-        className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-white/45"
+        className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-champagne/70"
       >
         <Sparkle />
       </span>

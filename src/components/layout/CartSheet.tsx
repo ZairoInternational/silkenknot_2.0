@@ -62,7 +62,7 @@ export function CartSheet() {
             <div className="flex flex-1 flex-col items-center justify-center px-5 pb-8 text-center">
               <ShoppingBag size={88} strokeWidth={1.15} className="text-ink/80" />
               <p className="mt-6 font-serif text-3xl">Your bag is empty.</p>
-              <Link href="/shop" onClick={store.closeCart} className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-[#CBAC7C] px-8 text-[11px] uppercase tracking-[0.16em] text-white hover:bg-[#B39668]">
+              <Link href="/shop" onClick={store.closeCart} className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-[#61A2AF] px-8 text-[11px] uppercase tracking-[0.16em] text-white hover:bg-[#4F8A96]">
                 Start shopping
               </Link>
             </div>
@@ -106,7 +106,7 @@ export function CartSheet() {
                   <span>{formatPrice(goods)}</span>
                 </div>
                 {coupon && discount > 0 ? (
-                  <div className="mt-1 flex items-baseline justify-between text-sm text-[#8a7350]">
+                  <div className="mt-1 flex items-baseline justify-between text-sm text-[#3A6B75]">
                     <span>{coupon.code}</span>
                     <span>−{formatPrice(discount)}</span>
                   </div>
@@ -116,10 +116,10 @@ export function CartSheet() {
                   <span>{formatPrice(Math.max(0, goods - discount))}</span>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-2">
-                  <Link href="/shop" onClick={store.closeCart} className="flex h-11 items-center justify-center border border-[#CBAC7C] text-[11px] uppercase tracking-[0.14em] text-[#8a7350] hover:bg-[#CBAC7C] hover:text-white">
+                  <Link href="/shop" onClick={store.closeCart} className="flex h-11 items-center justify-center border border-[#61A2AF] text-[11px] uppercase tracking-[0.14em] text-[#3A6B75] hover:bg-[#61A2AF] hover:text-white">
                     View shop
                   </Link>
-                  <Link href="/checkout" onClick={store.closeCart} className="flex h-11 items-center justify-center bg-[#CBAC7C] text-[11px] uppercase tracking-[0.14em] text-white hover:bg-[#B39668]">
+                  <Link href="/checkout" onClick={store.closeCart} className="flex h-11 items-center justify-center bg-[#61A2AF] text-[11px] uppercase tracking-[0.14em] text-white hover:bg-[#4F8A96]">
                     Checkout
                   </Link>
                 </div>

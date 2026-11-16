@@ -335,19 +335,19 @@ export function ShopCatalog() {
 
   // ── Render ─────────────────────────────────────────────────────────────
   return (
-    <div className="bg-[#f6f3ee] pt-[calc(var(--nav-h)+var(--announce-h))] text-[#2c2926]">
+    <div className="bg-[#ffffff] pt-[calc(var(--nav-h)+var(--announce-h))] text-[#2c2926]">
       {/* Hero banner */}
       <section className="grid md:min-h-[440px] md:grid-cols-[0.9fr_1.1fr]">
         <div className="relative order-first min-h-[240px] md:order-last md:min-h-full">
           <Media src={siteMedia.shopHero} alt="Silken Knot body care" sizes="(min-width: 768px) 55vw, 100vw" className="object-cover" />
         </div>
         <div className="flex flex-col justify-center px-6 py-8 md:px-12 md:py-16 lg:px-16">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#8a7350] md:text-sm">Shop our collections</p>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#3A6B75] md:text-sm">Shop our collections</p>
           <h1 className="mt-3 text-[2.15rem] font-medium leading-[1.12] md:text-5xl">Natural care for your everyday rituals</h1>
           <p className="mt-4 max-w-md text-base leading-7 text-[#4e4943] md:text-lg">
             From nourishing body butters to calming candles, find everything you need for a little more self-care in your day.
           </p>
-          <a href="#products" className="mt-6 inline-flex w-fit items-center rounded-full bg-[#CBAC7C] px-6 py-3 text-base text-white transition-colors hover:bg-[#B39668] md:text-sm">
+          <a href="#products" className="mt-6 inline-flex w-fit items-center rounded-full bg-[#61A2AF] px-6 py-3 text-base text-white transition-colors hover:bg-[#4F8A96] md:text-sm">
             Explore all products
           </a>
         </div>
@@ -360,7 +360,7 @@ export function ShopCatalog() {
           {/* ── Header row ─────────────────────────────────────────────── */}
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#8a7350] md:text-sm">The Silken Knot collection</p>
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#3A6B75] md:text-sm">The Silken Knot collection</p>
               <h2 className="mt-2 text-3xl font-medium md:text-4xl">
                 {category === "all" ? "All products" : categoryName}
               </h2>
@@ -368,7 +368,7 @@ export function ShopCatalog() {
 
               {/* "Did you mean …?" banner */}
               {correctedQuery && urlQuery ? (
-                <p className="mt-2 text-sm text-[#8a7350]">
+                <p className="mt-2 text-sm text-[#3A6B75]">
                   Showing results for <em className="font-medium not-italic">{correctedQuery}</em>.{" "}
                   <button
                     type="button"
@@ -385,7 +385,7 @@ export function ShopCatalog() {
             </div>
             <p className="text-base text-[#4e4943]">
               {isLoading && total === 0 ? (
-                <span className="inline-block h-4 w-16 animate-pulse rounded bg-[#e6e0d6]" />
+                <span className="inline-block h-4 w-16 animate-pulse rounded bg-[#efefed]" />
               ) : (
                 `${total} product${total !== 1 ? "s" : ""}`
               )}
@@ -442,7 +442,7 @@ export function ShopCatalog() {
                           }}
                           className="grid grid-cols-[52px_1fr] items-center gap-3 px-4 py-2.5 hover:bg-black/5"
                         >
-                          <span className="relative block aspect-square overflow-hidden rounded-lg bg-[#eee8de]">
+                          <span className="relative block aspect-square overflow-hidden rounded-lg bg-[#efefed]">
                             <Media src={product.images[0]} alt="" sizes="52px" className="object-cover" />
                           </span>
                           <span className="min-w-0">
@@ -466,17 +466,17 @@ export function ShopCatalog() {
                 aria-haspopup="listbox"
                 aria-expanded={desktopSortOpen}
                 onClick={() => setDesktopSortOpen((open) => !open)}
-                className="flex h-12 min-w-[240px] items-center justify-between gap-4 rounded-full border border-[#e3dbd1] bg-white px-4 text-base text-[#2c2926]"
+                className="flex h-12 min-w-[240px] items-center justify-between gap-4 rounded-full border border-[#e8e8e6] bg-white px-4 text-base text-[#2c2926]"
               >
                 <span>
-                  <span className="text-[#8a7350]">Sort</span>
-                  <span className="mx-2 text-[#e3dbd1]">/</span>
+                  <span className="text-[#3A6B75]">Sort</span>
+                  <span className="mx-2 text-[#e8e8e6]">/</span>
                   {SORT_OPTIONS.find(([value]) => value === sort)?.[1] ?? "Featured"}
                 </span>
-                <ChevronDown size={16} className={`text-[#8a7350] transition ${desktopSortOpen ? "rotate-180" : ""}`} />
+                <ChevronDown size={16} className={`text-[#3A6B75] transition ${desktopSortOpen ? "rotate-180" : ""}`} />
               </button>
               {desktopSortOpen ? (
-                <ul role="listbox" aria-label="Sort products" className="absolute right-0 top-[calc(100%+0.5rem)] z-30 w-full overflow-hidden rounded-2xl border border-[#e3dbd1] bg-white py-2 shadow-[0_18px_50px_-24px_rgba(44,41,38,0.35)]">
+                <ul role="listbox" aria-label="Sort products" className="absolute right-0 top-[calc(100%+0.5rem)] z-30 w-full overflow-hidden rounded-2xl border border-[#e8e8e6] bg-white py-2 shadow-[0_18px_50px_-24px_rgba(44,41,38,0.35)]">
                   {SORT_OPTIONS.map(([value, label]) => {
                     const selected = sort === value;
                     return (
@@ -489,10 +489,10 @@ export function ShopCatalog() {
                             write({ sort: value === "featured" ? undefined : value, page: undefined });
                             setDesktopSortOpen(false);
                           }}
-                          className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm ${selected ? "bg-[#fbf9f6] text-[#2c2926]" : "text-[#4e4943] hover:bg-[#f6f3ee]"}`}
+                          className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm ${selected ? "bg-[#ffffff] text-[#2c2926]" : "text-[#4e4943] hover:bg-[#ffffff]"}`}
                         >
                           {label}
-                          <span className={`size-2.5 rounded-full ${selected ? "bg-[#CBAC7C]" : "border border-[#e3dbd1]"}`} />
+                          <span className={`size-2.5 rounded-full ${selected ? "bg-[#61A2AF]" : "border border-[#e8e8e6]"}`} />
                         </button>
                       </li>
                     );
@@ -520,7 +520,7 @@ export function ShopCatalog() {
               <SlidersHorizontal size={16} />
               Filter
               {activeCount > 0 ? (
-                <span className="grid size-5 place-items-center rounded-full border border-[#e3dbd1] bg-white text-xs text-[#2c2926]">{activeCount}</span>
+                <span className="grid size-5 place-items-center rounded-full border border-[#e8e8e6] bg-white text-xs text-[#2c2926]">{activeCount}</span>
               ) : null}
             </button>
           </div>
@@ -528,8 +528,8 @@ export function ShopCatalog() {
 
           {/* ── Product grid ──────────────────────────────────────────── */}
           {isError ? (
-            <div className="mt-6 border border-[#e6e0d6] px-6 py-16 text-center">
-              <RefreshCw size={24} className="mx-auto mb-4 text-[#8a7350]" />
+            <div className="mt-6 border border-[#efefed] px-6 py-16 text-center">
+              <RefreshCw size={24} className="mx-auto mb-4 text-[#3A6B75]" />
               <h3 className="text-2xl font-medium">Something went wrong</h3>
               <p className="mx-auto mt-3 max-w-sm text-base leading-7 text-[#4e4943]">
                 We couldn&apos;t load products right now.
@@ -543,7 +543,7 @@ export function ShopCatalog() {
                   reqId.current++; // allow the next effect to run
                   write({ page: undefined }); // triggers URL-params effect
                 }}
-                className="mt-6 rounded-full bg-[#CBAC7C] px-6 py-3 text-base text-white hover:bg-[#B39668]"
+                className="mt-6 rounded-full bg-[#61A2AF] px-6 py-3 text-base text-white hover:bg-[#4F8A96]"
               >
                 Retry
               </button>
@@ -565,7 +565,7 @@ export function ShopCatalog() {
             </div>
           ) : (
             /* Zero results — only shown after a successful empty response */
-            <div className="mt-6 border border-[#e6e0d6] px-6 py-16 text-center">
+            <div className="mt-6 border border-[#efefed] px-6 py-16 text-center">
               <h3 className="text-2xl font-medium">No products found</h3>
               <p className="mx-auto mt-3 max-w-sm text-base leading-7 text-[#4e4943]">
                 Try a different search or clear a filter.
@@ -573,7 +573,7 @@ export function ShopCatalog() {
               <button
                 type="button"
                 onClick={clearAll}
-                className="mt-6 rounded-full bg-[#CBAC7C] px-6 py-3 text-base text-white hover:bg-[#B39668]"
+                className="mt-6 rounded-full bg-[#61A2AF] px-6 py-3 text-base text-white hover:bg-[#4F8A96]"
               >
                 Clear filters
               </button>
@@ -614,7 +614,7 @@ export function ShopCatalog() {
 
       {/* ── Mobile sort bottom sheet ─────────────────────────────────────── */}
       <BottomSheet open={sortOpen} onClose={() => setSortOpen(false)} label="Sort">
-        <div className="flex items-center justify-between border-b border-[#e6e0d6] px-5 py-4">
+        <div className="flex items-center justify-between border-b border-[#efefed] px-5 py-4">
           <h2 className="text-2xl font-medium">Sort</h2>
           <button type="button" onClick={() => setSortOpen(false)} className="text-base">Close</button>
         </div>
@@ -628,10 +628,10 @@ export function ShopCatalog() {
                 write({ sort: value === "featured" ? undefined : value, page: undefined });
                 setSortOpen(false);
               }}
-              className={`flex min-h-12 items-center justify-between rounded-xl px-3 text-left text-base ${sort === value ? "bg-[#f3eadc]" : ""}`}
+              className={`flex min-h-12 items-center justify-between rounded-xl px-3 text-left text-base ${sort === value ? "bg-[#f7f7f6]" : ""}`}
             >
               {label}
-              <span className={`size-2.5 rounded-full ${sort === value ? "bg-[#CBAC7C]" : "border border-[#c8bfb4]"}`} />
+              <span className={`size-2.5 rounded-full ${sort === value ? "bg-[#61A2AF]" : "border border-[#c8bfb4]"}`} />
             </button>
           ))}
         </div>
@@ -639,7 +639,7 @@ export function ShopCatalog() {
 
       {/* ── Mobile filter bottom sheet ───────────────────────────────────── */}
       <BottomSheet open={filtersOpen} onClose={() => setFiltersOpen(false)} label="Filters" tall>
-        <div className="flex items-center justify-between border-b border-[#e6e0d6] px-5 py-4">
+        <div className="flex items-center justify-between border-b border-[#efefed] px-5 py-4">
           <h2 className="text-2xl font-medium">Filters</h2>
           <button type="button" onClick={() => setFiltersOpen(false)} className="text-base">Close</button>
         </div>
@@ -654,28 +654,28 @@ export function ShopCatalog() {
           )}
           {fields}
         </div>
-        <div className="flex gap-3 border-t border-[#e6e0d6] px-5 py-4">
-          <button type="button" onClick={clearAll} className="h-12 flex-1 rounded-full border border-[#e3dbd1] bg-white text-base">
+        <div className="flex gap-3 border-t border-[#efefed] px-5 py-4">
+          <button type="button" onClick={clearAll} className="h-12 flex-1 rounded-full border border-[#e8e8e6] bg-white text-base">
             Clear
           </button>
-          <button type="button" onClick={() => setFiltersOpen(false)} className="h-12 flex-[1.4] rounded-full bg-[#CBAC7C] text-base text-white hover:bg-[#B39668]">
+          <button type="button" onClick={() => setFiltersOpen(false)} className="h-12 flex-[1.4] rounded-full bg-[#61A2AF] text-base text-white hover:bg-[#4F8A96]">
             Show {total} products
           </button>
         </div>
       </BottomSheet>
 
       {/* ── Collection editorial banner ──────────────────────────────────── */}
-      <section className="grid bg-[#efeae3] md:grid-cols-2">
+      <section className="grid bg-[#f7f7f6] md:grid-cols-2">
         <div className="relative min-h-[220px] md:min-h-[320px]">
           <Media src={siteMedia.shopEditorial} alt="" sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
         </div>
         <div className="flex flex-col justify-center px-6 py-10 md:px-14">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#8a7350] md:text-sm">A little more mindful</p>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#3A6B75] md:text-sm">A little more mindful</p>
           <h2 className="mt-3 text-3xl font-medium leading-tight md:text-4xl">Small rituals. Softer days.</h2>
           <p className="mt-4 max-w-md text-base leading-7 text-[#4e4943] md:text-lg">
             Made with care, in small batches. The formulas are meant to be used every day, not saved for later.
           </p>
-          <Link href="/about" className="mt-6 w-fit border-b border-[#8a7350] pb-1 text-base text-[#2c2926]">
+          <Link href="/about" className="mt-6 w-fit border-b border-[#3A6B75] pb-1 text-base text-[#2c2926]">
             Read our story
           </Link>
         </div>
@@ -689,16 +689,16 @@ export function ShopCatalog() {
 function ProductCardSkeleton() {
   return (
     <article
-      className="flex h-[calc((100dvh-0.5rem)/1.55)] min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-[#e6e0d6] md:h-auto md:overflow-visible md:rounded-none md:bg-transparent md:ring-0"
+      className="flex h-[calc((100dvh-0.5rem)/1.55)] min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-[#efefed] md:h-auto md:overflow-visible md:rounded-none md:bg-transparent md:ring-0"
       aria-hidden="true"
     >
-      <div className="min-h-0 flex-1 overflow-hidden bg-[#eee8de] md:aspect-[3/4] md:flex-none md:rounded-2xl">
-        <div className="h-full animate-pulse bg-[#e0d8cc]" />
+      <div className="min-h-0 flex-1 overflow-hidden bg-[#efefed] md:aspect-[3/4] md:flex-none md:rounded-2xl">
+        <div className="h-full animate-pulse bg-[#e8e8e6]" />
       </div>
       <div className="shrink-0 space-y-2 px-2 py-2 md:px-0 md:pt-3">
-        <div className="h-4 w-4/5 animate-pulse rounded bg-[#e6e0d6]" />
-        <div className="h-3.5 w-2/3 animate-pulse rounded bg-[#e6e0d6]" />
-        <div className="h-4 w-1/3 animate-pulse rounded bg-[#e6e0d6]" />
+        <div className="h-4 w-4/5 animate-pulse rounded bg-[#efefed]" />
+        <div className="h-3.5 w-2/3 animate-pulse rounded bg-[#efefed]" />
+        <div className="h-4 w-1/3 animate-pulse rounded bg-[#efefed]" />
       </div>
     </article>
   );
@@ -730,7 +730,7 @@ function ProductCard({ product }: { product: SearchProduct }) {
   };
 
   return (
-    <article className="group flex h-[calc((100dvh-0.5rem)/1.55)] min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-[#e6e0d6] md:h-auto md:overflow-visible md:rounded-none md:bg-transparent md:ring-0">
+    <article className="group flex h-[calc((100dvh-0.5rem)/1.55)] min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-[#efefed] md:h-auto md:overflow-visible md:rounded-none md:bg-transparent md:ring-0">
       <div className="relative min-h-0 flex-1 md:flex-none">
         <ListingCardMedia
           href={`/products/${product.slug}`}
@@ -752,7 +752,7 @@ function ProductCard({ product }: { product: SearchProduct }) {
       </div>
       <div className="flex shrink-0 flex-col gap-1 px-2.5 pb-2.5 pt-2.5 md:gap-0 md:px-0 md:pt-3.5">
         {badge ? (
-          <span className="w-fit max-w-full truncate rounded-full bg-[#f6f3ee] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-[#8a7350] md:hidden">
+          <span className="w-fit max-w-full truncate rounded-full bg-[#ffffff] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-[#3A6B75] md:hidden">
             {badge}
           </span>
         ) : null}
@@ -833,13 +833,13 @@ function FilterFields({
         })}
       </div>
 
-      <div className="my-6 h-px bg-[#e6e0d6]" />
+      <div className="my-6 h-px bg-[#efefed]" />
       <p className="text-base font-medium md:text-lg">Price</p>
       <PriceRange floor={priceFloor} ceil={priceCeil} low={minPrice} high={maxPrice} onChange={onPrice} />
 
       {SHOW_STORE_REVIEWS ? (
         <>
-          <div className="my-6 h-px bg-[#e6e0d6]" />
+          <div className="my-6 h-px bg-[#efefed]" />
           <p className="text-base font-medium md:text-lg">Rating</p>
           <div className="mt-3 space-y-1" role="radiogroup" aria-label="Minimum rating">
             <Choice checked={ratingChoice === 4} onSelect={() => onRating(ratingChoice === 4 ? 0 : 4)} label="4★ and above" />
@@ -848,7 +848,7 @@ function FilterFields({
         </>
       ) : null}
 
-      <div className="my-6 h-px bg-[#e6e0d6]" />
+      <div className="my-6 h-px bg-[#efefed]" />
       <Choice checked={bestseller} onSelect={() => onBestseller(!bestseller)} label="Bestsellers only" role="checkbox" />
     </div>
   );
@@ -921,9 +921,9 @@ function PriceRange({
         <span>{formatPrice(draft.high)}</span>
       </p>
       <div className="price-range mt-4" onPointerUp={release} onPointerCancel={release}>
-        <div className="pointer-events-none absolute left-0 right-0 top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-[#e6e0d6]" />
+        <div className="pointer-events-none absolute left-0 right-0 top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-[#efefed]" />
         <div
-          className="pointer-events-none absolute top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-[#CBAC7C]"
+          className="pointer-events-none absolute top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-[#61A2AF]"
           style={{ left: `${start}%`, right: `${100 - end}%` }}
         />
         <input
@@ -970,7 +970,7 @@ function Choice({
 }) {
   return (
     <button type="button" role={role} aria-checked={checked} onClick={onSelect} className="flex min-h-11 w-full items-center gap-3 text-left text-base">
-      <span className={`grid size-5 shrink-0 place-items-center rounded-full border-2 ${checked ? "border-[#CBAC7C] bg-[#CBAC7C]" : "border-[#c8bfb4] bg-white"}`}>
+      <span className={`grid size-5 shrink-0 place-items-center rounded-full border-2 ${checked ? "border-[#61A2AF] bg-[#61A2AF]" : "border-[#c8bfb4] bg-white"}`}>
         <span className={`size-2 rounded-full bg-white ${checked ? "scale-100" : "scale-0"}`} />
       </span>
       <span className="min-w-0 flex-1">{label}</span>
@@ -1043,7 +1043,7 @@ function PageButton({
       aria-current={current ? "page" : undefined}
       disabled={disabled}
       onClick={onClick}
-      className={`grid size-11 place-items-center rounded-full border bg-white text-base text-[#2c2926] disabled:opacity-40 ${current ? "border-[#2c2926]" : "border-[#e3dbd1]"}`}
+      className={`grid size-11 place-items-center rounded-full border bg-white text-base text-[#2c2926] disabled:opacity-40 ${current ? "border-[#2c2926]" : "border-[#e8e8e6]"}`}
     >
       {children}
     </button>

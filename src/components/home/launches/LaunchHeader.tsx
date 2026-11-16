@@ -15,9 +15,9 @@ export function LaunchHeader() {
       </div>
       <Link
         href="/shop?sort=newest"
-        className="group inline-flex w-fit items-center gap-2 text-sm text-[#2c2926] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#8a7350]"
+        className="group inline-flex w-fit items-center gap-2 text-sm text-[#2c2926] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#61A2AF]"
       >
-        <span className="border-b border-[#2c2926]/30 pb-0.5 transition-colors duration-300 group-hover:border-[#CBAC7C]">
+        <span className="border-b border-[#2c2926]/30 pb-0.5 transition-colors duration-300 group-hover:border-[#61A2AF]">
           View all new arrivals
         </span>
         <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0" />

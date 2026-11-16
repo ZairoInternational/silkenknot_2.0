@@ -177,7 +177,7 @@ function AdminOtpInput({
             event.preventDefault();
             write(index, event.clipboardData.getData("text"));
           }}
-          className="h-14 w-full min-w-0 rounded-lg border border-stone bg-white text-center text-xl text-ink outline-none transition-[border-color,box-shadow] focus:border-mist focus:shadow-[0_0_0_3px_rgb(203_172_124_/_28%)] disabled:opacity-60"
+          className="h-14 w-full min-w-0 rounded-lg border border-stone bg-white text-center text-xl text-ink outline-none transition-[border-color,box-shadow] focus:border-mist focus:shadow-[0_0_0_3px_rgb(97_162_175_/_28%)] disabled:opacity-60"
         />
       ))}
     </div>
@@ -609,8 +609,8 @@ function productStockTotal(product: Product) {
 function statusPill(tone: "ok" | "warn" | "mute" | "danger" | "info", label: string) {
   const tones = {
     ok: "bg-[#e8f0e6] text-[#3d5a3a]",
-    warn: "bg-[#f5ebd3] text-[#7a5a28]",
-    mute: "bg-[#efeae3] text-[#6f675d]",
+    warn: "bg-[#f7f7f6] text-[#7a5a28]",
+    mute: "bg-[#f7f7f6] text-[#6f675d]",
     danger: "bg-[#f6e4e1] text-[#8a3b32]",
     info: "bg-[#e7eef5] text-[#3d5670]",
   } as const;
@@ -754,7 +754,7 @@ export function ProductIndex() {
                     <tr key={product.id} className="border-b border-line/70 align-middle transition-colors duration-200 last:border-b-0 hover:bg-cream/50">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <span className="relative block size-14 shrink-0 overflow-hidden rounded-xl bg-[#efeae3]">
+                          <span className="relative block size-14 shrink-0 overflow-hidden rounded-xl bg-[#f7f7f6]">
                             {thumb ? <Media src={thumb} alt="" sizes="56px" className="object-cover" /> : (
                               <span className="grid h-full place-items-center text-mute"><ImagePlus size={16} /></span>
                             )}
@@ -1058,7 +1058,7 @@ function ProductForm({ initial }: { initial?: Product }) {
                     : product[field].some((item) => item.trim()));
                 const rowOpen = Boolean(openDetail[flag]);
                 return (
-                  <div key={flag} className="overflow-hidden rounded-xl border border-line bg-[#faf7f2]">
+                  <div key={flag} className="overflow-hidden rounded-xl border border-line bg-[#ffffff]">
                     <div className="flex items-center gap-3 px-3 py-2.5">
                       <label className="flex min-w-0 flex-1 items-center gap-2 text-sm">
                         <input
@@ -1112,7 +1112,7 @@ function ProductForm({ initial }: { initial?: Product }) {
 
           <StudioPanel title="Media" hint="Product gallery photos — drag to reorder">
             <label
-              className="flex min-h-36 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-stone bg-[#faf7f2] text-sm text-mute"
+              className="flex min-h-36 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-stone bg-[#ffffff] text-sm text-mute"
               onDragOver={(event) => event.preventDefault()}
               onDrop={(event) => {
                 event.preventDefault();
@@ -1161,7 +1161,7 @@ function ProductForm({ initial }: { initial?: Product }) {
                     }}
                     className="w-24"
                   >
-                    <span className="relative block aspect-[4/5] overflow-hidden rounded-xl bg-[#efeae3]">
+                    <span className="relative block aspect-[4/5] overflow-hidden rounded-xl bg-[#f7f7f6]">
                       <Media src={src} alt="" sizes="96px" className="object-cover" />
                       {index === 0 ? (
                         <span className="absolute left-1 top-1 rounded-full bg-ink/80 px-1.5 py-0.5 text-[9px] uppercase tracking-[0.12em] text-paper">
@@ -1193,7 +1193,7 @@ function ProductForm({ initial }: { initial?: Product }) {
 
             <div className="overflow-x-auto rounded-xl border border-line">
               <table className="min-w-full text-left text-sm">
-                <thead className="bg-[#f3eee6] text-[11px] uppercase tracking-[0.12em] text-mute">
+                <thead className="bg-[#f7f7f6] text-[11px] uppercase tracking-[0.12em] text-mute">
                   <tr>
                     <th className="px-3 py-3 font-medium">Option</th>
                     <th className="px-3 py-3 font-medium">Selling price</th>
@@ -1292,7 +1292,7 @@ function ProductForm({ initial }: { initial?: Product }) {
             <AdminTip label="Add option">
               <button
                 type="button"
-                className="inline-flex h-11 items-center gap-2 border border-line px-4 text-sm text-ink transition hover:bg-[#faf7f2]"
+                className="inline-flex h-11 items-center gap-2 border border-line px-4 text-sm text-ink transition hover:bg-[#ffffff]"
                 onClick={() =>
                   set("variants", [
                     ...product.variants,
@@ -1335,7 +1335,7 @@ function ProductForm({ initial }: { initial?: Product }) {
                 ["bestseller", "Bestseller", "Show in bestsellers"],
                 ["newArrival", "New arrival", "Mark as new"],
               ] as const).map(([key, label, note]) => (
-                <label key={key} className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#faf7f2] px-4 py-3 text-sm">
+                <label key={key} className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#ffffff] px-4 py-3 text-sm">
                   <input
                     type="checkbox"
                     className="mt-0.5"
@@ -1509,7 +1509,7 @@ export function CategoryManager() {
               >
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex min-w-0 items-center gap-4">
-                    <span className="relative block size-16 shrink-0 overflow-hidden rounded-xl bg-[#efeae3]">
+                    <span className="relative block size-16 shrink-0 overflow-hidden rounded-xl bg-[#f7f7f6]">
                       {category.image ? (
                         <Media src={category.image} alt="" sizes="64px" className="object-cover" />
                       ) : (
@@ -1612,7 +1612,7 @@ export function CategoryManager() {
             ]).map(([field, label]) => (
               <div key={field} className="space-y-2">
                 <p className="text-sm">{label}</p>
-                <label className="relative flex aspect-[4/5] cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-stone bg-[#f7f3ee]">
+                <label className="relative flex aspect-[4/5] cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-stone bg-[#ffffff]">
                   {draft[field] ? (
                     <Media src={draft[field]} alt="" sizes="220px" className="object-cover" />
                   ) : (
@@ -1928,7 +1928,7 @@ export function OrderDetail({ id }: { id: string }) {
           {order.items.map((item) => (
             <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-line/70 px-5 py-4 last:border-b-0">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="relative block size-14 shrink-0 overflow-hidden rounded-xl bg-[#efeae3]">
+                <span className="relative block size-14 shrink-0 overflow-hidden rounded-xl bg-[#f7f7f6]">
                   {item.image ? <Media src={item.image} alt="" sizes="56px" className="object-cover" /> : null}
                 </span>
                 <div className="min-w-0">
@@ -2175,7 +2175,7 @@ export function CustomerDetail({ id }: { id: string }) {
           {customer.addresses.length ? (
             <ul className="space-y-3">
               {customer.addresses.map((address) => (
-                <li key={address.id} className="rounded-xl border border-line bg-[#faf7f2] px-4 py-3 text-sm leading-6">
+                <li key={address.id} className="rounded-xl border border-line bg-[#ffffff] px-4 py-3 text-sm leading-6">
                   {address.line1}
                   {address.line2 ? <>, {address.line2}</> : null}
                   <br />
@@ -2595,13 +2595,13 @@ export function SiteMediaManager() {
               {SITE_MEDIA_SLOTS.filter((slot) => (group.keys as readonly string[]).includes(slot.key)).map((slot) => {
                 const value = draft[slot.key];
                 return (
-                  <div key={slot.key} className="space-y-3 rounded-xl border border-line bg-[#faf7f2] p-4">
+                  <div key={slot.key} className="space-y-3 rounded-xl border border-line bg-[#ffffff] p-4">
                     <div>
                       <p className="font-medium">{slot.label}</p>
                       <p className="text-sm text-mute">{slot.hint}</p>
                     </div>
                     {value ? (
-                      <div className="relative aspect-[16/9] overflow-hidden rounded-xl border border-line bg-[#efeae3]">
+                      <div className="relative aspect-[16/9] overflow-hidden rounded-xl border border-line bg-[#f7f7f6]">
                         <Media src={value} alt="" sizes="320px" className="object-cover" />
                       </div>
                     ) : null}
@@ -2629,7 +2629,7 @@ export function SiteMediaManager() {
             defaultOpen={false}
           >
             {draft.categoryStrip.map((item, index) => (
-              <div key={item.id} className="space-y-3 rounded-xl border border-line bg-[#faf7f2] p-4">
+              <div key={item.id} className="space-y-3 rounded-xl border border-line bg-[#ffffff] p-4">
                 <AdminField label="Name" value={item.name} onChange={(name) => patchStrip(index, { name })} />
                 <AdminField label="Link" value={item.href} onChange={(href) => patchStrip(index, { href })} />
                 <AdminField label="Image URL" value={item.image} onChange={(image) => patchStrip(index, { image })} />
@@ -2654,7 +2654,7 @@ export function SiteMediaManager() {
             defaultOpen={false}
           >
             {draft.reviews.map((review, index) => (
-              <div key={review.id} className="space-y-3 rounded-xl border border-line bg-[#faf7f2] p-4">
+              <div key={review.id} className="space-y-3 rounded-xl border border-line bg-[#ffffff] p-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <AdminField label="Customer name" value={review.name} onChange={(name) => patchReview(index, { name })} />
                   <AdminField label="City" value={review.city} onChange={(city) => patchReview(index, { city })} />
@@ -2785,7 +2785,7 @@ export function OfferManager() {
     <div className="space-y-6">
       <AdminPageHeader
         title="Discount codes"
-        purpose="Codes shoppers type at checkout (for example DIWALI20)."
+        purpose="Codes shoppers type at checkout (for example WINTER20)."
       />
 
       <div className="flex flex-wrap gap-2">
@@ -2913,7 +2913,7 @@ export function OfferManager() {
                     type="button"
                     onClick={() => setDraft({ ...draft, type: value })}
                     className={`h-10 rounded-xl border text-sm transition ${
-                      draft.type === value ? "border-ink bg-ink text-paper" : "border-line bg-[#faf7f2] text-ink hover:bg-[#f3eee6]"
+                      draft.type === value ? "border-ink bg-ink text-paper" : "border-line bg-[#ffffff] text-ink hover:bg-[#f7f7f6]"
                     }`}
                   >
                     {label}
@@ -2949,7 +2949,7 @@ export function OfferManager() {
                       })
                     }
                     className={`h-10 rounded-xl border text-sm transition ${
-                      draft.scope === value ? "border-ink bg-ink text-paper" : "border-line bg-[#faf7f2] text-ink hover:bg-[#f3eee6]"
+                      draft.scope === value ? "border-ink bg-ink text-paper" : "border-line bg-[#ffffff] text-ink hover:bg-[#f7f7f6]"
                     }`}
                   >
                     {label}
@@ -2978,7 +2978,7 @@ export function OfferManager() {
                           key={id}
                           type="button"
                           onClick={() => toggleProduct(id)}
-                          className="inline-flex items-center gap-1 rounded-full border border-line bg-[#faf7f2] px-2.5 py-1 text-xs transition hover:border-red-200 hover:text-red-700"
+                          className="inline-flex items-center gap-1 rounded-full border border-line bg-[#ffffff] px-2.5 py-1 text-xs transition hover:border-red-200 hover:text-red-700"
                         >
                           {product?.name || id}
                           <X size={12} aria-hidden />
@@ -2987,7 +2987,7 @@ export function OfferManager() {
                     })}
                   </div>
                 ) : null}
-                <label className="flex h-10 items-center gap-2 rounded-xl border border-line bg-[#faf7f2] px-3">
+                <label className="flex h-10 items-center gap-2 rounded-xl border border-line bg-[#ffffff] px-3">
                   <Search size={15} className="text-mute" aria-hidden />
                   <input
                     value={productQuery}
@@ -3004,7 +3004,7 @@ export function OfferManager() {
                         <li key={product.id}>
                           <label
                             className={`flex cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2 text-sm transition ${
-                              checked ? "bg-[#efeae3]" : "hover:bg-[#faf7f2]"
+                              checked ? "bg-[#f7f7f6]" : "hover:bg-[#ffffff]"
                             }`}
                           >
                             <input
@@ -3041,7 +3041,7 @@ export function OfferManager() {
               </label>
             ) : null}
 
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#faf7f2] px-4 py-3 text-sm">
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#ffffff] px-4 py-3 text-sm">
               <input
                 type="checkbox"
                 className="mt-0.5"
@@ -3125,8 +3125,8 @@ function FulfilmentAction({
 }) {
   const tones = {
     default: {
-      card: "border-line bg-paper hover:border-[#d6cfc4] hover:bg-[#faf7f2]",
-      icon: "bg-[#efeae3] text-ink",
+      card: "border-line bg-paper hover:border-[#d6cfc4] hover:bg-[#ffffff]",
+      icon: "bg-[#f7f7f6] text-ink",
       title: "text-ink",
     },
     primary: {
@@ -3232,25 +3232,25 @@ function FulfilmentPanel({ orderId, initial }: { orderId: string; initial: Order
       </div>
 
       <div className="grid gap-3 border-b border-line p-5 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-line bg-[#faf7f2] px-4 py-3">
+        <div className="rounded-xl border border-line bg-[#ffffff] px-4 py-3">
           <p className="text-[11px] uppercase tracking-[0.12em] text-mute">Waybill</p>
           <p className="mt-2 truncate font-medium">{shipment?.awb || "Not booked"}</p>
         </div>
-        <div className="rounded-xl border border-line bg-[#faf7f2] px-4 py-3">
+        <div className="rounded-xl border border-line bg-[#ffffff] px-4 py-3">
           <p className="text-[11px] uppercase tracking-[0.12em] text-mute">Parcel weight</p>
           <p className="mt-2 font-medium">{shipment?.weightGrams ? `${shipment.weightGrams} g` : "—"}</p>
           {shipment?.weightGrams && shipment.packageData !== "product_weights" ? (
             <p className="mt-1 text-xs text-mute">Includes store fallback weight</p>
           ) : null}
         </div>
-        <div className="rounded-xl border border-line bg-[#faf7f2] px-4 py-3">
+        <div className="rounded-xl border border-line bg-[#ffffff] px-4 py-3">
           <p className="text-[11px] uppercase tracking-[0.12em] text-mute">Payment</p>
           <p className="mt-2 font-medium">{order.payment === "cod" ? "Cash on delivery" : humanLabel(order.payment || "prepaid")}</p>
           {order.payment === "cod" ? (
             <p className="mt-1 text-xs text-mute">{order.codCollection === "due" ? "Collection still due" : "COD does not apply"}</p>
           ) : null}
         </div>
-        <div className="rounded-xl border border-line bg-[#faf7f2] px-4 py-3">
+        <div className="rounded-xl border border-line bg-[#ffffff] px-4 py-3">
           <p className="text-[11px] uppercase tracking-[0.12em] text-mute">Last tracking</p>
           <p className="mt-2 font-medium">
             {shipment?.lastTrackingAt ? formatDate(shipment.lastTrackingAt) : events[0]?.at ? formatDate(events[0].at) : "—"}
@@ -3261,7 +3261,7 @@ function FulfilmentPanel({ orderId, initial }: { orderId: string; initial: Order
       {(shipment?.test || shipment?.lastError || error || message) ? (
         <div className="space-y-2 border-b border-line px-5 py-4">
           {shipment?.test ? (
-            <p className="rounded-xl border border-[#e8d9b5] bg-[#fbf6ea] px-4 py-3 text-sm text-[#7a5a28]">
+            <p className="rounded-xl border border-[#e8d9b5] bg-[#f7f7f6] px-4 py-3 text-sm text-[#7a5a28]">
               Test shipment — not sent to Delhivery. Refresh tracking to add the next test event.
             </p>
           ) : null}
@@ -3372,7 +3372,7 @@ function FulfilmentPanel({ orderId, initial }: { orderId: string; initial: Order
             </div>
           ) : null}
           {label?.kind === "data" && label.fields.length ? (
-            <dl className="mt-4 space-y-2 rounded-xl border border-line bg-[#faf7f2] px-4 py-3 text-sm">
+            <dl className="mt-4 space-y-2 rounded-xl border border-line bg-[#ffffff] px-4 py-3 text-sm">
               {label.fields.map((field) => (
                 <div key={field.key} className="flex flex-wrap gap-2 sm:flex-nowrap sm:gap-3">
                   <dt className="w-36 shrink-0 text-mute">{field.key}</dt>

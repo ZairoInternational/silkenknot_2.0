@@ -49,12 +49,12 @@ export function ShopPreview() {
   }, [catalog, category, search, sort, wishlistOnly, store.wishlist]);
 
   return (
-    <main className="mt-[var(--nav-h)] min-h-screen bg-[#f7f4ef] text-[#2c2926]">
-      <section className="relative isolate overflow-hidden bg-[#e9e0d2]">
+    <main className="mt-[var(--nav-h)] min-h-screen bg-[#ffffff] text-[#2c2926]">
+      <section className="relative isolate overflow-hidden bg-[#f0f0ef]">
         <div className="absolute inset-0 -z-20">
           <Media src={media.shopHero} alt="" sizes="100vw" className="object-cover object-center" />
         </div>
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#f7f4ef]/95 via-[#f7f4ef]/80 to-[#f7f4ef]/20" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#ffffff]/95 via-[#ffffff]/80 to-[#ffffff]/20" />
         <div className="site-container px-5 py-14 sm:px-8 sm:py-20 lg:px-14 lg:py-24">
           <p className="flex items-center gap-3 text-[10px] font-medium uppercase tracking-[0.24em] text-[#59634b]">
             <span className="h-px w-7 bg-[#59634b]" />
@@ -68,7 +68,7 @@ export function ShopPreview() {
           <p className="mt-5 max-w-md text-sm leading-7 text-[#625b52] sm:text-base">
             Thoughtful body care, comforting scents, and everyday essentials to make your ordinary moments feel special.
           </p>
-          <a href="#shop-products" className="mt-7 inline-flex min-h-11 items-center gap-3 rounded-full bg-[#CBAC7C] px-6 py-3 text-sm text-white transition hover:bg-[#B39668]">
+          <a href="#shop-products" className="mt-7 inline-flex min-h-11 items-center gap-3 rounded-full bg-[#61A2AF] px-6 py-3 text-sm text-white transition hover:bg-[#4F8A96]">
             Discover the collection
             <ArrowRight size={16} />
           </a>
@@ -88,14 +88,14 @@ export function ShopPreview() {
       </section>
 
       <section id="shop-products" className="site-container scroll-mt-24 px-5 py-10 sm:px-8 sm:py-14 lg:px-14">
-        <div className="flex flex-col justify-between gap-5 border-b border-[#e5dfd3] pb-6 sm:flex-row sm:items-end">
+        <div className="flex flex-col justify-between gap-5 border-b border-[#e8e8e6] pb-6 sm:flex-row sm:items-end">
           <div>
             <p className="text-[10px] uppercase tracking-[0.22em] text-[#898675]">Made for your moments</p>
             <h2 className="mt-2 font-serif text-3xl sm:text-4xl">Shop all products</h2>
             <p className="mt-2 text-sm text-[#777166]">{products.length} products to discover</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <label className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-full border border-[#ddd6cc] bg-[#fbf9f6] px-3 sm:min-w-[190px] sm:flex-none">
+            <label className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-full border border-[#e0e0de] bg-[#ffffff] px-3 sm:min-w-[190px] sm:flex-none">
               <Search size={15} className="shrink-0 text-[#898675]" />
               <input
                 value={search}
@@ -110,7 +110,7 @@ export function ShopPreview() {
                 </button>
               ) : null}
             </label>
-            <label className="flex h-10 items-center gap-2 rounded-full border border-[#ddd6cc] bg-[#fbf9f6] px-3">
+            <label className="flex h-10 items-center gap-2 rounded-full border border-[#e0e0de] bg-[#ffffff] px-3">
               <ArrowDownUp size={14} className="text-[#777166]" />
               <select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Sort products" className="max-w-[125px] bg-transparent text-xs outline-none sm:max-w-none">
                 <option value="featured">Featured</option>
@@ -119,7 +119,7 @@ export function ShopPreview() {
                 <option value="price-high">Price: high to low</option>
               </select>
             </label>
-            <button type="button" onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)} className="flex h-10 items-center gap-2 rounded-full border border-[#ddd6cc] px-3 text-xs lg:hidden">
+            <button type="button" onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)} className="flex h-10 items-center gap-2 rounded-full border border-[#e0e0de] px-3 text-xs lg:hidden">
               <SlidersHorizontal size={14} />
               Categories
             </button>
@@ -135,7 +135,7 @@ export function ShopPreview() {
                 setCategory(item.id);
                 setMobileFiltersOpen(false);
               }}
-              className={`rounded-full border bg-white px-4 py-2.5 text-xs transition ${item.id === category ? "border-[#2c2926] text-[#2c2926]" : "border-[#ddd6cc] text-[#5e574e] hover:border-mist-ink"}`}
+              className={`rounded-full border bg-white px-4 py-2.5 text-xs transition ${item.id === category ? "border-[#2c2926] text-[#2c2926]" : "border-[#e0e0de] text-[#5e574e] hover:border-mist-ink"}`}
             >
               {item.label}
             </button>
@@ -143,7 +143,7 @@ export function ShopPreview() {
           <button
             type="button"
             onClick={() => setWishlistOnly(!wishlistOnly)}
-            className={`inline-flex items-center gap-2 rounded-full border bg-white px-4 py-2.5 text-xs transition ${wishlistOnly ? "border-[#2c2926] text-[#2c2926]" : "border-[#ddd6cc] text-[#5e574e]"}`}
+            className={`inline-flex items-center gap-2 rounded-full border bg-white px-4 py-2.5 text-xs transition ${wishlistOnly ? "border-[#2c2926] text-[#2c2926]" : "border-[#e0e0de] text-[#5e574e]"}`}
           >
             <Heart size={14} fill={wishlistOnly ? "currentColor" : "none"} />
             Wishlist
@@ -168,7 +168,7 @@ export function ShopPreview() {
                 setCategory("all");
                 setWishlistOnly(false);
               }}
-              className="mt-5 rounded-full bg-[#CBAC7C] px-6 py-3 text-sm text-white hover:bg-[#B39668]"
+              className="mt-5 rounded-full bg-[#61A2AF] px-6 py-3 text-sm text-white hover:bg-[#4F8A96]"
             >
               Clear filters
             </button>
@@ -176,14 +176,14 @@ export function ShopPreview() {
         )}
       </section>
 
-      <section className="border-y border-[#e5dfd3] bg-[#efebe2]">
+      <section className="border-y border-[#e8e8e6] bg-[#f7f7f6]">
         <div className="site-container grid gap-8 px-5 py-10 sm:px-8 sm:py-14 md:grid-cols-2 md:items-center lg:px-14">
           <div>
             <p className="text-[10px] uppercase tracking-[0.22em] text-[#858477]">A moment just for you</p>
             <h2 className="mt-3 max-w-lg font-serif text-3xl leading-tight sm:text-4xl">Make room for the little things that feel good.</h2>
             <p className="mt-3 max-w-md text-sm leading-6 text-[#6c655b]">Discover thoughtful formulas and comforting fragrances designed to bring a little more calm to your everyday.</p>
           </div>
-          <Link href="/shop#products" className="group flex min-h-12 items-center justify-between gap-4 rounded-full border border-mist bg-[#f7f4ef] px-6 py-4 text-sm transition hover:border-mist-ink hover:bg-[#CBAC7C] hover:text-white">
+          <Link href="/shop#products" className="group flex min-h-12 items-center justify-between gap-4 rounded-full border border-mist bg-[#ffffff] px-6 py-4 text-sm transition hover:border-mist-ink hover:bg-[#61A2AF] hover:text-white">
             Explore all our essentials
             <ArrowRight size={17} className="transition-transform group-hover:translate-x-1" />
           </Link>
@@ -196,7 +196,7 @@ export function ShopPreview() {
 function CategoryCard({ title, description, image, onClick }: { title: string; description: string; image: string; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} className="group text-left">
-      <div className="relative aspect-[4/4.5] overflow-hidden rounded-xl bg-[#e9e0d2] sm:aspect-[4/4]">
+      <div className="relative aspect-[4/4.5] overflow-hidden rounded-xl bg-[#f0f0ef] sm:aspect-[4/4]">
         <Media src={image} alt={title} sizes="(min-width: 768px) 25vw, 50vw" className="object-cover transition-transform duration-700 group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-3 text-white sm:p-4">
@@ -227,11 +227,11 @@ function ShopProductCard({ product }: { product: Product }) {
 
   return (
     <article className="group min-w-0">
-      <div className="relative overflow-hidden rounded-xl bg-[#eee8de]">
+      <div className="relative overflow-hidden rounded-xl bg-[#efefed]">
         <Link href={`/products/${product.slug}`} aria-label={`View ${product.name}`} className="relative block aspect-[4/4.5] sm:aspect-[4/4.4]">
           <Media src={product.images[0]} alt={product.name} sizes="(min-width: 1280px) 23vw, (min-width: 768px) 30vw, 48vw" className="object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04] sm:p-5" />
         </Link>
-        <span className="absolute left-2.5 top-2.5 rounded-full bg-[#f7f4ef]/90 px-2.5 py-1 text-[9px] uppercase tracking-wider text-[#59634b] sm:left-3 sm:top-3">Handcrafted</span>
+        <span className="absolute left-2.5 top-2.5 rounded-full bg-[#ffffff]/90 px-2.5 py-1 text-[9px] uppercase tracking-wider text-[#59634b] sm:left-3 sm:top-3">Handcrafted</span>
       </div>
       <div className="pt-3 sm:pt-4">
         <div className="flex items-start gap-1">
@@ -250,7 +250,7 @@ function ShopProductCard({ product }: { product: Product }) {
           </div>
         ) : null}
         <p className="mt-2 text-sm font-medium text-[#2c2926] sm:text-base">{formatPrice(product.price)}</p>
-        <button type="button" onClick={addToCart} className="mt-3 h-10 w-full rounded-full bg-[#CBAC7C] px-3 text-xs font-medium text-white transition duration-300 hover:bg-[#B39668] sm:h-11 sm:text-sm">
+        <button type="button" onClick={addToCart} className="mt-3 h-10 w-full rounded-full bg-[#61A2AF] px-3 text-xs font-medium text-white transition duration-300 hover:bg-[#4F8A96] sm:h-11 sm:text-sm">
           Add to cart
         </button>
       </div>

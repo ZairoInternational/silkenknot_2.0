@@ -314,25 +314,25 @@ export function DeliveryChoice() {
 
   return (
     <div className="mt-4 md:col-span-2 md:mt-5">
-      <div className="@container overflow-hidden rounded-2xl border border-[#e6e0d6] bg-white text-[#2c2926] shadow-[0_8px_30px_rgba(28,36,32,0.04)]">
+      <div className="@container overflow-hidden rounded-2xl border border-[#efefed] bg-white text-[#2c2926] shadow-[0_8px_30px_rgba(28,36,32,0.04)]">
         {panelOpen ? null : (
           <div className="relative grid grid-cols-1 items-stretch @min-[680px]:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto] @min-[680px]:items-center">
             <div className="flex min-w-0 items-center gap-2.5 px-3 py-2.5">
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#f6f3ee] text-[#8a7350]">
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffffff] text-[#3A6B75]">
                 <MapPin size={15} strokeWidth={1.8} />
               </span>
               <span className="min-w-0">
-                <span className="block text-[10px] font-medium uppercase tracking-[0.16em] text-[#8a7350]">Delivery to</span>
+                <span className="block text-[10px] font-medium uppercase tracking-[0.16em] text-[#3A6B75]">Delivery to</span>
                 <span className="mt-0.5 block truncate text-sm font-medium tracking-tight">{activePin ? `PIN ${activePin}` : "Add a PIN"}</span>
               </span>
             </div>
-            <span className="my-4 hidden w-px self-stretch bg-[#e6e0d6] @min-[680px]:block" aria-hidden />
-            <div className="flex min-w-0 items-center gap-2.5 border-t border-[#eee8de] px-3 py-2.5 @min-[680px]:border-t-0">
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#f6f3ee] text-[#8a7350]">
+            <span className="my-4 hidden w-px self-stretch bg-[#efefed] @min-[680px]:block" aria-hidden />
+            <div className="flex min-w-0 items-center gap-2.5 border-t border-[#efefed] px-3 py-2.5 @min-[680px]:border-t-0">
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffffff] text-[#3A6B75]">
                 <Truck size={15} strokeWidth={1.8} />
               </span>
               <span className="min-w-0">
-                <span className="block text-[10px] font-medium uppercase tracking-[0.16em] text-[#8a7350]">Estimated delivery</span>
+                <span className="block text-[10px] font-medium uppercase tracking-[0.16em] text-[#3A6B75]">Estimated delivery</span>
                 <span className="mt-0.5 block truncate text-sm font-medium tracking-tight">
                   {checking ? "Checking" : ready && result?.by ? `By ${result.by}` : ready ? "Available" : result ? "Not available" : "Enter a PIN"}
                 </span>
@@ -351,7 +351,7 @@ export function DeliveryChoice() {
                   window.setTimeout(() => pinInputRef.current?.focus(), 40);
                 }
               }}
-              className="absolute right-2 top-2 grid size-8 place-items-center text-[#8a7350] @min-[680px]:static @min-[680px]:mr-2"
+              className="absolute right-2 top-2 grid size-8 place-items-center text-[#3A6B75] @min-[680px]:static @min-[680px]:mr-2"
             >
               <ChevronDown size={16} />
             </button>
@@ -362,13 +362,13 @@ export function DeliveryChoice() {
           <div className="px-3 pb-3 pt-3 @min-[680px]:px-4">
             <div className="grid grid-cols-1 items-start gap-3 @min-[680px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] @min-[680px]:items-center @min-[680px]:gap-0">
               <div className="flex min-w-0 items-start gap-2.5 @min-[680px]:pr-4">
-                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#f6f3ee] text-[#8a7350]">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffffff] text-[#3A6B75]">
                   <MapPin size={15} strokeWidth={1.8} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="flex flex-wrap items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-[#8a7350]">
+                  <span className="flex flex-wrap items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.16em] text-[#3A6B75]">
                     Delivery pincode
-                    {activePin && !editingPin ? <span className="rounded-full bg-[#f6f3ee] px-1.5 py-0.5 text-[10px] font-medium normal-case tracking-normal text-[#8a7350]">Set</span> : null}
+                    {activePin && !editingPin ? <span className="rounded-full bg-[#ffffff] px-1.5 py-0.5 text-[10px] font-medium normal-case tracking-normal text-[#3A6B75]">Set</span> : null}
                   </span>
                   {editingPin || !activePin ? (
                     <form onSubmit={useDraftPin} className="mt-1.5 space-y-1.5">
@@ -381,9 +381,9 @@ export function DeliveryChoice() {
                           autoComplete="postal-code"
                           placeholder="Enter pincode"
                           aria-label="PIN code"
-                          className="h-9 min-w-0 flex-1 rounded-lg border border-[#e3dbd1] bg-white px-3 text-sm text-[#2c2926] outline-none placeholder:text-[#b5aa9c]"
+                          className="h-9 min-w-0 flex-1 rounded-lg border border-[#e8e8e6] bg-white px-3 text-sm text-[#2c2926] outline-none placeholder:text-[#b5aa9c]"
                         />
-                        <button type="submit" disabled={checking} className="h-9 shrink-0 rounded-lg bg-[#CBAC7C] px-3 text-sm text-white hover:bg-[#B39668] disabled:opacity-50">
+                        <button type="submit" disabled={checking} className="h-9 shrink-0 rounded-lg bg-[#61A2AF] px-3 text-sm text-white hover:bg-[#4F8A96] disabled:opacity-50">
                           {checking ? "Checking" : "Check"}
                         </button>
                         {activePin ? (
@@ -394,7 +394,7 @@ export function DeliveryChoice() {
                               setDraftPin(activePin);
                               setPinNote("");
                             }}
-                            className="h-9 shrink-0 px-1 text-xs text-[#8a7350]"
+                            className="h-9 shrink-0 px-1 text-xs text-[#3A6B75]"
                           >
                             Cancel
                           </button>
@@ -402,7 +402,7 @@ export function DeliveryChoice() {
                       </div>
                       {pinNote ? <p className="text-xs text-[#9a4b3a]">{pinNote}</p> : null}
                       {user && addresses.length ? (
-                        <button type="button" onClick={() => setOpen(true)} className="text-left text-xs text-[#8a7350] underline decoration-[#e3dbd1] underline-offset-2">
+                        <button type="button" onClick={() => setOpen(true)} className="text-left text-xs text-[#3A6B75] underline decoration-[#e8e8e6] underline-offset-2">
                           Use a saved address
                         </button>
                       ) : null}
@@ -410,29 +410,29 @@ export function DeliveryChoice() {
                   ) : (
                     <>
                       <span className="mt-0.5 block text-sm font-medium tracking-tight">{activePin}</span>
-                      <button type="button" onClick={revealPinInput} className="mt-0.5 inline-flex items-center gap-1 text-xs text-[#8a7350] underline decoration-[#e3dbd1] underline-offset-2">
+                      <button type="button" onClick={revealPinInput} className="mt-0.5 inline-flex items-center gap-1 text-xs text-[#3A6B75] underline decoration-[#e8e8e6] underline-offset-2">
                         Change pincode <Pencil size={11} />
                       </button>
                     </>
                   )}
                 </span>
               </div>
-              <div className="flex min-w-0 items-center gap-2.5 border-t border-[#eee8de] pt-3 @min-[680px]:border-l @min-[680px]:border-t-0 @min-[680px]:px-4 @min-[680px]:pt-0">
-                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#f6f3ee] text-[#8a7350]">
+              <div className="flex min-w-0 items-center gap-2.5 border-t border-[#efefed] pt-3 @min-[680px]:border-l @min-[680px]:border-t-0 @min-[680px]:px-4 @min-[680px]:pt-0">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#ffffff] text-[#3A6B75]">
                   <Truck size={15} strokeWidth={1.8} />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[10px] font-medium uppercase tracking-[0.16em] text-[#8a7350]">Estimated delivery</span>
+                  <span className="block text-[10px] font-medium uppercase tracking-[0.16em] text-[#3A6B75]">Estimated delivery</span>
                   <span className="mt-0.5 block text-sm font-medium tracking-tight">
                     {checking ? "Checking" : ready && result?.by ? `By ${result.by}` : ready ? "Available" : "—"}
                   </span>
                   {ready ? <span className="block text-xs text-[#6f675d]">{standardCaption}</span> : null}
                 </span>
               </div>
-              <div className="flex items-center justify-between gap-2 border-t border-[#eee8de] pt-3 @min-[680px]:border-l @min-[680px]:border-t-0 @min-[680px]:pl-4 @min-[680px]:pt-0">
+              <div className="flex items-center justify-between gap-2 border-t border-[#efefed] pt-3 @min-[680px]:border-l @min-[680px]:border-t-0 @min-[680px]:pl-4 @min-[680px]:pt-0">
                 {ready && result?.expressEstimate ? (
-                  <span className="inline-flex max-w-full flex-col rounded-full border border-[#e3dbd1] bg-[#fbf9f6] px-2.5 py-1">
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-[#8a7350]">
+                  <span className="inline-flex max-w-full flex-col rounded-full border border-[#e8e8e6] bg-[#ffffff] px-2.5 py-1">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-[#3A6B75]">
                       <Check size={12} strokeWidth={2.5} /> Express available
                     </span>
                     <span className="text-[11px] text-[#6f675d]">{expressFaster || `Around ${result.expressEstimate}`}</span>
@@ -440,41 +440,41 @@ export function DeliveryChoice() {
                 ) : (
                   <span className="text-xs text-[#6f675d]">{checking ? "Checking express" : "Express appears when it is available"}</span>
                 )}
-                <button type="button" aria-label="Hide delivery details" onClick={closePanel} className="grid size-8 shrink-0 place-items-center text-[#8a7350]">
+                <button type="button" aria-label="Hide delivery details" onClick={closePanel} className="grid size-8 shrink-0 place-items-center text-[#3A6B75]">
                   <ChevronDown size={16} className="rotate-180" />
                 </button>
               </div>
             </div>
 
             {ready ? (
-              <div className="mt-3 overflow-hidden rounded-xl bg-[#fbf9f6]">
+              <div className="mt-3 overflow-hidden rounded-xl bg-[#ffffff]">
                 <button type="button" onClick={() => setDetailsOpen((current) => !current)} className="flex w-full items-start gap-2.5 px-3 py-2.5 text-left" aria-expanded={detailsOpen}>
-                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white text-[#8a7350]">
+                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white text-[#3A6B75]">
                     <Package size={14} strokeWidth={1.8} />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-medium">Delivery details</span>
                     {detailsOpen ? <span className="mt-0.5 block text-xs leading-5 text-[#4e4943]">{detailCopy}</span> : null}
                   </span>
-                  <ChevronDown size={14} className={`mt-0.5 shrink-0 text-[#8a7350] transition-transform ${detailsOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown size={14} className={`mt-0.5 shrink-0 text-[#3A6B75] transition-transform ${detailsOpen ? "rotate-180" : ""}`} />
                 </button>
-                <div className="grid grid-cols-1 border-t border-[#eee8de] @min-[680px]:grid-cols-3">
+                <div className="grid grid-cols-1 border-t border-[#efefed] @min-[680px]:grid-cols-3">
                   <div className="flex min-w-0 items-center gap-2 px-3 py-2.5">
-                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white text-[#8a7350]"><Truck size={14} /></span>
+                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white text-[#3A6B75]"><Truck size={14} /></span>
                     <span className="min-w-0">
                       <span className="block text-xs font-medium">Standard delivery</span>
                       <span className="block text-xs text-[#6f675d]">{result?.by ? `Expected by ${result.by}` : standardCaption}</span>
                     </span>
                   </div>
-                  <div className="flex min-w-0 items-center gap-2 border-t border-[#eee8de] px-3 py-2.5 @min-[680px]:border-l @min-[680px]:border-t-0">
-                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white text-[#8a7350]"><Zap size={14} /></span>
+                  <div className="flex min-w-0 items-center gap-2 border-t border-[#efefed] px-3 py-2.5 @min-[680px]:border-l @min-[680px]:border-t-0">
+                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white text-[#3A6B75]"><Zap size={14} /></span>
                     <span className="min-w-0">
                       <span className="block text-xs font-medium">Express delivery</span>
                       <span className="block text-xs text-[#6f675d]">{result?.expressEstimate ? (expressFaster || `Around ${result.expressEstimate}`) : "Not available"}</span>
                     </span>
                   </div>
-                  <div className="flex min-w-0 items-center gap-2 border-t border-[#eee8de] px-3 py-2.5 @min-[680px]:border-l @min-[680px]:border-t-0">
-                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white text-[#8a7350]"><CreditCard size={14} /></span>
+                  <div className="flex min-w-0 items-center gap-2 border-t border-[#efefed] px-3 py-2.5 @min-[680px]:border-l @min-[680px]:border-t-0">
+                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-white text-[#3A6B75]"><CreditCard size={14} /></span>
                     <span className="min-w-0">
                       <span className="block text-xs font-medium">{paymentTitle}</span>
                       <span className="block text-xs text-[#6f675d]">{paymentValue}</span>
@@ -507,20 +507,20 @@ export function DeliveryChoice() {
             role="dialog"
             aria-modal="true"
             aria-label="Delivery address"
-            className="fixed z-[80] flex flex-col bg-[#f6f3ee] text-[#2c2926] shadow-[-24px_0_80px_rgba(28,27,25,0.16)] max-md:inset-x-0 max-md:bottom-0 max-md:max-h-[88dvh] max-md:rounded-t-[28px] md:inset-y-0 md:right-0 md:w-[420px]"
+            className="fixed z-[80] flex flex-col bg-[#ffffff] text-[#2c2926] shadow-[-24px_0_80px_rgba(28,27,25,0.16)] max-md:inset-x-0 max-md:bottom-0 max-md:max-h-[88dvh] max-md:rounded-t-[28px] md:inset-y-0 md:right-0 md:w-[420px]"
             initial={mobile ? { x: 0, y: "100%" } : { x: "100%", y: 0 }}
             animate={{ x: 0, y: 0 }}
             exit={mobile ? { x: 0, y: "100%" } : { x: "100%", y: 0 }}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="px-6 pt-3 md:pt-6">
-              <span className="mx-auto mb-3 block h-1 w-10 rounded-full bg-[#e3dbd1] md:hidden" />
+              <span className="mx-auto mb-3 block h-1 w-10 rounded-full bg-[#e8e8e6] md:hidden" />
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-[#8a7350]">Delivery</p>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-[#3A6B75]">Delivery</p>
                   <h2 className="mt-1 font-serif text-3xl tracking-tight">Where to?</h2>
                 </div>
-                <button type="button" aria-label="Close delivery address" onClick={() => setOpen(false)} className="grid size-9 place-items-center rounded-full bg-white ring-1 ring-[#e6e0d6]">
+                <button type="button" aria-label="Close delivery address" onClick={() => setOpen(false)} className="grid size-9 place-items-center rounded-full bg-white ring-1 ring-[#efefed]">
                   <X size={15} />
                 </button>
               </div>
@@ -533,7 +533,7 @@ export function DeliveryChoice() {
               ) : (
                 <p className="mb-6 text-sm leading-6 text-[#6f675d]">Choose an address or enter a PIN to see if we can deliver there, how long it takes, and how you can pay.</p>
               )}
-              <p className="text-[10px] uppercase tracking-[0.18em] text-[#8a7350]">Saved addresses</p>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-[#3A6B75]">Saved addresses</p>
               {user && addresses.length ? (
                 <ul className="mt-3 space-y-2.5">
                   {addresses.map((address) => {
@@ -543,13 +543,13 @@ export function DeliveryChoice() {
                         <button
                           type="button"
                           onClick={() => chooseAddress(address)}
-                          className={`flex w-full items-start gap-3 rounded-2xl border bg-white px-4 py-3.5 text-left ${active ? "border-[#2c2926]" : "border-[#e6e0d6]"}`}
+                          className={`flex w-full items-start gap-3 rounded-2xl border bg-white px-4 py-3.5 text-left ${active ? "border-[#2c2926]" : "border-[#efefed]"}`}
                         >
-                          <span className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border ${active ? "border-[#2c2926] bg-[#2c2926] text-white" : "border-[#e3dbd1]"}`}>
+                          <span className={`mt-0.5 grid size-5 shrink-0 place-items-center rounded-full border ${active ? "border-[#2c2926] bg-[#2c2926] text-white" : "border-[#e8e8e6]"}`}>
                             {active ? <Check size={12} /> : null}
                           </span>
                           <span className="min-w-0">
-                            <span className="text-[10px] uppercase tracking-[0.16em] text-[#8a7350]">{address.label}{address.isDefault ? " · Default" : ""}</span>
+                            <span className="text-[10px] uppercase tracking-[0.16em] text-[#3A6B75]">{address.label}{address.isDefault ? " · Default" : ""}</span>
                             <span className="mt-1 block text-sm font-medium">{address.name}</span>
                             <span className="mt-1 block text-sm leading-6 text-[#6f675d]">{address.line1}{address.line2 ? `, ${address.line2}` : ""}</span>
                             <span className="block text-sm text-[#6f675d]">{address.city} {address.postal}</span>
@@ -565,16 +565,16 @@ export function DeliveryChoice() {
                 </p>
               )}
               {user ? (
-                <Link href={`/account/addresses?next=${encodeURIComponent(pathname || "/shop")}`} className="mt-4 inline-block text-sm text-[#8a7350] underline decoration-[#e3dbd1] underline-offset-4">
+                <Link href={`/account/addresses?next=${encodeURIComponent(pathname || "/shop")}`} className="mt-4 inline-block text-sm text-[#3A6B75] underline decoration-[#e8e8e6] underline-offset-4">
                   Add an address
                 </Link>
               ) : (
-                <Link href={loginHref} className="mt-4 inline-block text-sm text-[#8a7350] underline decoration-[#e3dbd1] underline-offset-4">
+                <Link href={loginHref} className="mt-4 inline-block text-sm text-[#3A6B75] underline decoration-[#e8e8e6] underline-offset-4">
                   Sign in
                 </Link>
               )}
-              <form onSubmit={useDraftPin} className="mt-8 rounded-2xl border border-[#e6e0d6] bg-white p-4">
-                <p className="text-[10px] uppercase tracking-[0.18em] text-[#8a7350]">Check a PIN</p>
+              <form onSubmit={useDraftPin} className="mt-8 rounded-2xl border border-[#efefed] bg-white p-4">
+                <p className="text-[10px] uppercase tracking-[0.18em] text-[#3A6B75]">Check a PIN</p>
                 <div className="mt-3 flex items-center gap-2">
                   <input
                     value={draftPin}
@@ -583,9 +583,9 @@ export function DeliveryChoice() {
                     autoComplete="postal-code"
                     placeholder="6-digit PIN"
                     aria-label="PIN code"
-                    className="h-12 min-w-0 flex-1 rounded-xl border border-[#e6e0d6] bg-[#fbf9f6] px-3 text-base tracking-[0.08em] text-[#2c2926] outline-none placeholder:tracking-normal placeholder:text-[#b5aa9c] max-md:text-lg"
+                    className="h-12 min-w-0 flex-1 rounded-xl border border-[#efefed] bg-[#ffffff] px-3 text-base tracking-[0.08em] text-[#2c2926] outline-none placeholder:tracking-normal placeholder:text-[#b5aa9c] max-md:text-lg"
                   />
-                  <button type="submit" disabled={checking} className="h-12 shrink-0 rounded-xl bg-[#CBAC7C] px-4 text-sm text-white disabled:opacity-50">
+                  <button type="submit" disabled={checking} className="h-12 shrink-0 rounded-xl bg-[#61A2AF] px-4 text-sm text-white disabled:opacity-50">
                     {checking ? "Checking" : "Check"}
                   </button>
                 </div>
