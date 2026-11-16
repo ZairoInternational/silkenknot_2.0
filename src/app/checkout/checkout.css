@@ -185,7 +185,12 @@
 .silk-checkout .billSave { color: #1f7a4d; }
 .silk-checkout .billMinus { color: #1f7a4d; font-weight: 600; }
 .silk-checkout .summaryTotal { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 16px; color: var(--ink); font-weight: 600; }
-.silk-checkout .summaryTotal strong { font-size: 19px; font-weight: 600; }
+.silk-checkout .summaryTotal strong {
+  display: inline-block;
+  font-size: 19px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
 .silk-checkout .billSaved {
   display: flex;
   align-items: center;

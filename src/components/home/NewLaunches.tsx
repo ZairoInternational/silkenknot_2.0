@@ -14,13 +14,13 @@ export function NewLaunches() {
     .slice(0, 4);
 
   return (
-    <section aria-labelledby="new-launches-heading" className="bg-[#ffffff] px-5 py-14 md:px-8 md:py-20">
+    <section aria-labelledby="new-launches-heading" className="border-b border-line bg-paper px-5 py-14 md:px-8 md:py-20">
       <div className="mx-auto max-w-[1200px]">
         <LaunchHeader />
         {launches.length ? (
           <LaunchShelf products={launches} />
         ) : (
-          <p className="mt-8 text-sm text-[#6f675d]">New arrivals will appear here when they are marked in the studio.</p>
+          <p className="mt-8 text-base text-mute">New arrivals will appear here when they are marked in the studio.</p>
         )}
       </div>
     </section>

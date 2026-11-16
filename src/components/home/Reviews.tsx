@@ -90,7 +90,7 @@ function useIsDesktop() {
 function StarRating({ rating, size = 16 }: { rating: number; size?: number }) {
   return (
     <div
-      className="flex items-center gap-0.5 text-[#B28B55]"
+      className="flex items-center gap-0.5 text-[#5FA4AD]"
       role="img"
       aria-label={`${rating} out of 5 stars`}
     >
@@ -116,13 +116,13 @@ function TestimonialCard({
   const tabIndex = interactive ? 0 : -1;
 
   return (
-    <article className="flex h-full w-full flex-col rounded-[22px] border border-white/80 bg-white/85 p-3 sm:p-4">
+    <article className="flex h-full w-full flex-col rounded-[22px] border border-white/80 bg-white/90 p-3 sm:p-4">
       {/* Product photo */}
       <Link
         href={`/products/${review.productSlug}`}
         tabIndex={tabIndex}
         aria-label={`View ${review.product}`}
-        className="group/img relative block aspect-[1.75/1] w-full overflow-hidden rounded-[15px] bg-[#EEE5D9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B28B55]"
+        className="group/img relative block aspect-[1.75/1] w-full overflow-hidden rounded-[15px] bg-[#E4F1F3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5FA4AD]"
       >
         <Image
           src={review.productImage}
@@ -131,7 +131,7 @@ function TestimonialCard({
           sizes="(max-width: 1023px) 86vw, 40vw"
           className="object-cover transition-transform duration-700 group-hover/img:scale-[1.04]"
         />
-        <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-[#8A6540]/90 px-3 py-1.5 text-[11px] font-medium text-white shadow-sm backdrop-blur-sm">
+        <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-[#5FA4AD]/95 px-3 py-1.5 text-[11px] font-medium text-white shadow-sm backdrop-blur-sm">
           Shop the product
           <ArrowUpRight size={12} />
         </span>
@@ -140,17 +140,17 @@ function TestimonialCard({
       {/* Stars + verification */}
       <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5">
         <StarRating rating={review.rating} />
-        <span className="flex items-center gap-1.5 text-[11px] text-[#81766C] sm:text-xs">
+        <span className="flex items-center gap-1.5 text-[11px] font-medium text-mute sm:text-xs">
           <BadgeCheck
             size={15}
-            className="shrink-0 fill-[#B28B55] text-white"
+            className="shrink-0 fill-[#5FA4AD] text-white"
           />
           Verified purchase
         </span>
       </div>
 
       {/* Review */}
-      <p className="mt-3 flex-1 font-serif text-base leading-[1.6] text-[#45372C] sm:text-lg">
+      <p className="mt-3 flex-1 font-serif text-base leading-[1.6] text-ink sm:text-lg">
         “{review.text}”
       </p>
 
@@ -158,22 +158,22 @@ function TestimonialCard({
       <div className="mt-4 flex items-center gap-3 pt-1">
         <div
           aria-hidden="true"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#E4D3BC] bg-[#F3E9DB] text-[#8A6540]"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#C5E0E3] bg-[#E8F4F5] text-[#5FA4AD]"
         >
           <User size={20} strokeWidth={1.5} />
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-[#3D3026]">
+          <p className="truncate text-sm font-medium text-ink">
             {review.name}
           </p>
-          <p className="text-xs text-[#8B8076]">{review.city}</p>
+          <p className="text-xs font-medium text-mute">{review.city}</p>
         </div>
 
         <Link
           href={`/products/${review.productSlug}`}
           tabIndex={tabIndex}
-          className="max-w-[48%] truncate rounded-full bg-[#F3EBE0] px-3 py-2 text-[11px] font-medium text-[#775638] transition-colors hover:bg-[#E9DCC9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B28B55]"
+          className="max-w-[48%] truncate rounded-full bg-[#E8F4F5] px-3 py-2 text-[11px] font-medium text-[#5FA4AD] transition-colors hover:bg-[#D4EBEE] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5FA4AD]"
         >
           {review.product}
         </Link>
@@ -250,7 +250,7 @@ export default function Testimonials() {
     <section
       aria-roledescription="carousel"
       aria-labelledby="testimonials-heading"
-      className="relative isolate overflow-hidden bg-[#ffffff] pt-16 sm:pt-20 lg:pt-24"
+      className="relative isolate overflow-hidden bg-[#F5FAFA] pt-16 sm:pt-20 lg:pt-24"
     >
       {/* Botanical decoration (generated SVGs in /public/silknknot/decor) */}
       <div
@@ -294,18 +294,18 @@ export default function Testimonials() {
       <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-10">
         {/* Heading */}
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-[#9A7043] sm:text-xs">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-mist-ink sm:text-xs">
             Kind words, real rituals
           </p>
 
           <h2
             id="testimonials-heading"
-            className="mt-3 font-serif text-5xl tracking-[-0.04em] text-[#382B20] sm:text-6xl lg:text-7xl"
+            className="mt-3 font-serif text-[clamp(2.5rem,6vw,4.25rem)] tracking-[-0.04em] text-ink sm:text-6xl lg:text-7xl"
           >
-            Loved <span className="italic text-[#B28B55]">by you.</span>
+            Loved <span className="italic text-mist-ink">by you.</span>
           </h2>
 
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-[#796E63] sm:text-base">
+          <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-ink/80 sm:text-lg">
             Real stories from our beautiful community. Thank you for being part
             of the Silken Knot journey.
           </p>
@@ -313,12 +313,12 @@ export default function Testimonials() {
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <div className="flex items-center gap-2">
               <StarRating rating={5} size={20} />
-              <span className="text-base font-medium text-[#5A3D27]">
+              <span className="text-base font-semibold text-ink">
                 {OVERALL_RATING}/5
               </span>
             </div>
-            <span className="hidden h-6 w-px bg-[#D9CBB9] sm:block" />
-            <span className="text-xs text-[#81766C] sm:text-sm">
+            <span className="hidden h-6 w-px bg-mist/40 sm:block" />
+            <span className="text-sm font-medium text-mute">
               Based on {OVERALL_COUNT} happy customers
             </span>
           </div>
@@ -393,8 +393,8 @@ export default function Testimonials() {
                   <div
                     className={`rounded-[22px] backdrop-blur-sm transition-shadow duration-500 ${
                       isCenter
-                        ? "shadow-[0_24px_60px_rgba(91,66,39,0.14)]"
-                        : "shadow-[0_10px_34px_rgba(91,66,39,0.07)]"
+                        ? "shadow-[0_24px_60px_rgba(95,164,173,0.16)]"
+                        : "shadow-[0_10px_34px_rgba(95,164,173,0.08)]"
                     }`}
                   >
                     <TestimonialCard
@@ -412,7 +412,7 @@ export default function Testimonials() {
             type="button"
             onClick={prev}
             aria-label="Previous review"
-            className="absolute left-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#6C4931] shadow-[0_6px_22px_rgba(91,66,39,0.14)] transition-colors hover:bg-[#6C4931] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B28B55] lg:-left-2"
+            className="absolute left-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#5FA4AD] shadow-[0_6px_22px_rgba(95,164,173,0.14)] transition-colors hover:bg-[#5FA4AD] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5FA4AD] lg:-left-2"
           >
             <ArrowLeft size={18} />
           </button>
@@ -420,7 +420,7 @@ export default function Testimonials() {
             type="button"
             onClick={next}
             aria-label="Next review"
-            className="absolute right-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#6C4931] shadow-[0_6px_22px_rgba(91,66,39,0.14)] transition-colors hover:bg-[#6C4931] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B28B55] lg:-right-2"
+            className="absolute right-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#5FA4AD] shadow-[0_6px_22px_rgba(95,164,173,0.14)] transition-colors hover:bg-[#5FA4AD] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5FA4AD] lg:-right-2"
           >
             <ArrowRight size={18} />
           </button>
@@ -444,7 +444,7 @@ export default function Testimonials() {
             >
               <span
                 className={`block h-2 rounded-full transition-all duration-500 ${
-                  index === active ? "w-6 bg-[#B28B55]" : "w-2 bg-[#D9CDBD]"
+                  index === active ? "w-6 bg-[#5FA4AD]" : "w-2 bg-[#C5E0E3]"
                 }`}
               />
             </button>

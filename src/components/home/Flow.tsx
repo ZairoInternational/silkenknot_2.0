@@ -306,18 +306,29 @@ export function BestSellers() {
 export function BrandStory() {
   const media = useSiteMedia();
   return (
-    <section className="mt-6 hidden bg-[#ffffff] px-5 py-8 md:block md:px-8 md:py-10">
+    <section className="bg-paper px-5 py-14 md:px-8 md:py-20" aria-labelledby="brand-story-heading">
       <div className="site-container grid items-center gap-10 md:grid-cols-2 md:gap-16">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] bg-[#efefed]">
+        <div className="relative aspect-[4/3] overflow-hidden bg-sand">
           <Media src={media.brandStory} alt="A Silken Knot candle" sizes="(min-width: 768px) 46vw, 90vw" className="object-cover" />
         </div>
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-[#8a8178]">Our story</p>
-          <h2 className="mt-3 font-serif text-4xl leading-tight text-[#2c2926] md:text-5xl">Made slowly, used daily.</h2>
-          <p className="mt-4 max-w-md text-[15px] leading-7 text-[#5e574e]">
+          <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-mist-ink">
+            <span className="h-px w-8 bg-mist" aria-hidden />
+            Our story
+          </p>
+          <h2
+            id="brand-story-heading"
+            className="mt-3 font-serif text-[clamp(2.2rem,4.5vw,3.35rem)] font-medium leading-tight tracking-[-0.02em] text-ink"
+          >
+            Made slowly, used daily.
+          </h2>
+          <p className="mt-4 max-w-md text-base leading-7 text-ink/80 md:text-lg">
             Silken Knot began as a small studio ritual: slow formulas, honest scents, and objects meant to be used every day — not saved for later.
           </p>
-          <Link href="/about" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#61A2AF] px-6 py-3 text-sm text-white transition-colors duration-300 hover:bg-[#4F8A96]">
+          <Link
+            href="/about"
+            className="mt-8 inline-flex cursor-pointer items-center gap-2 rounded-full bg-mist px-6 py-3 text-[15px] font-medium text-white transition-colors duration-300 hover:bg-mist-hover"
+          >
             Read the story
             <ArrowRight size={16} />
           </Link>
@@ -339,13 +350,15 @@ export function Newsletter() {
       <div className="pointer-events-none absolute inset-0 bg-white/5 md:bg-gradient-to-r md:from-white/55 md:via-white/25 md:to-transparent" />
       <div className="site-container relative z-10 flex flex-col items-center gap-6 px-6 py-12 text-center md:gap-10 md:px-8 md:py-20">
         <div className="w-full">
-          <h2 className="text-[1.85rem] leading-tight text-[#2c2926] md:text-5xl">Join the Silken Knot list</h2>
-          <p className="mx-auto mt-3 max-w-md text-base leading-7 text-[#2c2926] md:text-[15px] md:text-[#4e4943]">
+          <h2 className="font-serif text-[clamp(2rem,4vw,3.15rem)] font-medium leading-tight tracking-[-0.02em] text-ink md:text-5xl">
+            Join the Silken Knot list
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-base leading-7 text-ink/80 md:text-lg">
             Be the first to know about new arrivals, care notes, and quiet launches.
           </p>
         </div>
         <form
-          className="flex w-full max-w-xl flex-col gap-4 md:flex-row md:items-center md:gap-0 md:rounded-full md:border md:border-black/15 md:bg-white md:p-1.5 md:focus-within:border-black/40 md:focus-within:shadow-[0_0_0_1px_rgba(0,0,0,0.28)]"
+          className="flex w-full max-w-xl flex-col gap-4 md:flex-row md:items-center md:gap-0 md:rounded-full md:border md:border-ink/15 md:bg-white md:p-1.5 md:focus-within:border-mist md:focus-within:shadow-[0_0_0_1px_rgba(95,164,173,0.45)]"
           onSubmit={(event) => {
             event.preventDefault();
             setDone(true);
@@ -354,7 +367,7 @@ export function Newsletter() {
           }}
         >
           <label htmlFor="notes-email" className="sr-only">Email address</label>
-          <div className="subscribe-field w-full rounded-full border border-black/15 bg-white md:contents">
+          <div className="subscribe-field w-full rounded-full border border-ink/15 bg-white md:contents">
             <input
               id="notes-email"
               type="email"
@@ -366,12 +379,12 @@ export function Newsletter() {
               }}
               placeholder="Your email address"
               autoComplete="email"
-              className="h-16 w-full min-w-0 flex-1 cursor-text bg-transparent px-5 text-base text-[#2c2926] outline-none focus:outline-none focus-visible:outline-none md:h-12 md:px-5 md:text-sm"
+              className="h-16 w-full min-w-0 flex-1 cursor-text bg-transparent px-5 text-base text-ink outline-none focus:outline-none focus-visible:outline-none md:h-12 md:px-5 md:text-sm"
             />
           </div>
           <button
             type="submit"
-            className={`h-14 w-full shrink-0 rounded-full px-6 text-base text-white transition-colors duration-300 md:h-12 md:w-auto md:text-sm ${done ? "bg-[#4F8A96]" : "bg-[#61A2AF] hover:bg-[#4F8A96]"}`}
+            className={`h-14 w-full shrink-0 rounded-full px-6 text-base font-medium text-white transition-colors duration-300 md:h-12 md:w-auto md:text-sm ${done ? "bg-mist-hover" : "bg-mist hover:bg-mist-hover"}`}
           >
             {done ? "Subscribed" : "Subscribe"}
           </button>

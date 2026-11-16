@@ -55,7 +55,8 @@ export function useDialog(open: boolean, onClose: () => void) {
       const node = ref.current?.querySelector<HTMLElement>(
         "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])",
       );
-      node?.focus();
+      // Mid-scroll opens (e.g. welcome scratch) must not jump the page.
+      node?.focus({ preventScroll: true });
     });
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onCloseRef.current();
@@ -75,13 +76,34 @@ export function useDialog(open: boolean, onClose: () => void) {
       }
     };
     document.addEventListener("keydown", onKey);
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+
+    // iOS: overflow:hidden alone during momentum scroll can freeze the page until refresh.
+    const body = document.body;
+    const scrollY = window.scrollY;
+    const prev = {
+      overflow: body.style.overflow,
+      position: body.style.position,
+      top: body.style.top,
+      width: body.style.width,
+      paddingRight: body.style.paddingRight,
+    };
+    const gutter = window.innerWidth - document.documentElement.clientWidth;
+    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.width = "100%";
+    if (gutter > 0) body.style.paddingRight = `${gutter}px`;
+
     return () => {
       window.cancelAnimationFrame(frame);
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = overflow;
-      if (previous && document.contains(previous)) previous.focus();
+      body.style.overflow = prev.overflow;
+      body.style.position = prev.position;
+      body.style.top = prev.top;
+      body.style.width = prev.width;
+      body.style.paddingRight = prev.paddingRight;
+      window.scrollTo(0, scrollY);
+      if (previous && document.contains(previous)) previous.focus({ preventScroll: true });
     };
   }, [open]);
 

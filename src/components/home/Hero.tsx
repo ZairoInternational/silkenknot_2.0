@@ -21,11 +21,11 @@ import { DEFAULT_HERO_CONTENT, DEFAULT_HERO_OFFER } from "@/lib/hero/content";
 import { formatPrice } from "@/lib/format";
 import { useShippingDisplay } from "@/lib/shipping/client";
 
-/* Silken Knot palette: Ivory #F8F6F1, Charcoal #292B2B, Brand teal #61A2AF,
-   Deep teal #3D7380, Midnight #1F3B40, Champagne #C7AD87. */
+/* Silken Knot palette: Ivory #F8F6F1, Charcoal #292B2B, Midnight #1F3B40, Champagne #C7AD87.
+   Hero teal accent: #5FA4AD */
 
 const FOCUS =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3D7380]";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5FA4AD]";
 const AUTOPLAY_SECONDS = 5.2;
 
 type ClassicSlide = {
@@ -219,12 +219,12 @@ function Coupon({ code }: { code: string }) {
     <button
       type="button"
       onClick={copy}
-      className={`mt-5 inline-flex items-center gap-3 rounded-full border border-dashed border-[#61A2AF] bg-paper/70 px-4 py-2 text-left transition-colors hover:bg-paper ${FOCUS}`}
+      className={`mt-5 inline-flex items-center gap-3 rounded-full border border-dashed border-[#5FA4AD] bg-paper/70 px-4 py-2 text-left transition-colors hover:bg-paper ${FOCUS}`}
       aria-label={`Copy code ${code}`}
     >
-      <span className="text-[11px] text-[#3D7380]">Code</span>
-      <span className="text-sm font-medium tracking-[0.12em] text-[#292B2B]">{code}</span>
-      <span className="inline-flex items-center gap-1 text-xs text-[#3D7380]" aria-live="polite">
+      <span className="text-[11px] font-semibold text-mist-ink">Code</span>
+      <span className="text-sm font-semibold tracking-[0.12em] text-ink">{code}</span>
+      <span className="inline-flex items-center gap-1 text-xs font-medium text-mist-ink" aria-live="polite">
         {copied ? <Check size={13} /> : <Copy size={13} />}
         {copied ? "Copied" : "Copy"}
       </span>
@@ -281,7 +281,7 @@ function CarouselControls({
               {active ? (
                 <motion.span
                   key={`${safeIndex}-${auto}`}
-                  className="absolute inset-0 origin-left rounded-full bg-[#61A2AF]"
+                  className="absolute inset-0 origin-left rounded-full bg-[#5FA4AD]"
                   initial={{ scaleX: auto ? 0 : 1 }}
                   animate={{ scaleX: 1 }}
                   transition={{
@@ -301,7 +301,7 @@ function CarouselControls({
         type="button"
         onClick={onTogglePlay}
         aria-label={playing ? "Pause slideshow" : "Play slideshow"}
-        className={`ml-1 inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone bg-paper/90 text-mute transition-colors hover:bg-paper ${FOCUS}`}
+        className={`ml-1 inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone bg-paper/90 text-[#5FA4AD] transition-colors hover:bg-paper ${FOCUS}`}
       >
         {playing ? <Pause size={13} /> : <Play size={13} />}
       </button>
@@ -396,7 +396,7 @@ export function Hero({
 
   useEffect(() => {
     if (preview) return;
-    // Campaign and classic hero both sit on Ivory; keep nav links charcoal.
+    // Campaign and classic hero both sit on light paper; keep nav links charcoal.
     setHeroNav("ink");
   }, [preview, isCampaign]);
 
@@ -455,7 +455,16 @@ export function Hero({
               exit={{ opacity: 0 }}
               transition={{ duration: reduced ? 0 : 0.45 }}
             >
-              <div className="relative z-10 mx-auto grid h-full max-w-[1440px] grid-cols-1 gap-8 px-5 pb-24 pt-[calc(var(--nav-h)+1.25rem)] md:grid-cols-[1.05fr_0.95fr] md:gap-10 md:px-12 md:pb-20 md:pt-[var(--nav-h)]">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "radial-gradient(55% 60% at 88% 42%, rgba(95,164,173,0.18), transparent 70%), radial-gradient(40% 45% at 0% 100%, rgba(199,173,135,0.16), transparent 70%)",
+                }}
+              />
+
+              <div className="relative z-10 mx-auto grid h-full max-w-[1440px] grid-cols-1 gap-8 px-5 pb-8 pt-[calc(var(--nav-h)+1.25rem)] md:grid-cols-[1.05fr_0.95fr] md:gap-10 md:px-12 md:pb-20 md:pt-[var(--nav-h)]">
                 <div className="order-2 flex flex-col justify-center md:order-1">
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
@@ -468,7 +477,7 @@ export function Hero({
                     >
                       <motion.p
                         variants={rise}
-                        className="inline-flex items-center gap-2 rounded-full border border-line bg-paper/60 px-3.5 py-1.5 text-[12px] font-medium text-mute"
+                        className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3.5 py-1.5 text-[12px] font-semibold text-mist-ink"
                       >
                         <span className="h-1.5 w-1.5 rounded-full bg-mist" />
                         {classic.pill}
@@ -479,14 +488,14 @@ export function Hero({
                           <motion.span
                             key={line}
                             variants={rise}
-                            className={`block ${lineIndex === classic.title.length - 1 ? "italic text-mute" : ""}`}
+                            className={`block ${lineIndex === classic.title.length - 1 ? "italic text-mist-ink" : ""}`}
                           >
                             {line}
                           </motion.span>
                         ))}
                       </h1>
 
-                      <motion.p variants={rise} className="mt-5 max-w-md text-base leading-relaxed text-ink/70 md:text-lg">
+                      <motion.p variants={rise} className="mt-5 max-w-md text-base leading-relaxed text-ink/80 md:text-lg">
                         {classic.note}
                       </motion.p>
 
@@ -509,7 +518,7 @@ export function Hero({
                         {classic.secondaryHref ? (
                           <Link
                             href={classic.secondaryHref}
-                            className={`inline-flex items-center gap-2 text-sm text-ink underline decoration-mist decoration-2 underline-offset-[6px] ${FOCUS}`}
+                            className={`inline-flex items-center gap-2 text-sm text-ink underline decoration-[#5FA4AD] decoration-2 underline-offset-[6px] ${FOCUS}`}
                           >
                             {classic.secondaryCta}
                             <ArrowRight size={14} />
@@ -519,19 +528,19 @@ export function Hero({
                     </motion.div>
                   </AnimatePresence>
 
-                  <ul className="mt-7 hidden flex-wrap gap-x-6 gap-y-2 text-[13px] text-ink/70 md:flex">
+                  <ul className="mt-7 hidden flex-wrap gap-x-6 gap-y-2 text-[13px] font-medium text-ink/80 md:flex">
                     <li className="inline-flex items-center gap-2">
-                      <Truck size={16} strokeWidth={1.5} className="text-mute" /> Free shipping over {formatPrice(shipping.freeShippingAt)}
+                      <Truck size={16} strokeWidth={1.5} className="text-mist-ink" /> Free shipping over {formatPrice(shipping.freeShippingAt)}
                     </li>
                     <li className="inline-flex items-center gap-2">
-                      <ShieldCheck size={16} strokeWidth={1.5} className="text-mute" /> Cancel before dispatch
+                      <ShieldCheck size={16} strokeWidth={1.5} className="text-mist-ink" /> Cancel before dispatch
                     </li>
                   </ul>
                 </div>
 
                 <div className="relative order-1 h-[50svh] min-h-[340px] w-full md:order-2 md:my-auto md:h-full md:max-h-[620px] md:max-w-[460px] md:justify-self-end">
                   <motion.div
-                    className="absolute inset-0 overflow-hidden rounded-b-[28px] rounded-t-[999px] border border-mist/40 bg-sand"
+                    className="absolute inset-0 overflow-hidden rounded-b-[28px] rounded-t-[999px] border border-[#5FA4AD]/40 bg-sand"
                     style={{ touchAction: "pan-y" }}
                     initial={
                       reduced
@@ -601,7 +610,7 @@ export function Hero({
                       >
                         <span className="flex items-start justify-between gap-3">
                           <span>
-                            <span className="block text-[11px] text-mute">{classic.cardTag}</span>
+                            <span className="block text-[11px] font-semibold text-mist-ink">{classic.cardTag}</span>
                             <span className="mt-0.5 block font-serif text-lg leading-tight text-ink">{classic.cardName}</span>
                           </span>
                           <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-paper">
@@ -612,7 +621,7 @@ export function Hero({
                           {classic.chips.map((chip) => (
                             <span
                               key={chip}
-                              className="rounded-full border border-line bg-paper px-2.5 py-0.5 text-[11px] text-ink/70"
+                              className="rounded-full border border-line bg-paper px-2.5 py-0.5 text-[11px] font-medium text-ink/80"
                             >
                               {chip}
                             </span>
@@ -627,25 +636,33 @@ export function Hero({
           ) : null}
         </AnimatePresence>
 
+        {/* Desktop: controls float over the hero. Mobile: kept out of this layer so they
+            do not sit on the product card or the care-names strip below. */}
         {items.length > 0 ? (
-          <div className="pointer-events-none absolute inset-x-0 bottom-5 z-40 flex justify-center md:bottom-7">
+          <div className="pointer-events-none absolute inset-x-0 bottom-7 z-40 hidden justify-center md:flex">
             <div className="pointer-events-auto">{controls}</div>
           </div>
         ) : null}
       </section>
+
+      {items.length > 0 ? (
+        <div className="flex shrink-0 items-center justify-center gap-3 bg-paper px-5 py-3 md:hidden">
+          {controls}
+        </div>
+      ) : null}
 
       <section className="shrink-0 overflow-hidden bg-[#100E09] py-4" aria-label="Care names">
         <div className="silk-marquee flex w-max items-center">
           {[0, 1].map((copy) => (
             <p
               key={copy}
-              className="flex items-center text-[clamp(2.6rem,6vw,4.5rem)] font-medium leading-none tracking-[-0.04em] text-mist"
+              className="flex items-center font-serif text-[clamp(2.4rem,5.5vw,4.1rem)] font-medium leading-none tracking-[-0.03em] text-[#d4b896]"
               aria-hidden={copy === 1}
             >
               {marquee.map((word) => (
                 <span key={word} className="flex items-center">
                   <span className="px-6">{word}</span>
-                  <span className="text-[0.55em] text-champagne">✱</span>
+                  <span className="text-[0.55em] text-[#5FA4AD]">✱</span>
                 </span>
               ))}
             </p>

@@ -26,31 +26,34 @@ export function BestsellerScroll() {
   const shopHref = bestsellers.length ? "/shop?bestseller=1" : "/shop";
 
   return (
-    <section aria-labelledby="bestsellers-heading" className="bg-[#ffffff] px-4 py-16 text-[#2c2926] sm:px-6 sm:py-20 lg:px-10 lg:py-24">
+    <section
+      aria-labelledby="bestsellers-heading"
+      className="bg-sand px-4 py-16 text-ink sm:px-6 sm:py-20 lg:px-10 lg:py-24"
+    >
       <div className="mx-auto max-w-[1440px]">
         <Reveal>
           <div className="mb-9 flex flex-col gap-6 sm:mb-11 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl">
-              <p className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#8a7350]">
-                <span className="h-px w-8 bg-[#61A2AF]" aria-hidden />
+              <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-mist-ink">
+                <span className="h-px w-8 bg-mist" aria-hidden />
                 The Silken Knot edit
               </p>
               <h2
                 id="bestsellers-heading"
-                className="mt-3 font-serif text-[clamp(2.1rem,5vw,3.4rem)] font-medium leading-[0.98] tracking-[-0.03em] text-[#292d25]"
+                className="mt-3 font-serif text-[clamp(2.2rem,5vw,3.5rem)] font-medium leading-[0.98] tracking-[-0.03em] text-ink"
               >
                 Our Bestsellers
               </h2>
-              <p className="mt-3 max-w-md text-sm leading-relaxed text-[#6f675d] md:text-base">
+              <p className="mt-3 max-w-md text-base leading-relaxed text-ink/80 md:text-lg">
                 Body care and everyday rituals worth making room for.
               </p>
             </div>
             <Link
               href={shopHref}
-              className="group inline-flex w-fit shrink-0 items-center gap-3 rounded-full bg-[#61A2AF] py-1.5 pl-6 pr-1.5 text-sm font-medium text-white shadow-[0_10px_28px_rgba(97,162,175,0.28)] transition-colors duration-300 hover:bg-[#4F8A96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]"
+              className="group inline-flex w-fit shrink-0 cursor-pointer items-center gap-3 rounded-full bg-mist py-1.5 pl-6 pr-1.5 text-sm font-medium text-white shadow-[0_10px_28px_rgba(95,164,173,0.3)] transition-colors duration-300 hover:bg-mist-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mist"
             >
               Explore all
-              <span className="inline-flex size-9 items-center justify-center rounded-full bg-white text-[#1c1b19] transition-transform duration-300 ease-out group-hover:rotate-45 motion-reduce:transition-none motion-reduce:group-hover:rotate-0">
+              <span className="inline-flex size-9 items-center justify-center rounded-full bg-white text-ink transition-transform duration-300 ease-out group-hover:rotate-45 motion-reduce:transition-none motion-reduce:group-hover:rotate-0">
                 <ArrowRight size={16} />
               </span>
             </Link>
@@ -95,7 +98,7 @@ function BestsellerCard({ product, rank }: { product: Product; rank: number }) {
   }
 
   return (
-    <article className="group flex h-full min-w-0 flex-col md:rounded-[1.35rem] md:border md:border-[#e8e8e6]/90 md:bg-[#ffffff] md:p-2 md:shadow-[0_2px_10px_rgba(44,41,38,0.05)] md:transition-[box-shadow,border-color] md:duration-300 md:ease-out md:hover:border-[#61A2AF]/55 md:hover:shadow-[0_14px_34px_rgba(44,41,38,0.12)]">
+    <article className="group flex h-full min-w-0 flex-col md:rounded-[1.35rem] md:border md:border-line md:bg-paper md:p-2 md:transition-[box-shadow,border-color] md:duration-300 md:ease-out md:hover:border-mist/60 md:hover:shadow-[0_14px_34px_rgba(17,17,17,0.1)]">
       <div className="relative">
         <ListingCardMedia
           href={`/products/${product.slug}`}
@@ -108,18 +111,18 @@ function BestsellerCard({ product, rank }: { product: Product; rank: number }) {
           wishlist={<WishlistButton productId={product.id} name={product.name} />}
           badge={
             product.bestseller ? (
-              <span className="bg-[#ffffff]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm md:rounded-full md:border md:border-[#61A2AF]/35 md:px-2.5 md:shadow-[0_2px_8px_rgba(44,41,38,0.06)]">
+              <span className="bg-paper/95 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-mist-ink backdrop-blur-sm md:rounded-full md:border md:border-mist/40 md:px-2.5">
                 Bestseller
               </span>
             ) : product.newArrival ? (
-              <span className="bg-[#ffffff]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm md:rounded-full md:border md:border-[#61A2AF]/35 md:px-2.5 md:shadow-[0_2px_8px_rgba(44,41,38,0.06)]">
+              <span className="bg-paper/95 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-mist-ink backdrop-blur-sm md:rounded-full md:border md:border-mist/40 md:px-2.5">
                 New
               </span>
             ) : null
           }
         />
         <span
-          className="pointer-events-none absolute bottom-3 left-3 z-10 hidden min-w-8 items-center justify-center rounded-full border border-white/40 bg-[#2c2926]/55 px-2 py-1 font-serif text-[11px] tabular-nums tracking-wide text-white backdrop-blur-md md:inline-flex"
+          className="pointer-events-none absolute bottom-3 left-3 z-10 hidden min-w-8 items-center justify-center rounded-full border border-white/40 bg-ink/70 px-2 py-1 font-serif text-[11px] tabular-nums tracking-wide text-white backdrop-blur-md md:inline-flex"
           aria-hidden
         >
           {String(rank).padStart(2, "0")}
@@ -129,14 +132,14 @@ function BestsellerCard({ product, rank }: { product: Product; rank: number }) {
       {/* Mobile: original flat card details. Desktop: Soft UI padded block. */}
       <div className="pt-3 md:flex md:flex-1 md:flex-col md:px-3 md:pb-2.5 md:pt-3.5">
         {meta ? (
-          <p className="mb-1 line-clamp-1 text-[12px] capitalize leading-snug text-[#6f675d] md:text-sm md:text-[#8a8178]">
+          <p className="mb-1 line-clamp-1 text-[13px] capitalize leading-snug text-mute md:text-sm">
             {meta}
           </p>
         ) : null}
-        <h3 className="truncate text-[15px] font-medium leading-snug text-[#2c2926] md:line-clamp-2 md:whitespace-normal md:text-lg">
+        <h3 className="truncate text-base font-medium leading-snug text-ink md:line-clamp-2 md:whitespace-normal md:text-lg">
           <Link
             href={`/products/${product.slug}`}
-            className="transition-colors duration-200 hover:text-[#4F8A96] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#61A2AF]"
+            className="transition-colors duration-200 hover:text-mist-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mist"
           >
             {product.name}
           </Link>

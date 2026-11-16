@@ -689,7 +689,7 @@ export function ShopCatalog() {
 function ProductCardSkeleton() {
   return (
     <article
-      className="flex h-[calc((100dvh-0.5rem)/1.55)] min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-[#efefed] md:h-auto md:overflow-visible md:rounded-none md:bg-transparent md:ring-0"
+      className="flex h-[calc((100dvh-0.5rem)/1.5)] min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-[#efefed] md:h-auto md:overflow-visible md:rounded-none md:bg-transparent md:ring-0"
       aria-hidden="true"
     >
       <div className="min-h-0 flex-1 overflow-hidden bg-[#efefed] md:aspect-[3/4] md:flex-none md:rounded-2xl">
@@ -730,7 +730,7 @@ function ProductCard({ product }: { product: SearchProduct }) {
   };
 
   return (
-    <article className="group flex h-[calc((100dvh-0.5rem)/1.55)] min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-[#efefed] md:h-auto md:overflow-visible md:rounded-none md:bg-transparent md:ring-0">
+    <article className="group flex h-[calc((100dvh-0.5rem)/1.5)] min-w-0 flex-col overflow-hidden rounded-xl bg-white ring-1 ring-[#efefed] md:h-auto md:overflow-visible md:rounded-none md:bg-transparent md:ring-0">
       <div className="relative min-h-0 flex-1 md:flex-none">
         <ListingCardMedia
           href={`/products/${product.slug}`}

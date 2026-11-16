@@ -84,15 +84,6 @@ export function WelcomeScratchOffer() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    if (phase === "closed") return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [phase]);
-
   const paintCover = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -226,7 +217,7 @@ export function WelcomeScratchOffer() {
           onClick={dismiss}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          exit={{ opacity: 0, pointerEvents: "none" }}
           transition={{ duration: 0.28, ease }}
         />
       ) : null}

@@ -90,20 +90,20 @@ export function MobileAccountBar() {
   const items = itemsFor(pathname, store.cartOpen, store.accountOpen);
 
   return (
-    <nav aria-label="Mobile" className={`fixed inset-x-0 bottom-0 z-40 border-t border-[#e8e8e6] bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur transition-transform duration-200 md:hidden ${shown ? "translate-y-0" : "translate-y-full"}`}>
+    <nav aria-label="Mobile" className={`fixed inset-x-0 bottom-0 z-40 border-t border-line bg-paper/98 pb-[env(safe-area-inset-bottom)] backdrop-blur transition-transform duration-200 md:hidden ${shown ? "translate-y-0" : "translate-y-full"}`}>
       <div className="grid grid-cols-4">
         {items.map((item) => {
           const Icon = item.icon;
-          const className = `flex flex-col items-center gap-1 px-1 py-2.5 text-[10px] ${item.active ? "font-medium text-[#b08958]" : "text-[#6f675d]"}`;
+          const className = `flex cursor-pointer flex-col items-center gap-1 px-1 py-2.5 text-[11px] ${item.active ? "font-semibold text-mist-ink" : "font-medium text-ink/75"}`;
           const icon = (
             <span className="relative grid size-5 place-items-center">
-              <Icon size={18} strokeWidth={1.7} />
+              <Icon size={18} strokeWidth={item.active ? 2 : 1.7} />
               {item.key === "bag" && itemCount(store.cart) > 0 ? (
                 <span className="absolute -right-2 -top-1.5 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-[#d21f2b] px-0.5 text-[8px] leading-none text-white">{itemCount(store.cart)}</span>
               ) : null}
             </span>
           );
-          const label = <span className="text-[10px] font-normal leading-none">{item.label}</span>;
+          const label = <span className="text-[11px] leading-none">{item.label}</span>;
           if (!item.href) {
             return (
               <button

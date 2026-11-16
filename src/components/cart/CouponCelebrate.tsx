@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Sparkles } from "lucide-react";
-import { onBagCelebrate, takePendingBagCelebrate } from "@/lib/bagCelebrate";
-import { useStore } from "@/lib/store";
+import { onBagCelebrate } from "@/lib/bagCelebrate";
 
 const PARTICLES = Array.from({ length: 18 }, (_, index) => {
   const angle = (index / 18) * Math.PI * 2;
@@ -18,17 +18,22 @@ const PARTICLES = Array.from({ length: 18 }, (_, index) => {
   };
 });
 
-/** Full-viewport green achievement when a coupon is applied — separate from free-delivery bar. */
+function onCheckout(pathname: string | null) {
+  return Boolean(pathname?.startsWith("/checkout"));
+}
+
+/** Full-viewport green achievement — only when a coupon is applied/updated on checkout. */
 export function CouponCelebrate() {
+  const pathname = usePathname();
   const reduceMotion = useReducedMotion();
-  const store = useStore();
-  const couponCode = store.couponCode;
   const [open, setOpen] = useState(false);
   const [ready, setReady] = useState(false);
   const timer = useRef<number | null>(null);
-  const seenCoupon = useRef<string | null | undefined>(undefined);
+  const pathRef = useRef(pathname);
+  pathRef.current = pathname;
 
   function play() {
+    if (!onCheckout(pathRef.current)) return;
     if (timer.current) window.clearTimeout(timer.current);
     setOpen(true);
     timer.current = window.setTimeout(() => setOpen(false), reduceMotion ? 1200 : 2600);
@@ -36,27 +41,12 @@ export function CouponCelebrate() {
 
   useEffect(() => {
     setReady(true);
-    const pending = takePendingBagCelebrate();
-    if (pending === "coupon") play();
     return onBagCelebrate((reason) => {
       if (reason !== "coupon") return;
-      takePendingBagCelebrate();
       play();
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- subscribe once; play reads latest reduceMotion via closure refresh on dep
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- subscribe once; path/reduceMotion read via refs/closure on fire
   }, [reduceMotion]);
-
-  useEffect(() => {
-    if (seenCoupon.current === undefined) {
-      seenCoupon.current = couponCode;
-      return;
-    }
-    if (couponCode && couponCode !== seenCoupon.current) {
-      play();
-    }
-    seenCoupon.current = couponCode;
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to coupon identity
-  }, [couponCode]);
 
   useEffect(() => () => {
     if (timer.current) window.clearTimeout(timer.current);

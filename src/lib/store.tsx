@@ -503,8 +503,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (couponDiscount(current.cart, coupon) <= 0) {
       return { ok: false, message: "This offer doesn’t apply to your bag." };
     }
+    const changed = current.couponCode !== coupon.code;
     patch({ couponCode: coupon.code });
-    queueBagCelebrate("coupon");
+    // Celebrate only on a real apply/switch — not bag hydrate or same-code re-apply.
+    if (changed) queueBagCelebrate("coupon");
     return { ok: true, message: coupon.label };
   }, [patch]);
 

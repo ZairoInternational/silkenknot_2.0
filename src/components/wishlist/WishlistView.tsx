@@ -25,30 +25,7 @@ import { SHOW_STORE_REVIEWS } from "@/lib/storefront-reviews";
 
 export function WishlistView() {
   const store = useStore();
-  const shipping = useShippingDisplay();
   const [sort, setSort] = useState("recent");
-  const notes = [
-    {
-      icon: Leaf,
-      title: "Natural Ingredients",
-      copy: "Pure and gentle on your skin.",
-    },
-    {
-      icon: Heart,
-      title: "Handmade with Love",
-      copy: "Crafted with care.",
-    },
-    {
-      icon: Truck,
-      title: "Free Shipping",
-      copy: `On orders over ${formatPrice(shipping.freeShippingAt)}.`,
-    },
-    {
-      icon: ShieldCheck,
-      title: "Secure Checkout",
-      copy: "Shop with confidence.",
-    },
-  ];
 
   const catalog = store.products.length ? store.products : seedProducts;
 
@@ -477,6 +454,30 @@ function EmptyWishlist() {
 }
 
 function WishlistBenefits() {
+  const shipping = useShippingDisplay();
+  const notes = [
+    {
+      icon: Leaf,
+      title: "Natural Ingredients",
+      copy: "Pure and gentle on your skin.",
+    },
+    {
+      icon: Heart,
+      title: "Handmade with Love",
+      copy: "Crafted with care.",
+    },
+    {
+      icon: Truck,
+      title: "Free Shipping",
+      copy: `On orders over ${formatPrice(shipping.freeShippingAt)}.`,
+    },
+    {
+      icon: ShieldCheck,
+      title: "Secure Checkout",
+      copy: "Shop with confidence.",
+    },
+  ];
+
   return (
     <section className="border-y border-[#e8e8e6] bg-[#f7f7f6]">
       <div className="site-container grid grid-cols-2 px-5 py-6 sm:px-8 sm:py-9 lg:grid-cols-4 lg:px-14">

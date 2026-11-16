@@ -3,6 +3,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import NumberFlow from "@number-flow/react";
 import { ChevronDown, Info, Percent } from "lucide-react";
 import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
 import { ShippingFee } from "@/components/checkout/DeliveryChargeNote";
@@ -35,6 +36,30 @@ import { useStore } from "@/lib/store";
 import type { CartItem } from "@/lib/types";
 
 type BillDiscount = { id: string; label: string; amount: number };
+
+const TOTAL_FORMAT = {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0,
+} as const;
+
+const TOTAL_SPIN = { duration: 280, easing: "ease-out" } as const;
+
+/** Digit-scroll checkout total (NumberFlow) when bag / fees / coupon change. */
+function AnimatedTotal({ value }: { value: number }) {
+  return (
+    <strong>
+      <NumberFlow
+        value={Math.round(value)}
+        locales="en-IN"
+        format={TOTAL_FORMAT}
+        transformTiming={TOTAL_SPIN}
+        spinTiming={TOTAL_SPIN}
+        opacityTiming={{ duration: 120, easing: "ease-out" }}
+      />
+    </strong>
+  );
+}
 
 function lineOffer(item: CartItem) {
   const markedUnit = item.compareAtPrice && item.compareAtPrice > item.price ? item.compareAtPrice : item.price;
@@ -620,7 +645,7 @@ export default function OrderSummary() {
         <BillDiscounts lines={discountLines} />
         <div className="summaryTotal">
           <span>Total amount</span>
-          <strong>{formatPrice(total)}</strong>
+          <AnimatedTotal value={total} />
         </div>
         {items.length && saved > 0 ? (
           <p className="billSaved">

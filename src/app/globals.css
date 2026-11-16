@@ -2,40 +2,74 @@
 
 :root {
   --nav-h: 4rem;
-  /* Silken Knot palette — White canvas, Charcoal type, Brand teal accent */
+  /* Silken Knot palette — near-black / white / teal #5FA4AD
+     mute = readable secondary gray (never brand teal — contrast) */
   --paper: #ffffff;
-  --ink: #292b2b;
-  --mute: #3d7380;
-  --line: #e5dfd6;
+  --ink: #111111;
+  --mute: #525252;
+  --line: #e0e0e0;
   --announce-h: 26px;
   color-scheme: light;
 }
 
 @theme {
-  /* Backgrounds: White page + Sand secondary surfaces */
+  /* Backgrounds: white + cool gray secondary */
   --color-paper: #ffffff;
   --color-cream: #ffffff;
-  --color-sand: #f0ebe3;
-  --color-stone: #e5dfd6;
-  /* Structure / text (~30%): Charcoal, Midnight, Deep teal */
-  --color-ink: #292b2b;
-  --color-mute: #3d7380;
-  --color-line: #e5dfd6;
-  --color-midnight: #1f3b40;
-  --color-olive: #3d7380;
-  /* Accents (~10%): Brand teal, Champagne, Mist cool, Blush, Berry, Sage */
-  --color-mist: #61a2af;
-  --color-mist-hover: #3d7380;
-  --color-mist-ink: #3d7380;
-  --color-cocoa: #61a2af;
-  --color-cocoa-hover: #3d7380;
+  --color-sand: #f4f7f8;
+  --color-stone: #e0e0e0;
+  /* Structure / text: near-black + readable gray */
+  --color-ink: #111111;
+  --color-mute: #525252;
+  --color-line: #e0e0e0;
+  --color-midnight: #0a0a0a;
+  --color-olive: #3d7a82;
+  /* Accents: brand teal fill + darker teal for small text on light */
+  --color-mist: #5fa4ad;
+  --color-mist-hover: #4a8a92;
+  --color-mist-ink: #2f6f78;
+  --color-cocoa: #5fa4ad;
+  --color-cocoa-hover: #4a8a92;
   --color-champagne: #c7ad87;
-  --color-mist-cool: #e3eef0;
+  --color-mist-cool: #e8f4f5;
   --color-blush: #e4c3b8;
   --color-berry: #a4414e;
   --color-sage: #6f8f72;
   --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  /* Display serif — Playfair from layout `--font-playfair` */
+  --font-serif: var(--font-playfair), ui-serif, Georgia, "Times New Roman", serif;
+  --animate-marquee: marquee var(--duration, 40s) linear infinite;
+  --animate-marquee-vertical: marquee-vertical var(--duration, 40s) linear infinite;
+}
+
+/* Force theme tokens after Tailwind layer (HMR can leave stale mappings). */
+@layer theme {
+  :root {
+    --font-serif: var(--font-playfair), ui-serif, Georgia, "Times New Roman", serif;
+    --color-mute: #525252;
+    --color-mist: #5fa4ad;
+    --color-mist-ink: #2f6f78;
+    --color-mist-hover: #4a8a92;
+    --color-ink: #111111;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--gap, 1rem)));
+  }
+}
+
+@keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(-100% - var(--gap, 1rem)));
+  }
 }
 
 @media (max-width: 767px) {
@@ -65,12 +99,12 @@ body {
 }
 
 ::selection {
-  background: rgba(97, 162, 175, 0.22);
-  color: #292b2b;
+  background: rgba(95, 164, 173, 0.28);
+  color: #111111;
 }
 
 :focus-visible {
-  outline: 2px solid #3d7380;
+  outline: 2px solid #5fa4ad;
   outline-offset: 3px;
 }
 
@@ -241,6 +275,11 @@ select:focus-visible {
   .silk-marquee {
     animation: none;
   }
+
+  .animate-marquee,
+  .animate-marquee-vertical {
+    animation: none !important;
+  }
 }
 
 .pending-cover {
@@ -316,11 +355,11 @@ select:focus-visible {
 @keyframes support-chat-pulse {
   0%,
   100% {
-    box-shadow: 0 10px 28px rgba(97, 162, 175, 0.35);
+    box-shadow: 0 10px 28px rgba(95, 164, 173, 0.35);
     transform: scale(1);
   }
   50% {
-    box-shadow: 0 12px 32px rgba(97, 162, 175, 0.48), 0 0 0 6px rgba(97, 162, 175, 0.14);
+    box-shadow: 0 12px 32px rgba(95, 164, 173, 0.48), 0 0 0 6px rgba(95, 164, 173, 0.14);
     transform: scale(1.03);
   }
 }

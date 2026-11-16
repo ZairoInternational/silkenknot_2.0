@@ -22,6 +22,13 @@ const outfit = localFont({
   display: "swap",
 });
 
+const playfair = localFont({
+  src: "./fonts/playfair-display-latin-wght-normal.woff2",
+  weight: "400 700",
+  variable: "--font-playfair",
+  display: "swap",
+});
+
 export async function generateMetadata(): Promise<Metadata> {
   const brand = await getBrandSettings();
   return buildRootMetadata({ iconUrl: resolveBrandIconUrl(brand.iconUrl) });
@@ -45,7 +52,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   });
 
   return (
-    <html lang="en-IN" className={`${outfit.variable} h-full antialiased`}>
+    <html lang="en-IN" className={`${outfit.variable} ${playfair.variable} h-full antialiased`}>
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />

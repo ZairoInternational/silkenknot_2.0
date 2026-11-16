@@ -38,9 +38,9 @@ export default async function HomePage() {
       <Hero content={hero} campaignBanners={campaigns.hero} />
       <PromotionalStrip banners={campaigns.strip} />
       <CategoryStrip />
+      <BestsellerScroll />
       <NewLaunches />
       <CategorySection />
-      <BestsellerScroll />
       <WhySilkKnot />
       <ClaimMarquee />
       <Reviews />

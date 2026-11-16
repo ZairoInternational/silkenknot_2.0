@@ -229,12 +229,11 @@ export function SiteHeader() {
   const heroNav = useHeroNav();
   const onHero = home && !bar.solid;
   const tone = onHero && heroNav === "white" ? "text-white" : "text-ink";
-  // Solid bar keeps the usual ink chips. On the home transparent hero only,
-  // right-side icons stay on that same ink chip instead of flipping to white.
+  // Classic full-bleed hero uses a dark wash — icons flip to light. Campaigns keep ink.
   const iconButton =
-    home || !onHero
-      ? "bg-black/10 text-ink hover:bg-black/18"
-      : "bg-white/15 text-white hover:bg-white/25";
+    onHero && heroNav === "white"
+      ? "bg-white/15 text-white hover:bg-white/25"
+      : "bg-black/10 text-ink hover:bg-black/18";
   const currentNote = notes[note] || notes[0];
   const NoteIcon = currentNote?.icon || Sparkles;
 

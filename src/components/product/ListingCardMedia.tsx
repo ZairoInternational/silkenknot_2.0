@@ -1,21 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { Media } from "@/components/ui";
 import { SHOW_STORE_REVIEWS } from "@/lib/storefront-reviews";
 
 const wipeEase = "duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]";
 
 const addDesktop =
-  "absolute inset-x-3 bottom-3 z-20 hidden items-center justify-center gap-2 rounded-full bg-ink py-2.5 text-[11px] font-medium uppercase tracking-[0.14em] text-paper opacity-0 shadow-[0_10px_22px_-12px_rgba(41,43,43,0.45)] transition-[opacity,filter,background-color] duration-300 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-midnight disabled:cursor-not-allowed disabled:opacity-40 md:flex";
+  "absolute inset-x-3 bottom-3 z-20 hidden items-center justify-center gap-2 rounded-full bg-mist py-2.5 text-[11px] font-medium uppercase tracking-[0.14em] text-paper opacity-0 shadow-[0_10px_22px_-12px_rgba(41,43,43,0.45)] transition-[opacity,filter,background-color] duration-300 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-midnight disabled:cursor-not-allowed disabled:opacity-40 md:flex";
 
 const inCartDesktop =
-  "absolute inset-x-3 bottom-3 z-20 hidden items-center justify-center gap-2 rounded-full border border-ink bg-paper/95 py-2.5 text-[11px] font-medium uppercase tracking-[0.14em] text-ink opacity-0 shadow-sm backdrop-blur-sm transition-[opacity,background-color,border-color] duration-300 group-hover:opacity-100 group-focus-within:opacity-100 hover:border-mist hover:bg-mist md:flex";
-
-const navBtn =
-  "absolute top-1/2 z-10 grid size-5 -translate-y-1/2 place-items-center rounded-full bg-paper/30 text-ink/65 backdrop-blur-[1px] transition active:scale-95 md:hidden";
+  "absolute inset-x-3 bottom-3 z-20 hidden items-center justify-center gap-2 rounded-full border border-mist bg-mist py-2.5 text-[11px] font-medium uppercase tracking-[0.14em] text-paper opacity-0 shadow-sm backdrop-blur-sm transition-[opacity,background-color,border-color] duration-300 group-hover:opacity-100 group-focus-within:opacity-100 hover:border-midnight hover:bg-midnight md:flex";
 
 const addMobile =
   "mt-3 flex w-full items-center justify-center gap-1.5 rounded-full bg-ink px-3 py-2.5 text-[11px] font-medium text-paper shadow-[0_10px_22px_-12px_rgba(41,43,43,0.45)] md:hidden hover:bg-midnight disabled:cursor-not-allowed disabled:opacity-50";
@@ -32,7 +29,7 @@ const inCartMobileCompact =
 type ListingCardMediaProps = {
   href: string;
   name: string;
-  /** Product gallery — first is primary; second+ used for wipe / mobile arrows. */
+  /** Product gallery — first is primary; second+ used for wipe / mobile swipe. */
   images: string[];
   sizes: string;
   soldOut?: boolean;
@@ -45,7 +42,7 @@ type ListingCardMediaProps = {
   fit?: "cover" | "contain";
 };
 
-/** Desktop: slow hover wipe. Mobile: faint < > on image; bag CTA is rendered by CardMobileAdd after details. */
+/** Desktop: slow hover wipe. Mobile: swipe gallery with bottom dots. */
 export function ListingCardMedia({
   href,
   name,
@@ -67,19 +64,31 @@ export function ListingCardMedia({
   const desktopClass = inCart && !soldOut ? inCartDesktop : addDesktop;
 
   const [active, setActive] = useState(0);
-  const current = gallery[active] || primary;
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const mobileFit = fit === "contain" ? "object-contain p-2" : "object-cover";
 
-  const prev = (event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setActive((index) => (index - 1 + gallery.length) % gallery.length);
-  };
+  const syncActive = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el || !el.clientWidth) return;
+    const next = Math.round(el.scrollLeft / el.clientWidth);
+    setActive(Math.min(Math.max(next, 0), Math.max(gallery.length - 1, 0)));
+  }, [gallery.length]);
 
-  const next = (event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setActive((index) => (index + 1) % gallery.length);
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const onScroll = () => syncActive();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [syncActive, multi]);
+
+  const goTo = (index: number, event?: React.MouseEvent) => {
+    event?.preventDefault();
+    event?.stopPropagation();
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollTo({ left: index * el.clientWidth, behavior: "smooth" });
+    setActive(index);
   };
 
   return (
@@ -101,24 +110,55 @@ export function ListingCardMedia({
         ) : null}
       </Link>
 
-      {/* Mobile: single image + faint arrow controls */}
+      {/* Mobile: swipeable gallery + bottom dots */}
       <div className="absolute inset-0 md:hidden">
-        <Link href={href} className="absolute inset-0" aria-label={name}>
-          {current ? (
-            <Media src={current} alt={name} sizes={sizes} className={mobileFit} />
-          ) : (
-            <span className="grid h-full place-items-center px-4 text-center text-sm text-[#6f675d]">{name}</span>
-          )}
-        </Link>
         {multi ? (
-          <>
-            <button type="button" onClick={prev} className={`${navBtn} left-1`} aria-label="Previous image">
-              <ChevronLeft size={13} strokeWidth={2} />
-            </button>
-            <button type="button" onClick={next} className={`${navBtn} right-1`} aria-label="Next image">
-              <ChevronRight size={13} strokeWidth={2} />
-            </button>
-          </>
+          <div
+            ref={scrollerRef}
+            className="flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain touch-pan-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {gallery.map((src, index) => (
+              <Link
+                key={`${src}-${index}`}
+                href={href}
+                className="relative h-full w-full shrink-0 snap-center"
+                aria-label={index === 0 ? name : `${name}, image ${index + 1}`}
+                tabIndex={index === active ? 0 : -1}
+              >
+                <Media src={src} alt={name} sizes={sizes} className={mobileFit} />
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <Link href={href} className="absolute inset-0" aria-label={name}>
+            {primary ? (
+              <Media src={primary} alt={name} sizes={sizes} className={mobileFit} />
+            ) : (
+              <span className="grid h-full place-items-center px-4 text-center text-sm text-[#6f675d]">{name}</span>
+            )}
+          </Link>
+        )}
+
+        {multi ? (
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-2.5 z-10 flex items-center justify-center gap-1.5"
+            role="tablist"
+            aria-label="Product images"
+          >
+            {gallery.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                role="tab"
+                aria-label={`Show image ${index + 1}`}
+                aria-selected={index === active}
+                onClick={(event) => goTo(index, event)}
+                className={`pointer-events-auto h-1.5 rounded-full transition-[width,background-color] duration-200 ${
+                  index === active ? "w-4 bg-ink/85" : "w-1.5 bg-ink/30"
+                }`}
+              />
+            ))}
+          </div>
         ) : null}
       </div>
 
