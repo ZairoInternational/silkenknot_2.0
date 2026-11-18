@@ -24,27 +24,16 @@ function shippingNotes(selection: ShippingSelection) {
   const standard = selection.optionId === "standard";
   const qualifies = offer && standard && net >= threshold;
   const offerPrice = offer ? formatPrice(threshold / 100) : "";
-  const lines: string[] = [];
+  const lines: string[] = [
+    offer
+      ? `Heavier bags may cost more. Free above ${offerPrice}.`
+      : "Heavier bags may cost more.",
+  ];
 
-  if (split.payingCod && (qualifies || selection.shippingDiscountPaise > 0)) {
-    lines.push(offer
-      ? `Free shipping on orders of ${offerPrice} or more applies when you pay online.`
-      : "Free shipping on this order applies when you pay online.");
-    lines.push("Pay on delivery does not get that offer, so the shipping fee stays. Pay online to remove it.");
-  } else if (split.payingCod && offer && !standard) {
-    lines.push(`Free shipping on orders of ${offerPrice} or more is for standard delivery when you pay online. Express keeps the shipping fee, and pay on delivery adds COD charges.`);
-  } else if (split.payingCod && offer && standard && net < threshold) {
-    lines.push(`Free shipping starts at ${offerPrice}. This order is ${formatPrice((threshold - net) / 100)} short, so the shipping fee stays. Pay on delivery also adds COD charges.`);
-  } else if (split.payingCod && split.codPaise > 0) {
-    lines.push(`Pay on delivery adds COD charges of ${formatPrice(split.codPaise / 100)} on top of the shipping fee.`);
-  } else if (split.shippingFree) {
-    lines.push(offer
-      ? `You earned free shipping. This order is ${offerPrice} or more and you are paying online.`
-      : "You earned free shipping on this order.");
+  if (split.payingCod && (qualifies || selection.shippingDiscountPaise > 0 || (offer && standard && net < threshold) || split.codPaise > 0)) {
+    lines.push("Pay online for free shipping when your bag qualifies.");
   } else if (offer && !standard) {
-    lines.push(`Free shipping on orders of ${offerPrice} or more is for standard delivery when you pay online. Express keeps the shipping fee.`);
-  } else if (offer && standard && net < threshold) {
-    lines.push(`Free shipping starts at ${offerPrice}. Add ${formatPrice((threshold - net) / 100)} more, and pay online, to remove the shipping fee.`);
+    lines.push("Choose standard delivery and pay online for free shipping.");
   }
   return lines;
 }
@@ -111,7 +100,7 @@ export function DeliveryChargeNote({ selection }: { selection: ShippingSelection
         className="chargeNoteButton"
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label="Shipping fee details"
+        aria-label="How delivery is priced"
         onClick={() => setOpen((current) => !current)}
       >
         <Info size={14} strokeWidth={1.8} />

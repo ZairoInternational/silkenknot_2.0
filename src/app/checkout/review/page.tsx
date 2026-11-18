@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, LockKeyhole } from "lucide-react";
+import { ArrowLeft, CreditCard, LockKeyhole, MapPin, Pencil, Phone, Truck, Wallet } from "lucide-react";
 import CheckoutShell from "@/components/checkout/CheckoutShell";
 import { PendingCover } from "@/components/PendingCover";
 import { DeliveryChargeNote } from "@/components/checkout/DeliveryChargeNote";
@@ -291,17 +291,37 @@ export default function ReviewPage() {
         <section className="formCard">
           <div className="reviewBlock">
             <div className="reviewHeading">
-              <h2>Delivery address</h2>
-              <button type="button" onClick={() => router.push("/checkout/shipping")}>Edit</button>
+              <div className="shipSectionHead">
+                <span className="shipSectionIcon" aria-hidden>
+                  <MapPin size={18} strokeWidth={0} fill="currentColor" />
+                </span>
+                <h2>Delivery Address</h2>
+              </div>
+              <button type="button" onClick={() => router.push("/checkout/shipping")}>
+                <Pencil size={14} strokeWidth={2} aria-hidden />
+                Edit
+              </button>
             </div>
             {address ? (
-              <p>
-                {address.fullName}<br />
-                {address.address1}{address.address2 ? `, ${address.address2}` : ""}<br />
-                {address.city} {address.postalCode}<br />
-                {address.country}<br />
-                {address.email} · {address.phone}
-              </p>
+              <div className="addressCard">
+                <div className="addressCardBody">
+                  <strong>{address.fullName}</strong>
+                  <p>
+                    {[
+                      [address.address1, address.address2].filter(Boolean).join(", "),
+                      [address.city, address.postalCode].filter(Boolean).join(" "),
+                      address.country,
+                    ].filter(Boolean).join(" • ")}
+                  </p>
+                  {address.phone ? (
+                    <p className="addressPhone">
+                      <Phone size={13} strokeWidth={0} fill="currentColor" aria-hidden />
+                      <span>{address.phone}</span>
+                    </p>
+                  ) : null}
+                  {address.email ? <p className="addressEmail">{address.email}</p> : null}
+                </div>
+              </div>
             ) : (
               <div className="space-y-2" aria-busy="true" aria-label="Loading address">
                 <div className="h-4 w-40 animate-pulse rounded bg-[#efefed]" />
@@ -312,9 +332,14 @@ export default function ReviewPage() {
           </div>
           <div className="reviewBlock">
             <div className="reviewHeading">
-              <h2>Payment</h2>
+              <div className="shipSectionHead">
+                <span className="shipSectionIcon" aria-hidden>
+                  <Wallet size={18} strokeWidth={2} />
+                </span>
+                <h2>Payment</h2>
+              </div>
             </div>
-            <p>
+            <p className="reviewLead">
               {method === "cod" ? "You pay the courier when the order arrives." : "You pay when you place the order."}
             </p>
             <div className="paymentOptions" role="radiogroup" aria-label="Payment method">
@@ -326,6 +351,7 @@ export default function ReviewPage() {
                 onClick={() => choosePay("razorpay")}
               >
                 <span className="radioDot" aria-hidden />
+                <span className="paymentIcon" aria-hidden><CreditCard size={18} strokeWidth={2} /></span>
                 <span className="paymentCopy">
                   <strong>Pay now</strong>
                   <small>UPI, cards, and wallets · taken when you place the order</small>
@@ -341,6 +367,7 @@ export default function ReviewPage() {
                 onClick={() => choosePay("cod")}
               >
                 <span className="radioDot" aria-hidden />
+                <span className="paymentIcon" aria-hidden><Wallet size={18} strokeWidth={2} /></span>
                 <span className="paymentCopy">
                   <strong>Cash on delivery</strong>
                   <small>
@@ -355,8 +382,24 @@ export default function ReviewPage() {
           </div>
           {selection ? (
             <div className="reviewBlock">
-              <div className="reviewHeading"><h2>Shipping <DeliveryChargeNote selection={selection} /></h2><button type="button" onClick={() => router.push("/checkout/shipping")}>Edit</button></div>
-              <p>{selection.label}{selection.estimate ? ` · ${selection.estimate}` : ""}</p>
+              <div className="reviewHeading">
+                <div className="shipSectionHead">
+                  <span className="shipSectionIcon" aria-hidden>
+                    <Truck size={18} strokeWidth={2} />
+                  </span>
+                  <h2 className="summaryWithNote">Shipping <DeliveryChargeNote selection={selection} /></h2>
+                </div>
+                <button type="button" onClick={() => router.push("/checkout/shipping")}>
+                  <Pencil size={14} strokeWidth={2} aria-hidden />
+                  Edit
+                </button>
+              </div>
+              <div className="addressCard reviewShipCard">
+                <div className="addressCardBody">
+                  <strong>{selection.label}</strong>
+                  {selection.estimate ? <p>{selection.estimate}</p> : null}
+                </div>
+              </div>
             </div>
           ) : null}
           <div className="termsBox">
@@ -368,8 +411,10 @@ export default function ReviewPage() {
             </label>
           </div>
           {error ? <p className="errorText">{error}</p> : null}
-          <div className="buttonRow">
-            <button className="secondaryButton" type="button" onClick={() => router.push("/checkout/shipping")}><ArrowLeft size={16} /> Back</button>
+          <div className="buttonRow shipNavRow">
+            <button className="textBackButton" type="button" onClick={() => router.push("/checkout/shipping")}>
+              <ArrowLeft size={16} /> Back
+            </button>
             <button className="primaryButton" type="button" disabled={busy || !address || !selection || !accepted} onClick={placeOrder}>
               {busy ? "Preparing checkout…" : method === "cod" ? "Place order" : "Pay now"} <LockKeyhole size={16} />
             </button>

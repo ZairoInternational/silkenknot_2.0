@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check, Leaf, MapPin, Plus } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarDays, Check, Leaf, Pencil, Phone, Plus, Truck } from "lucide-react";
 import CheckoutShell from "@/components/checkout/CheckoutShell";
 import OrderSummary from "@/components/checkout/OrderSummary";
+import { BrandPin } from "@/components/icons/BrandPin";
 import {
   ADDRESS_STORAGE_KEY,
   assumedAccountAddress,
@@ -330,86 +331,129 @@ export default function ShippingPage() {
               {chosen ? (
                 <>
                   <div className="reviewHeading">
-                    <h2>Delivery address</h2>
+                    <div className="shipSectionHead">
+                      <span className="shipSectionIcon" aria-hidden>
+                        <BrandPin size={18} />
+                      </span>
+                      <h2>Delivery Address</h2>
+                    </div>
                     <div className="addressActions">
-                      <button type="button" onClick={() => router.push(addressPage)}>Change address</button>
+                      <button type="button" onClick={() => router.push(addressPage)}>
+                        <Pencil size={14} strokeWidth={2} aria-hidden />
+                        Change address
+                      </button>
                     </div>
                   </div>
                   <div className="addressCard">
                     <span className="addressCheck" aria-hidden>
-                      <Check size={16} strokeWidth={2.5} />
+                      <Check size={14} strokeWidth={2.5} />
                     </span>
-                    <div>
+                    <div className="addressCardBody">
                       <strong>{chosen.fullName}</strong>
                       <p>
-                        {chosen.address1}{chosen.address2 ? `, ${chosen.address2}` : ""}
-                        <br />
-                        {chosen.city}{chosen.postalCode ? ` ${chosen.postalCode}` : ""}
-                        {chosen.country ? `, ${chosen.country}` : ""}
+                        {[
+                          [chosen.address1, chosen.address2].filter(Boolean).join(", "),
+                          [chosen.city, chosen.postalCode].filter(Boolean).join(" "),
+                          chosen.country,
+                        ].filter(Boolean).join(" • ")}
                       </p>
-                      {chosen.phone ? <p>{chosen.phone}</p> : null}
+                      {chosen.phone ? (
+                        <p className="addressPhone">
+                          <Phone size={13} strokeWidth={0} fill="currentColor" aria-hidden />
+                          <span>{chosen.phone}</span>
+                        </p>
+                      ) : null}
                     </div>
+                    <Leaf className="addressCardLeaf" size={72} strokeWidth={1} aria-hidden />
                   </div>
                 </>
               ) : (
-                <div className="addressEmpty">
-                  <span className="addressEmptyIcon" aria-hidden>
-                    <Leaf className="addressLeaf addressLeafLeft" size={14} />
-                    <MapPin size={28} strokeWidth={1.6} />
-                    <Leaf className="addressLeaf addressLeafRight" size={14} />
-                  </span>
-                  <strong>Your first address starts here</strong>
-                  <p>Add an address to check delivery and continue securely.</p>
-                  <button type="button" className="addressEmptyCta" onClick={() => router.push(addressPage)}>
-                    <Plus size={18} aria-hidden />
-                    Add delivery address
-                  </button>
-                </div>
+                <>
+                  <div className="reviewHeading">
+                    <div className="shipSectionHead">
+                      <span className="shipSectionIcon" aria-hidden>
+                        <BrandPin size={18} />
+                      </span>
+                      <h2>Delivery Address</h2>
+                    </div>
+                  </div>
+                  <div className="addressEmpty">
+                    <span className="addressEmptyIcon" aria-hidden>
+                      <Leaf className="addressLeaf addressLeafLeft" size={14} />
+                      <BrandPin size={28} />
+                      <Leaf className="addressLeaf addressLeafRight" size={14} />
+                    </span>
+                    <strong>Your first address starts here</strong>
+                    <p>Add an address to check delivery and continue securely.</p>
+                    <button type="button" className="addressEmptyCta" onClick={() => router.push(addressPage)}>
+                      <Plus size={18} aria-hidden />
+                      Add delivery address
+                    </button>
+                  </div>
+                </>
               )}
             </div>
             <div className="reviewBlock">
               <PinLookup initialPin={pin} />
               {couponNotice ? <p className="couponNotice" role="status">{couponNotice}</p> : null}
-              {hasAddress ? (
-                <>
-                  {checking && !options.length ? (
-                    <p className="shipHint">Checking delivery for this address.</p>
-                  ) : !checking && addressReady && !options.length ? (
-                    <p className="pinNotice">{status}</p>
-                  ) : null}
-                  <div className={`paymentOptions${checking && options.length ? " isRefreshing" : ""}`} aria-busy={checking}>
-                    {checking && !options.length ? (
-                      <>
-                        <div className="shipSkeleton" />
-                        <div className="shipSkeleton" />
-                      </>
-                    ) : options.map((option) => (
-                      <button type="button" key={option.id} onClick={() => setSelected(option.id)} className={`paymentOption shipChoice ${selected === option.id ? "selected" : ""}`}>
-                        <span className="radioDot" />
-                        <span className="paymentCopy">
-                          <strong>{option.label}</strong>
-                          <small>{option.detail}{option.estimate ? ` · ${option.estimate}` : ""}</small>
-                        </span>
-                        <span className={option.chargePaise === 0 ? "shipPrice free" : "shipPrice"}>
-                          {option.chargePaise === 0 ? "Free" : formatPrice(option.chargePaise / 100)}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                  {freeShippingPaise > 0 ? (
-                    <p className="shipHint">Free shipping on orders above {formatPrice(freeShippingPaise / 100)}.</p>
-                  ) : null}
-                </>
-              ) : null}
             </div>
+            {hasAddress ? (
+              <div className="reviewBlock">
+                <div className="reviewHeading">
+                  <div className="shipSectionHead">
+                    <span className="shipSectionIcon" aria-hidden>
+                      <Truck size={20} strokeWidth={2} />
+                    </span>
+                    <h2>Choose Delivery Method</h2>
+                  </div>
+                  {options.length > 0 ? (
+                    <span className="shipOptionCount">{options.length} options</span>
+                  ) : null}
+                </div>
+                {checking && !options.length ? (
+                  <p className="shipHint">Checking delivery for this address.</p>
+                ) : !checking && addressReady && !options.length ? (
+                  <p className="pinNotice">{status}</p>
+                ) : null}
+                <div className={`paymentOptions${checking && options.length ? " isRefreshing" : ""}`} aria-busy={checking}>
+                  {checking && !options.length ? (
+                    <>
+                      <div className="shipSkeleton" />
+                      <div className="shipSkeleton" />
+                    </>
+                  ) : options.map((option) => (
+                    <button type="button" key={option.id} onClick={() => setSelected(option.id)} className={`paymentOption shipChoice ${selected === option.id ? "selected" : ""}`}>
+                      <span className="radioDot" />
+                      <span className="paymentCopy">
+                        <strong>{option.label}</strong>
+                        <small className="shipEta">
+                          <CalendarDays size={13} strokeWidth={2} aria-hidden />
+                          <span>{option.estimate || option.detail}</span>
+                        </small>
+                      </span>
+                      <span className={option.chargePaise === 0 ? "shipPrice free" : "shipPrice"}>
+                        {option.chargePaise === 0 ? "Free" : formatPrice(option.chargePaise / 100)}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            {freeShippingPaise > 0 ? (
+              <p className="shipPromo">
+                <Truck size={16} strokeWidth={2} aria-hidden />
+                <span>Free shipping on orders above {formatPrice(freeShippingPaise / 100)}</span>
+              </p>
+            ) : null}
             {error ? <p className="errorText">{error}</p> : null}
-            <div className="buttonRow">
-              <button className="secondaryButton" type="button" onClick={() => router.push("/checkout")}><ArrowLeft size={16} /> Back</button>
+            <div className="buttonRow shipNavRow">
+              <button className="textBackButton" type="button" onClick={() => router.push("/checkout")}>
+                <ArrowLeft size={16} /> Back
+              </button>
               <button className="primaryButton" type="submit" disabled={!selected || checking}>
                 Continue to review <ArrowRight size={17} />
               </button>
             </div>
-            <p className="formFine">By continuing, you confirm that your delivery details are accurate.</p>
           </form>
         </section>
         <OrderSummary />

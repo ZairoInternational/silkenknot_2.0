@@ -35,9 +35,17 @@ export function WishlistButton({ productId, name, className = "" }: { productId:
         store.toggleWishlist(productId);
         if (saved) store.notify(`${name} removed`);
       }}
-      className={`grid size-10 shrink-0 place-items-center bg-transparent text-[#61A2AF] ${className}`}
+      className={`group/wish grid size-10 shrink-0 place-items-center bg-transparent text-mist transition-transform duration-300 active:scale-95 ${className}`}
     >
-      <Heart size={24} strokeWidth={1.5} fill={saved ? "currentColor" : "none"} />
+      <Heart
+        size={24}
+        strokeWidth={saved ? 1.7 : 1.5}
+        className={`transition-[fill,transform,color] duration-300 ease-out ${
+          saved
+            ? "scale-105 fill-mist text-mist"
+            : "fill-none group-hover/wish:scale-110 group-hover/wish:fill-mist"
+        }`}
+      />
     </button>
   );
 }

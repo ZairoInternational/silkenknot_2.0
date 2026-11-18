@@ -39,12 +39,24 @@ export default function CheckoutShell({
         <p>{subtitle}</p>
       </div>
       <div className="steps">
-        {steps.map((step, index) => (
-          <div className={`step ${index <= active ? "stepActive" : ""}`} key={step.label}>
-            <span className="stepCircle">{index < active ? <Check size={14} /> : index + 1}</span>
-            <span>{step.label}</span>
-          </div>
-        ))}
+        {steps.map((step, index) => {
+          const reached = index <= active;
+          const label = (
+            <>
+              <span className="stepCircle">{index < active ? <Check size={14} /> : index + 1}</span>
+              <span className="stepLabel">{step.label}</span>
+            </>
+          );
+          return reached ? (
+            <Link className={`step stepActive stepLink`} href={step.href} key={step.label}>
+              {label}
+            </Link>
+          ) : (
+            <div className="step" key={step.label}>
+              {label}
+            </div>
+          );
+        })}
       </div>
       <div className="secureNote">
         <LockKeyhole size={14} /> Secure checkout <span>·</span> Your details are protected

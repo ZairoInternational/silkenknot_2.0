@@ -134,6 +134,8 @@ test("expected TAT uses the warehouse PIN and falls back when it is missing", as
   assert.equal(parseExpectedTat(400, JSON.stringify({ success: false, msg: "Origin pin not serviceable." })).status, "unavailable");
   assert.throws(() => parseExpectedTat(403, "{\"detail\":\"Invalid token\"}"));
   assert.equal(formatTransit(5, "2026-10-19").by, "19 Oct");
+  assert.equal(formatTransit(5, "2026-10-19").estimate, "4–5 days");
+  assert.equal(formatTransit(1, null).estimate, "1–2 days");
   assert.equal(formatTransit(5, null, new Date("2026-10-14T06:30:00.000Z")).estimateSource, "delhivery_tat");
   const calls: string[] = [];
   const ready = policyFromEnv({
@@ -160,7 +162,8 @@ test("expected TAT uses the warehouse PIN and falls back when it is missing", as
     express: { estimate: "3 days", estimateSource: "delhivery_tat" },
   });
   assert.equal(options.find((option) => option.id === "standard")?.estimateSource, "delhivery_tat");
-  assert.equal(options.find((option) => option.id === "express")?.estimate, "3 days");
+  assert.equal(options.find((option) => option.id === "standard")?.estimate, "4–5 days");
+  assert.equal(options.find((option) => option.id === "express")?.estimate, "2–3 days");
 });
 
 test("a store estimate becomes a delivery-by date in India", () => {

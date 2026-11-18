@@ -4,7 +4,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import NumberFlow from "@number-flow/react";
-import { ChevronDown, Info, Percent } from "lucide-react";
+import { ArrowDown, ChevronDown, Info, Percent } from "lucide-react";
 import { FreeShippingProgress } from "@/components/cart/FreeShippingProgress";
 import { ShippingFee } from "@/components/checkout/DeliveryChargeNote";
 import { Media } from "@/components/ui";
@@ -28,7 +28,7 @@ import {
   shippingQuoteCartKey,
   type ShippingQuoteEventDetail,
 } from "@/lib/checkout/shippingQuoteCache";
-import { couponDiscount, couponDiscountPaise, formatPrice, subtotal } from "@/lib/format";
+import { couponDiscount, couponDiscountPaise, discountPercent, formatPrice, subtotal } from "@/lib/format";
 import { usePlatformFeeDisplay } from "@/lib/payments/platformFeeClient";
 import { resolvePlatformFeeDisplay } from "@/lib/payments/platformFeeDisplay";
 import { useShippingDisplay } from "@/lib/shipping/client";
@@ -129,6 +129,80 @@ function BillDiscounts({ lines }: { lines: BillDiscount[] }) {
 
 function quoteMatchesBag(selection: ShippingSelection, goodsPaise: number) {
   return selection.subtotalPaise === goodsPaise;
+}
+
+function DeliveryThresholdNote({ freeAbovePaise }: { freeAbovePaise: number }) {
+  const [open, setOpen] = useState(false);
+  const [place, setPlace] = useState({ left: 12, top: 12 });
+  const rootRef = useRef<HTMLSpanElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLSpanElement>(null);
+  const panelId = useId();
+  const note = freeAbovePaise > 0
+    ? `Heavier bags may cost more. Free above ${formatPrice(freeAbovePaise / 100)}.`
+    : "Heavier bags may cost more.";
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    function placePanel() {
+      const button = buttonRef.current;
+      const panel = panelRef.current;
+      if (!button || !panel) return;
+      const rect = button.getBoundingClientRect();
+      const width = panel.offsetWidth;
+      const height = panel.offsetHeight;
+      let left = rect.left;
+      if (left + width > window.innerWidth - 12) left = window.innerWidth - 12 - width;
+      if (left < 12) left = 12;
+      let top = rect.bottom + 8;
+      if (top + height > window.innerHeight - 12) top = Math.max(12, rect.top - height - 8);
+      setPlace({ left, top });
+    }
+    placePanel();
+    window.addEventListener("resize", placePanel);
+    window.addEventListener("scroll", placePanel, true);
+    return () => {
+      window.removeEventListener("resize", placePanel);
+      window.removeEventListener("scroll", placePanel, true);
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    function close(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    }
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("pointerdown", close);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", close);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <span className="chargeNote" ref={rootRef}>
+      <button
+        ref={buttonRef}
+        type="button"
+        className="chargeNoteButton"
+        aria-expanded={open}
+        aria-controls={panelId}
+        aria-label="How delivery is priced"
+        onClick={() => setOpen((current) => !current)}
+      >
+        <Info size={14} strokeWidth={1.8} />
+      </button>
+      {open ? (
+        <span ref={panelRef} className="chargeNotePanel" id={panelId} role="note" style={{ left: place.left, top: place.top }}>
+          <p style={{ margin: 0 }}>{note}</p>
+        </span>
+      ) : null}
+    </span>
+  );
 }
 
 function PlatformFeeNote({
@@ -270,7 +344,7 @@ function MrpNote({ items, mrp, selling }: { items: CartItem[]; mrp: number; sell
         className="chargeNoteButton"
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label="How MRP adds up"
+        aria-label="How selling price adds up"
         onClick={() => setOpen((current) => !current)}
       >
         <Info size={14} strokeWidth={1.8} />
@@ -278,8 +352,10 @@ function MrpNote({ items, mrp, selling }: { items: CartItem[]; mrp: number; sell
       {open ? (
         <span ref={panelRef} className="chargeNotePanel subtotalNote" id={panelId} role="note" style={{ left: place.left, top: place.top }}>
           {items.map((item) => {
-            const sellingLine = item.price * item.quantity;
-            const marked = item.compareAtPrice && item.compareAtPrice > item.price ? item.compareAtPrice * item.quantity : sellingLine;
+            const offerLine = item.price * item.quantity;
+            const original = item.compareAtPrice && item.compareAtPrice > item.price
+              ? item.compareAtPrice * item.quantity
+              : offerLine;
             return (
               <span className="chargeRow" key={item.id}>
                 <span>
@@ -287,20 +363,19 @@ function MrpNote({ items, mrp, selling }: { items: CartItem[]; mrp: number; sell
                   {item.variantLabel} · Qty {item.quantity}
                 </span>
                 <span className="chargeFee">
-                  {marked > sellingLine ? <s>{formatPrice(marked)}</s> : null}
-                  <b className={marked > sellingLine ? "offerPrice" : ""}>{formatPrice(sellingLine)}</b>
+                  <b>{formatPrice(original)}</b>
                 </span>
               </span>
             );
           })}
-          <p>MRP is the marked price including taxes. A crossed-out figure is the earlier MRP; the amount below it is what you pay before coupons and delivery.</p>
+          <p>Selling price is the original price of your items, including taxes. Discounts below bring this down before shipping.</p>
           <span className="chargeRow chargeRowTotal">
-            <span>MRP</span>
+            <span>Selling price</span>
             <span>{formatPrice(mrp)}</span>
           </span>
           {mrp > selling ? (
             <span className="chargeRow chargeRowTotal">
-              <span>Selling price</span>
+              <span>After product discount</span>
               <span>{formatPrice(selling)}</span>
             </span>
           ) : null}
@@ -513,7 +588,9 @@ export default function OrderSummary() {
     return null;
   })();
   const discountLines: BillDiscount[] = [];
-  if (mrpDiscount > 0) discountLines.push({ id: "mrp", label: "Discount on MRP", amount: mrpDiscount });
+  if (mrpDiscount > 0) {
+    discountLines.push({ id: "mrp", label: "Discount on selling price", amount: mrpDiscount });
+  }
   if (coupon && discount > 0) {
     discountLines.push({
       id: "coupon",
@@ -553,6 +630,7 @@ export default function OrderSummary() {
         <div className="summaryItems">
           {items.map((item) => {
             const prices = lineOffer(item);
+            const off = discountPercent(item.price, item.compareAtPrice);
             const product = store.products.find((entry) => entry.id === item.productId);
             const stock = product?.variants.find((variant) => variant.label === item.variantLabel)?.stock ?? 20;
             return (
@@ -573,6 +651,12 @@ export default function OrderSummary() {
                     <button type="button" aria-label={`Increase ${item.name}`} disabled={item.quantity >= stock} onClick={() => changeQuantity(item.id, item.quantity + 1)}>+</button>
                   </div>
                   <span className="itemPrice">
+                    {off > 0 ? (
+                      <span className="itemOff" aria-label={`${off}% off`}>
+                        <ArrowDown size={12} strokeWidth={2.5} aria-hidden />
+                        {off}%
+                      </span>
+                    ) : null}
                     {prices.offer ? <s>{formatPrice(prices.marked)}</s> : null}
                     <b className={prices.offer ? "offerPrice" : ""}>{formatPrice(prices.payable)}</b>
                   </span>
@@ -588,23 +672,38 @@ export default function OrderSummary() {
         <FreeShippingProgress
           amount={merchandise}
           threshold={(priced?.freeShippingPaise ?? shippingDisplay.freeShippingPaise) / 100}
-          className="mb-4"
+          className="mb-3"
         />
       ) : null}
-      {items.length ? <div className="mb-4"><OfferBox onOpenAll={() => setOffersOpen(true)} /></div> : null}
+      {items.length ? <div className="mb-3"><OfferBox onOpenAll={() => setOffersOpen(true)} /></div> : null}
       {couponNotice ? <p className="couponNotice" role="status">{couponNotice}</p> : null}
       <CheckoutOfferSheet open={offersOpen} onClose={() => setOffersOpen(false)} />
       <div className="billSummary">
         <h3 className="billTitle">Price details</h3>
         <div className="summaryLine">
           <span className="summaryWithNote">
-            <span className="billLabel">MRP <span className="billHint">(incl. of all taxes)</span></span>
+            <span className="billLabel">
+              Selling price <span className="billHint">(incl. of all taxes)</span>
+            </span>
             {items.length ? <MrpNote items={items} mrp={mrp} selling={goods} /> : null}
           </span>
           <span>{formatPrice(mrp || goods)}</span>
         </div>
+        <BillDiscounts lines={discountLines} />
+        <div className="billRule" />
+        {items.length ? (
+          <div className="summaryLine billBagTotal">
+            <span className="billLabel">
+              Bag total <span className="billHint">(after offers)</span>
+            </span>
+            <span>{formatPrice(merchandise)}</span>
+          </div>
+        ) : null}
         <div className={`summaryLine billDelivery${freeDeliveryHint ? " hasHint" : ""}`}>
-          <span className="billLabel">Delivery charges</span>
+          <span className="summaryWithNote">
+            <span className="billLabel">Shipping fee</span>
+            {items.length ? <DeliveryThresholdNote freeAbovePaise={threshold} /> : null}
+          </span>
           <span className="billAmountBlock">
             {deliveryAmount()}
             {deliveryFeeHint ? <span className="billAmountNote">{deliveryFeeHint}</span> : null}
@@ -641,16 +740,14 @@ export default function OrderSummary() {
             <span>{formatPrice(priced.codFeePaise / 100)}</span>
           </div>
         ) : null}
-        {discountLines.length ? <div className="billRule billRuleDashed" /> : null}
-        <BillDiscounts lines={discountLines} />
         <div className="summaryTotal">
-          <span>Total amount</span>
+          <span>You pay</span>
           <AnimatedTotal value={total} />
         </div>
         {items.length && saved > 0 ? (
           <p className="billSaved">
             <span className="bg-green-800 text-white p-[5px] rounded-full">
-            <Percent size={14} strokeWidth={2.2} aria-hidden />
+              <Percent size={14} strokeWidth={2.2} aria-hidden />
             </span>
             <span>You&apos;ll save <strong>{formatPrice(saved)}</strong> on this order</span>
           </p>
@@ -658,11 +755,6 @@ export default function OrderSummary() {
           <p className="summaryFoot">Delivery charge appears after you add an address.</p>
         ) : items.length && hasPin && deliveryFree ? (
           <p className="summaryFoot">Free delivery unlocked — no delivery charge on this bag.</p>
-        ) : items.length && hasPin && shortfallPaise > 0 ? (
-          <p className="summaryFoot">
-            Add {formatPrice(shortfallPaise / 100)} more to unlock free delivery
-            {payCod ? " when you pay online" : ""}.
-          </p>
         ) : items.length && hasPin && payCod && threshold > 0 && shortfallPaise <= 0 ? (
           <p className="summaryFoot">Pay online to waive delivery on this bag.</p>
         ) : null}

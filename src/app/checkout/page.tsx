@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Leaf, LockKeyhole, Mail, Phone, Truck, User } from "lucide-react";
+import { ArrowLeft, ArrowRight, Leaf, LockKeyhole, Mail, Phone, Truck, User } from "lucide-react";
 import CheckoutShell from "@/components/checkout/CheckoutShell";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { trackBeginCheckout } from "@/lib/analytics";
@@ -132,6 +132,9 @@ export default function CheckoutContactPage() {
       <div className="checkoutGrid">
         <section className="formCard">
           <div className="sectionTitle">
+            <span className="shipSectionIcon" aria-hidden>
+              <User size={18} strokeWidth={2} />
+            </span>
             <div>
               <h2>Contact information</h2>
               <p>We’ll use this to send your order updates and delivery details.</p>
@@ -141,29 +144,34 @@ export default function CheckoutContactPage() {
             <div className="fieldGrid">
               <label className="field full iconField">
                 Full name
-                <User size={16} aria-hidden />
+                <User size={16} strokeWidth={2} aria-hidden />
                 <input value={name} onChange={(event) => setName(event.target.value)} autoComplete="name" placeholder="Your name" />
               </label>
               <label className="field full iconField">
                 Email address
-                <Mail size={16} aria-hidden />
+                <Mail size={16} strokeWidth={2} aria-hidden />
                 <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="name@email.com" />
               </label>
               <label className="field full iconField">
                 Mobile number
-                <Phone size={16} aria-hidden />
+                <Phone size={16} strokeWidth={0} fill="currentColor" aria-hidden />
                 <input value={phone} onChange={(event) => setPhone(event.target.value)} autoComplete="tel" inputMode="numeric" placeholder="10-digit mobile number" />
               </label>
             </div>
             {error ? <p className="errorText">{error}</p> : null}
-            <button className="primaryButton" type="submit">
-              Continue to delivery <ArrowRight size={17} />
-            </button>
+            <div className="buttonRow shipNavRow">
+              <button className="textBackButton" type="button" onClick={() => router.push("/shop")}>
+                <ArrowLeft size={16} /> Back
+              </button>
+              <button className="primaryButton" type="submit">
+                Continue to delivery <ArrowRight size={17} />
+              </button>
+            </div>
           </form>
           <ul className="trustRow">
-            <li><LockKeyhole size={16} /> <span><strong>Secure checkout</strong>Your details stay protected</span></li>
-            <li><Truck size={16} /> <span><strong>Fair delivery</strong>To the address you choose</span></li>
-            <li><Leaf size={16} /> <span><strong>Botanical care</strong>Made for daily rituals</span></li>
+            <li><LockKeyhole size={16} strokeWidth={2} /> <span><strong>Secure checkout</strong>Your details stay protected</span></li>
+            <li><Truck size={16} strokeWidth={2} /> <span><strong>Fair delivery</strong>To the address you choose</span></li>
+            <li><Leaf size={16} strokeWidth={2} /> <span><strong>Botanical care</strong>Made for daily rituals</span></li>
           </ul>
         </section>
         <OrderSummary />

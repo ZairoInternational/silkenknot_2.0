@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, ChevronRight, Gift, Tag, X } from "lucide-react";
+import { ChevronDown, Gift, Tag, X } from "lucide-react";
 import { couponDiscount } from "@/lib/format";
 import { useStore } from "@/lib/store";
 import type { Coupon } from "@/lib/types";
@@ -19,6 +19,8 @@ export function OfferBox({ onOpenAll }: { onOpenAll: () => void }) {
     ?? offers[0];
   if (!featured) return null;
 
+  const applied = store.couponCode === featured.code;
+
   function apply(offer: Coupon) {
     if (store.couponCode === offer.code) {
       store.clearCoupon();
@@ -30,28 +32,54 @@ export function OfferBox({ onOpenAll }: { onOpenAll: () => void }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#e8e8e6] bg-[#ffffff]">
-      <div className="flex items-center gap-3 px-3 py-3">
-        <Tag size={18} className="shrink-0 text-mist" />
+    <div className="overflow-hidden rounded-xl border border-[#c5dde0] bg-[#f4fafb]">
+      <div className="flex items-center gap-2 px-2.5 py-2">
+        <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#e8f4f5] text-[#61A2AF]">
+          <Tag size={14} strokeWidth={2} />
+        </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold tracking-wide text-ink">{featured.code}</p>
-          <p className="truncate text-xs text-mute">{featured.label}</p>
+          <p className="truncate text-[13px] font-semibold tracking-wide text-ink">{featured.code}</p>
+          {featured.label ? <p className="truncate text-[11px] leading-tight text-mute">{featured.label}</p> : null}
         </div>
         <button
           type="button"
           onClick={() => apply(featured)}
-          className={`h-8 shrink-0 rounded-md px-3 text-xs ${store.couponCode === featured.code ? "border border-ink bg-paper text-ink" : "bg-ink text-paper hover:bg-midnight"}`}
+          className={`h-7 shrink-0 rounded-lg px-2.5 text-[11px] font-medium ${
+            applied
+              ? "border border-[#61A2AF] bg-white text-[#3A6B75]"
+              : "bg-[#61A2AF] text-white hover:bg-[#4F8A96]"
+          }`}
         >
-          {store.couponCode === featured.code ? "Remove" : "Apply"}
+          {applied ? "Remove" : "Apply"}
         </button>
       </div>
-      <button type="button" onClick={() => setCodeOpen((open) => !open)} className="flex w-full items-center gap-2 border-t border-line px-3 py-2.5 text-left text-sm text-ink/80">
-        Enter coupon code
-        <ChevronDown size={16} className={`text-mute transition ${codeOpen ? "rotate-180" : ""}`} />
-      </button>
+
+      <div className="flex items-center gap-2 border-t border-[#c5dde0] bg-white px-2.5 py-1.5">
+        <button
+          type="button"
+          onClick={() => setCodeOpen((open) => !open)}
+          className="inline-flex items-center gap-1 text-[12px] font-medium text-[#3A6B75]"
+        >
+          Enter code
+          <ChevronDown size={14} className={`transition ${codeOpen ? "rotate-180" : ""}`} />
+        </button>
+        <span className="text-[#c5dde0]" aria-hidden>|</span>
+        <button
+          type="button"
+          onClick={onOpenAll}
+          className="inline-flex min-w-0 flex-1 items-center gap-1.5 text-[12px] font-medium text-[#3A6B75]"
+        >
+          <Gift size={13} className="shrink-0" />
+          <span className="truncate">View all</span>
+          <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#e8f4f5] px-1.5 text-[10px] font-semibold text-[#3A6B75]">
+            {offers.length}
+          </span>
+        </button>
+      </div>
+
       {codeOpen ? (
         <form
-          className="flex items-center gap-2 px-3 pb-3"
+          className="flex items-center gap-2 border-t border-[#c5dde0] bg-white px-2.5 py-2"
           onSubmit={(event) => {
             event.preventDefault();
             const result = store.applyCoupon(code);
@@ -59,20 +87,19 @@ export function OfferBox({ onOpenAll }: { onOpenAll: () => void }) {
             if (result.ok) setCode("");
           }}
         >
-          <input value={code} onChange={(event) => setCode(event.target.value)} placeholder="Code" className="h-10 min-w-0 flex-1 rounded-lg border border-line bg-paper px-3 text-sm outline-none" />
-          <button type="submit" className="h-10 rounded-md bg-ink px-4 text-xs text-paper hover:bg-midnight">Apply</button>
+          <input
+            value={code}
+            onChange={(event) => setCode(event.target.value)}
+            placeholder="Coupon code"
+            className="h-8 min-w-0 flex-1 rounded-lg border border-[#c5dde0] bg-white px-2.5 text-[13px] text-ink outline-none focus:border-[#61A2AF]"
+          />
+          <button type="submit" className="h-8 rounded-lg bg-[#61A2AF] px-3 text-[11px] font-medium text-white hover:bg-[#4F8A96]">
+            Apply
+          </button>
         </form>
       ) : null}
-      <button type="button" onClick={onOpenAll} className="flex w-full items-center gap-3 border-t border-line px-3 py-3 text-left">
-        <Gift size={18} className="shrink-0 text-mist" />
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium text-ink">View all offers</span>
-          <span className="block text-xs text-mute">Coupons</span>
-        </span>
-        <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-ink px-1.5 text-xs text-paper">{offers.length}</span>
-        <ChevronRight size={16} className="text-ink" />
-      </button>
-      {note ? <p className="border-t border-[#e8e8e6] px-3 py-2 text-xs text-[#6f675d]">{note}</p> : null}
+
+      {note ? <p className="border-t border-[#c5dde0] bg-white px-2.5 py-1.5 text-[11px] text-[#6f675d]">{note}</p> : null}
     </div>
   );
 }
@@ -94,26 +121,32 @@ export function OfferList({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-white">
-      <div className="flex items-center justify-between px-5 py-4">
-        <p className="text-xl font-medium text-[#2c2926]">Offers</p>
-        <button type="button" aria-label="Close offers" onClick={onClose} className="inline-flex h-8 w-8 items-center justify-center group/close bg-black/10 hover:bg-black/16 rounded-full">
-          <X size={16} className="group-hover/close:rotate-90 transition-transform duration-200"/>
+      <div className="flex items-center justify-between border-b border-[#c5dde0] px-4 py-3">
+        <p className="text-lg font-medium text-ink">Offers</p>
+        <button type="button" aria-label="Close offers" onClick={onClose} className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#e8f4f5] text-[#3A6B75] transition hover:bg-[#d7eef1]">
+          <X size={16} />
         </button>
       </div>
-      <ul className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 pb-5">
+      <ul className="min-h-0 flex-1 space-y-2 overflow-y-auto px-4 py-3">
         {offers.map((offer) => {
           const applied = store.couponCode === offer.code;
           return (
-            <li key={offer.id} className={`flex items-center gap-3 rounded-2xl border px-3 py-3 ${applied ? "border-ink bg-paper" : "border-line bg-paper"}`}>
-              <Tag size={18} className="shrink-0 text-mist" />
+            <li key={offer.id} className={`flex items-center gap-2.5 rounded-xl border px-2.5 py-2 ${applied ? "border-[#61A2AF] bg-[#f4fafb]" : "border-[#c5dde0] bg-white"}`}>
+              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#e8f4f5] text-[#61A2AF]">
+                <Tag size={14} />
+              </span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold tracking-wide text-ink">{offer.code}</p>
-                <p className="text-xs text-mute">{offer.label}</p>
+                <p className="truncate text-[13px] font-semibold tracking-wide text-ink">{offer.code}</p>
+                <p className="truncate text-[11px] text-mute">{offer.label}</p>
               </div>
               <button
                 type="button"
                 onClick={() => apply(offer)}
-                className={`h-8 shrink-0 rounded-md px-3 text-xs ${applied ? "border border-ink bg-paper text-ink" : "bg-ink text-paper hover:bg-midnight"}`}
+                className={`h-7 shrink-0 rounded-lg px-2.5 text-[11px] font-medium ${
+                  applied
+                    ? "border border-[#61A2AF] bg-white text-[#3A6B75]"
+                    : "bg-[#61A2AF] text-white hover:bg-[#4F8A96]"
+                }`}
               >
                 {applied ? "Remove" : "Apply"}
               </button>
@@ -121,7 +154,7 @@ export function OfferList({ onClose }: { onClose: () => void }) {
           );
         })}
       </ul>
-      {note ? <p className="px-5 pb-4 text-xs text-[#6f675d]">{note}</p> : null}
+      {note ? <p className="px-4 pb-3 text-[11px] text-[#6f675d]">{note}</p> : null}
     </div>
   );
 }

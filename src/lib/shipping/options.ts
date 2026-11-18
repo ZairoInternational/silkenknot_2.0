@@ -1,3 +1,4 @@
+import { toDeliveryRange } from "./estimate";
 import type { ShippingPolicy } from "./policy";
 
 export type Serviceability =
@@ -61,7 +62,7 @@ export function buildShippingOptions(policy: ShippingPolicy, serviceability: Ser
     estimateRupees: charges.standardRupees ?? null,
     codEstimateRupees: charges.standardCodRupees ?? null,
     shippingDiscountPaise: standard.shippingDiscountPaise,
-    estimate: policy.standardEta,
+    estimate: toDeliveryRange(policy.standardEta),
     estimateSource: policy.standardEta ? "store_policy" : "none",
     priceSource: "delhivery_estimate",
     available: true,
@@ -76,7 +77,7 @@ export function buildShippingOptions(policy: ShippingPolicy, serviceability: Ser
       estimateRupees: charges.expressRupees ?? null,
       codEstimateRupees: charges.expressCodRupees ?? null,
       shippingDiscountPaise: 0,
-      estimate: policy.expressEta,
+      estimate: toDeliveryRange(policy.expressEta),
       estimateSource: policy.expressEta ? "store_policy" : "none",
       priceSource: "delhivery_estimate",
       available: true,
@@ -91,7 +92,7 @@ export function applyLaneEstimates(options: ShippingOption[], lane: { standard: 
     if (!next || next.estimateSource !== "delhivery_tat") return option;
     return {
       ...option,
-      estimate: next.estimate,
+      estimate: toDeliveryRange(next.estimate),
       estimateSource: "delhivery_tat" as const,
     };
   });

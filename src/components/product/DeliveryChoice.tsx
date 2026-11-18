@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ChevronDown, CreditCard, Info, MapPin, Package, Pencil, Truck, X, Zap } from "lucide-react";
+import { BrandPin } from "@/components/icons/BrandPin";
 import { useDialog } from "@/components/ui";
 import { useStore } from "@/lib/store";
 import type { Address } from "@/lib/types";
@@ -93,15 +94,16 @@ export function PinLookup({ initialPin = "" }: { initialPin?: string }) {
   const [status, setStatus] = useState<"idle" | "ok" | "bad" | "warn">("idle");
   const [line, setLine] = useState("");
   const [checking, setChecking] = useState(false);
+  const autoChecked = useRef("");
 
   useEffect(() => {
     if (initialPin && /^\d{6}$/.test(initialPin)) setPin(initialPin);
   }, [initialPin]);
 
-  async function check(event?: React.SyntheticEvent) {
+  async function check(nextPin?: string, event?: React.SyntheticEvent) {
     event?.preventDefault();
     event?.stopPropagation();
-    const next = pin.trim();
+    const next = (nextPin ?? pin).trim();
     if (!/^\d{6}$/.test(next)) {
       setStatus("warn");
       setLine("Enter a 6-digit PIN.");
@@ -115,10 +117,7 @@ export function PinLookup({ initialPin = "" }: { initialPin?: string }) {
       const body = await response.json();
       if (body.available) {
         setStatus("ok");
-        const estimate = typeof body.estimate === "string" && body.estimate
-          ? ` Estimated delivery: ${body.estimate}.`
-          : "";
-        setLine(`Great news — we deliver to this pincode.${estimate}`);
+        setLine("Delivery available in your area");
       } else {
         setStatus("bad");
         setLine(body.label === "Not serviceable" || !body.available
@@ -133,6 +132,12 @@ export function PinLookup({ initialPin = "" }: { initialPin?: string }) {
     }
   }
 
+  useEffect(() => {
+    if (!/^\d{6}$/.test(pin) || autoChecked.current === pin) return;
+    autoChecked.current = pin;
+    void check(pin);
+  }, [pin]);
+
   return (
     <div
       className="pinLookup"
@@ -140,41 +145,57 @@ export function PinLookup({ initialPin = "" }: { initialPin?: string }) {
         if (event.key !== "Enter") return;
         event.preventDefault();
         event.stopPropagation();
-        void check(event);
+        void check(undefined, event);
       }}
     >
-      <h3>Check delivery availability</h3>
-      <p className="pinLookupLead">Enter your pincode to see delivery options.</p>
-      <div className="pinLookupRow">
-        <input
-          value={pin}
-          onChange={(event) => {
-            setPin(event.target.value.replace(/\D/g, "").slice(0, 6));
-            if (status !== "idle") {
-              setStatus("idle");
-              setLine("");
-            }
-          }}
-          inputMode="numeric"
-          autoComplete="postal-code"
-          placeholder="Enter 6-digit PIN"
-          aria-label="PIN code"
-        />
-        <button type="button" disabled={checking} onClick={(event) => void check(event)}>
-          {checking ? "Checking" : "Check"}
-        </button>
+      <div className="shipSectionHead shipSectionHeadCompact">
+        <BrandPin size={20} />
+        <h3>Check Delivery Availability</h3>
       </div>
-      {line ? (
-        <p className={`mt-2 pinResult is-${status}`} role="status">
-          {status === "ok" ? <Check size={16} aria-hidden /> : null}
+      <div className="pinLookupActions">
+        <div className="pinLookupRow">
+          <input
+            value={pin}
+            onChange={(event) => {
+              const next = event.target.value.replace(/\D/g, "").slice(0, 6);
+              setPin(next);
+              if (status !== "idle") {
+                setStatus("idle");
+                setLine("");
+              }
+            }}
+            inputMode="numeric"
+            autoComplete="postal-code"
+            placeholder="Enter 6-digit PIN"
+            aria-label="PIN code"
+          />
+          <button type="button" disabled={checking} onClick={(event) => void check(undefined, event)}>
+            {checking ? "Checking" : "Check"}
+          </button>
+        </div>
+        {status === "ok" ? (
+          <div className="pinLookupOk" role="status">
+            <span className="pinOkCheck" aria-hidden>
+              <Check size={13} strokeWidth={2.8} />
+            </span>
+            <span className="pinOkText">Delivery available in your area</span>
+            <span className="pinOkTruck">
+              <Truck size={28} strokeWidth={2} aria-hidden />
+            </span>
+          </div>
+        ) : null}
+      </div>
+      {line && status !== "ok" ? (
+        <p className={`pinResult is-${status}`} role="status">
           <span>{line}</span>
         </p>
-      ) : (
-        <p className="pinHint mt-2">
+      ) : null}
+      {!line && status === "idle" && !/^\d{6}$/.test(pin) ? (
+        <p className="pinHint">
           <Info size={14} aria-hidden />
           <span>Delivery availability will be confirmed after a valid PIN.</span>
         </p>
-      )}
+      ) : null}
     </div>
   );
 }

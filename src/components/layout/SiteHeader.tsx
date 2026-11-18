@@ -28,17 +28,61 @@ import { useHeroNav } from "@/lib/hero-nav";
 import { DEFAULT_ANNOUNCEMENTS, type AnnouncementIcon, type AnnouncementNote } from "@/lib/announcements/content";
 import type { LucideIcon } from "lucide-react";
 
-function EscalatorIcon({ icon: Icon }: { icon: LucideIcon }) {
+function EscalatorIcon({
+  icon: Icon,
+  filled = false,
+  effect = "fill",
+}: {
+  icon: LucideIcon;
+  filled?: boolean;
+  /** fill = solid mist glyph; tint = mist stroke + soft pop (better for search/bag) */
+  effect?: "fill" | "tint";
+}) {
+  if (effect === "tint") {
+    return (
+      <span className="relative grid size-5 place-items-center">
+        <Icon
+          size={20}
+          strokeWidth={filled ? 2 : 1.6}
+          className={`transition-[color,transform] duration-300 ease-out motion-reduce:transition-none ${
+            filled
+              ? "scale-105 text-mist"
+              : "group-hover:scale-110 group-hover:text-mist group-active:scale-95"
+          }`}
+        />
+      </span>
+    );
+  }
+
   return (
-    <span className="relative block size-5 overflow-hidden">
-      <span className="absolute inset-0 flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full motion-reduce:transition-none motion-reduce:group-hover:translate-y-0">
-        <Icon size={20} strokeWidth={1.6} />
+    <span
+      className={`relative block size-5 overflow-hidden transition-transform duration-300 ease-out motion-reduce:transition-none ${
+        filled ? "scale-105" : "group-hover:scale-110 group-active:scale-95"
+      }`}
+    >
+      <span
+        className={`absolute inset-0 flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] motion-reduce:transition-none ${
+          filled
+            ? "-translate-y-full motion-reduce:translate-y-0"
+            : "group-hover:-translate-y-full motion-reduce:group-hover:translate-y-0"
+        }`}
+      >
+        <Icon
+          size={20}
+          strokeWidth={1.6}
+          fill={filled ? "currentColor" : "none"}
+          className={filled ? "text-mist motion-reduce:text-mist" : undefined}
+        />
       </span>
       <span
         aria-hidden
-        className="absolute inset-0 flex translate-y-full items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-y-0 motion-reduce:hidden"
+        className={`absolute inset-0 flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] ${
+          filled
+            ? "translate-y-0 motion-reduce:hidden"
+            : "translate-y-full group-hover:translate-y-0 motion-reduce:hidden"
+        }`}
       >
-        <Icon size={20} strokeWidth={1.6} />
+        <Icon size={20} strokeWidth={1.6} fill="currentColor" className="text-mist" />
       </span>
     </span>
   );
@@ -232,8 +276,8 @@ export function SiteHeader() {
   // Classic full-bleed hero uses a dark wash — icons flip to light. Campaigns keep ink.
   const iconButton =
     onHero && heroNav === "white"
-      ? "bg-white/15 text-white hover:bg-white/25"
-      : "bg-black/10 text-ink hover:bg-black/18";
+      ? "bg-white/15 text-white hover:bg-white/25 active:scale-95"
+      : "bg-black/10 text-ink hover:bg-black/18 active:scale-95";
   const currentNote = notes[note] || notes[0];
   const NoteIcon = currentNote?.icon || Sparkles;
 
@@ -380,37 +424,41 @@ export function SiteHeader() {
           <div className="relative z-20 ml-auto flex items-center gap-2">
             <button
               type="button"
-              className={`group h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 ${shop ? "inline-flex" : "hidden md:inline-flex"} ${iconButton}`}
+              className={`group h-10 w-10 items-center justify-center rounded-full transition-[colors,transform] duration-300 ${shop ? "inline-flex" : "hidden md:inline-flex"} ${iconButton}`}
               aria-label="Search"
+              aria-pressed={store.searchOpen}
               onClick={store.openSearch}
             >
-              <EscalatorIcon icon={Search} />
+              <EscalatorIcon icon={Search} filled={store.searchOpen} effect="tint" />
             </button>
             <button
               type="button"
-              className={`group hidden h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 md:inline-flex ${iconButton}`}
+              className={`group hidden h-10 w-10 items-center justify-center rounded-full transition-[colors,transform] duration-300 md:inline-flex ${iconButton}`}
               aria-label="Account"
+              aria-pressed={store.accountOpen}
               onClick={() => store.openAccount()}
             >
-              <EscalatorIcon icon={User} />
+              <EscalatorIcon icon={User} filled={store.accountOpen} />
             </button>
             <Link
               href="/wishlist"
               aria-label="Wishlist"
-              className={`group relative inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 ${iconButton}`}
+              aria-current={pathname.startsWith("/wishlist") ? "page" : undefined}
+              className={`group relative inline-flex h-10 w-10 items-center justify-center rounded-full transition-[colors,transform] duration-300 ${iconButton}`}
             >
-              <EscalatorIcon icon={Heart} />
+              <EscalatorIcon icon={Heart} filled={pathname.startsWith("/wishlist")} />
               {store.wishlist.length > 0 ? (
                 <span className="absolute right-1.5 top-1.5 h-1.25 w-1.25 rounded-full bg-mist" />
               ) : null}
             </Link>
             <button
               type="button"
-              className={`group relative hidden h-10 w-10 items-center justify-center rounded-full transition-colors duration-300 md:inline-flex ${iconButton}`}
+              className={`group relative hidden h-10 w-10 items-center justify-center rounded-full transition-[colors,transform] duration-300 md:inline-flex ${iconButton}`}
               aria-label="Bag"
+              aria-pressed={store.cartOpen}
               onClick={store.openCart}
             >
-              <EscalatorIcon icon={ShoppingBag} />
+              <EscalatorIcon icon={ShoppingBag} filled={store.cartOpen} effect="tint" />
               {itemCount(store.cart) > 0 ? (
                 <span
                   key={itemCount(store.cart)}

@@ -94,10 +94,27 @@ export function MobileAccountBar() {
       <div className="grid grid-cols-4">
         {items.map((item) => {
           const Icon = item.icon;
-          const className = `flex cursor-pointer flex-col items-center gap-1 px-1 py-2.5 text-[11px] ${item.active ? "font-semibold text-mist-ink" : "font-medium text-ink/75"}`;
+          const tintOnly = item.key === "bag";
+          const className = `group flex cursor-pointer flex-col items-center gap-1 px-1 py-2.5 text-[11px] transition-transform duration-150 active:scale-95 ${item.active ? "font-semibold text-mist-ink" : "font-medium text-ink/75"}`;
           const icon = (
             <span className="relative grid size-5 place-items-center">
-              <Icon size={18} strokeWidth={item.active ? 2 : 1.7} />
+              <Icon
+                size={18}
+                strokeWidth={item.active ? 2 : 1.7}
+                className={
+                  tintOnly
+                    ? `transition-[color,transform] duration-200 ${
+                        item.active
+                          ? "scale-105 text-mist"
+                          : "group-hover:scale-110 group-hover:text-mist"
+                      }`
+                    : `transition-[fill,color] duration-150 ${
+                        item.active
+                          ? "fill-mist text-mist"
+                          : "fill-none group-hover:fill-mist group-hover:text-mist"
+                      }`
+                }
+              />
               {item.key === "bag" && itemCount(store.cart) > 0 ? (
                 <span className="absolute -right-2 -top-1.5 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-[#d21f2b] px-0.5 text-[8px] leading-none text-white">{itemCount(store.cart)}</span>
               ) : null}
