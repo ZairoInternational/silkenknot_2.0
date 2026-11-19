@@ -1,5 +1,9 @@
+import type { ProductClaimId } from "@/lib/product-claims";
+
 /** `lifestyle` kept for legacy DB rows only — not seeded or linked on the storefront. */
 export type CategoryId = "body-care" | "bath-soap" | "aromatherapy" | "lifestyle";
+
+export type { ProductClaimId };
 
 export type Variant = {
   id: string;
@@ -49,7 +53,15 @@ export type Product = {
   showIngredients?: boolean;
   showHowToUse?: boolean;
   showBenefits?: boolean;
+  /**
+   * Formula marks on the product page.
+   * Undefined = plant-based, cruelty-free, made-in-india.
+   * Explicit array (including empty) = only those ids.
+   */
+  claims?: ProductClaimId[];
   images: string[];
+  /** Gallery URL shown beside description copy. Falls back to images[0]. */
+  descriptionImage?: string;
   variants: Variant[];
   featured: boolean;
   bestseller: boolean;

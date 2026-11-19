@@ -31,6 +31,12 @@ import {
   X,
 } from "lucide-react";
 import { couponProductIds, formatDate, formatPrice, slugify } from "@/lib/format";
+import {
+  DEFAULT_PRODUCT_CLAIMS,
+  PRODUCT_CLAIMS,
+  normalizeProductClaims,
+  toggleProductClaim,
+} from "@/lib/product-claims";
 import { useStore } from "@/lib/store";
 import type { Category, Coupon, Order, OrderStatus, Product, Variant } from "@/lib/types";
 import type { HeroContent, HeroEvergreenSlide, HeroOffer } from "@/lib/hero/content";
@@ -65,6 +71,7 @@ import {
   ProductDraftPreview,
   SiteMediaDraftPreview,
 } from "@/components/admin/StorefrontPreviews";
+import { PRODUCT_CLAIM_ICONS } from "@/components/product/ProductClaims";
 
 export {
   AdminEmptyState,
@@ -545,7 +552,14 @@ const commonTasks = [
 
 export function Dashboard() {
   const store = useStore();
-  const revenue = store.orders.filter((order) => order.status !== "cancelled").reduce((sum, order) => sum + order.total, 0);
+  const revenue = store.orders
+    .filter(
+      (order) =>
+        order.status !== "cancelled" &&
+        order.status !== "pending_payment" &&
+        (order.paymentState === "captured" || order.payment === "cod"),
+    )
+    .reduce((sum, order) => sum + order.total, 0);
   const low = store.products.filter((product) => product.variants.some((variant) => variant.stock < 8));
   const stats = [
     [store.products.length, "Products"],
@@ -851,6 +865,7 @@ function blankProduct(): Product {
     showIngredients: false,
     showHowToUse: false,
     showBenefits: false,
+    claims: [...DEFAULT_PRODUCT_CLAIMS],
     images: [],
     variants: [{ id: "standard", label: "Standard", price: 0, stock: 0 }],
     featured: false,
@@ -870,7 +885,10 @@ function ProductForm({ initial }: { initial?: Product }) {
   const store = useStore();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const [product, setProduct] = useState<Product>(initial ?? blankProduct());
+  const [product, setProduct] = useState<Product>(() => {
+    const base = initial ?? blankProduct();
+    return { ...base, claims: normalizeProductClaims(base.claims) };
+  });
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
@@ -878,6 +896,7 @@ function ProductForm({ initial }: { initial?: Product }) {
   const [pendingDeletes, setPendingDeletes] = useState<string[]>([]);
   const [imageUrl, setImageUrl] = useState("");
   const [openDetail, setOpenDetail] = useState<Record<string, boolean>>({});
+  const enabledClaims = new Set(normalizeProductClaims(product.claims));
 
   const set = <K extends keyof Product>(key: K, value: Product[K]) => setProduct((current) => ({ ...current, [key]: value }));
 
@@ -931,9 +950,30 @@ function ProductForm({ initial }: { initial?: Product }) {
 
   const removeImage = (index: number) => {
     const src = product.images[index];
-    set("images", product.images.filter((_, item) => item !== index));
+    const images = product.images.filter((_, item) => item !== index);
+    setProduct((current) => ({
+      ...current,
+      images,
+      descriptionImage:
+        current.descriptionImage && current.descriptionImage !== src
+          ? current.descriptionImage
+          : images[0],
+    }));
     if (!src || src.startsWith("/") || src.startsWith("data:") || src.startsWith("blob:")) return;
     setPendingDeletes((current) => (current.includes(src) ? current : [...current, src]));
+  };
+
+  const moveImage = (from: number, to: number) => {
+    if (to < 0 || to >= product.images.length || from === to) return;
+    const images = [...product.images];
+    const [moved] = images.splice(from, 1);
+    images.splice(to, 0, moved);
+    set("images", images);
+  };
+
+  const setMainImage = (index: number) => {
+    if (index <= 0 || index >= product.images.length) return;
+    moveImage(index, 0);
   };
 
   const addImageUrl = () => {
@@ -963,12 +1003,18 @@ function ProductForm({ initial }: { initial?: Product }) {
       onSubmit={async (event) => {
         event.preventDefault();
         const nextImages = product.images;
+        const descriptionImage =
+          product.descriptionImage && nextImages.includes(product.descriptionImage)
+            ? product.descriptionImage
+            : nextImages[0];
         const result = await store.saveProduct(
           {
             ...product,
+            descriptionImage,
             benefits: product.benefits.map((item) => item.trim()).filter(Boolean),
             ingredients: product.ingredients.map((item) => item.trim()).filter(Boolean),
             howToUse: product.howToUse.map((item) => item.trim()).filter(Boolean),
+            claims: normalizeProductClaims(product.claims),
             slug: slugify(product.slug || product.name),
           },
           !initial,
@@ -1110,7 +1156,7 @@ function ProductForm({ initial }: { initial?: Product }) {
             </div>
           </StudioPanel>
 
-          <StudioPanel title="Media" hint="Product gallery photos — drag to reorder">
+          <StudioPanel title="Media" hint="Gallery photos — pick featured and description roles">
             <label
               className="flex min-h-36 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-stone bg-[#ffffff] text-sm text-mute"
               onDragOver={(event) => event.preventDefault()}
@@ -1144,45 +1190,98 @@ function ProductForm({ initial }: { initial?: Product }) {
               </AdminTip>
             </div>
             {product.images.length ? (
-              <ul className="flex flex-wrap gap-3">
-                {product.images.map((src, index) => (
-                  <li
-                    key={`${src}-${index}`}
-                    draggable
-                    onDragStart={() => setDragIndex(index)}
-                    onDragOver={(event) => event.preventDefault()}
-                    onDrop={() => {
-                      if (dragIndex === null || dragIndex === index) return;
-                      const images = [...product.images];
-                      const [moved] = images.splice(dragIndex, 1);
-                      images.splice(index, 0, moved);
-                      set("images", images);
-                      setDragIndex(null);
-                    }}
-                    className="w-24"
-                  >
-                    <span className="relative block aspect-[4/5] overflow-hidden rounded-xl bg-[#f7f7f6]">
-                      <Media src={src} alt="" sizes="96px" className="object-cover" />
-                      {index === 0 ? (
-                        <span className="absolute left-1 top-1 rounded-full bg-ink/80 px-1.5 py-0.5 text-[9px] uppercase tracking-[0.12em] text-paper">
-                          Main
-                        </span>
-                      ) : null}
-                    </span>
-                    <AdminTip label="Remove photo">
-                      <button
-                        type="button"
-                        className="mt-1 inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.14em] text-mute hover:text-ink"
-                        onClick={() => void removeImage(index)}
+              <div className="space-y-2">
+                <p className="text-xs text-mute">
+                  Featured leads the gallery. Description is the photo beside product copy. Drag a row or use arrows to reorder.
+                </p>
+                <ul className="space-y-2">
+                  {product.images.map((src, index) => {
+                    const isMain = index === 0;
+                    const isDescription =
+                      (product.descriptionImage || product.images[0]) === src;
+                    return (
+                      <li
+                        key={`${src}-${index}`}
+                        draggable
+                        onDragStart={() => setDragIndex(index)}
+                        onDragEnd={() => setDragIndex(null)}
+                        onDragOver={(event) => event.preventDefault()}
+                        onDrop={() => {
+                          if (dragIndex === null || dragIndex === index) return;
+                          moveImage(dragIndex, index);
+                          setDragIndex(null);
+                        }}
+                        className={`flex items-center gap-3 rounded-xl border bg-[#ffffff] p-2 ${
+                          dragIndex === index ? "border-ink/40 opacity-70" : "border-line"
+                        }`}
                       >
-                        <Trash2 size={11} /> Remove
-                      </button>
-                    </AdminTip>
-                  </li>
-                ))}
-              </ul>
+                        <span className="relative block h-20 w-16 shrink-0 overflow-hidden rounded-lg bg-[#f7f7f6]">
+                          <Media src={src} alt="" sizes="64px" className="object-cover" />
+                        </span>
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <p className="text-xs font-medium text-ink">Photo {index + 1}</p>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                            <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-ink">
+                              <input
+                                type="radio"
+                                name="product-featured-image"
+                                checked={isMain}
+                                onChange={() => setMainImage(index)}
+                              />
+                              Featured
+                            </label>
+                            <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-ink">
+                              <input
+                                type="radio"
+                                name="product-description-image"
+                                checked={isDescription}
+                                onChange={() => set("descriptionImage", src)}
+                              />
+                              Description
+                            </label>
+                          </div>
+                        </div>
+                        <div className="flex shrink-0 flex-col gap-1">
+                          <AdminTip label="Move up">
+                            <button
+                              type="button"
+                              aria-label="Move image up"
+                              disabled={index === 0}
+                              onClick={() => moveImage(index, index - 1)}
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-paper text-mute disabled:opacity-35"
+                            >
+                              <ArrowUp size={14} />
+                            </button>
+                          </AdminTip>
+                          <AdminTip label="Move down">
+                            <button
+                              type="button"
+                              aria-label="Move image down"
+                              disabled={index === product.images.length - 1}
+                              onClick={() => moveImage(index, index + 1)}
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-paper text-mute disabled:opacity-35"
+                            >
+                              <ArrowDown size={14} />
+                            </button>
+                          </AdminTip>
+                        </div>
+                        <AdminTip label="Remove photo">
+                          <button
+                            type="button"
+                            aria-label="Remove photo"
+                            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line bg-paper text-mute hover:text-ink"
+                            onClick={() => void removeImage(index)}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </AdminTip>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             ) : (
-              <p className="text-xs text-mute">No photos yet. First upload becomes the main image.</p>
+              <p className="text-xs text-mute">No photos yet. First upload becomes the featured image.</p>
             )}
           </StudioPanel>
 
@@ -1325,6 +1424,44 @@ function ProductForm({ initial }: { initial?: Product }) {
                 Fallback when a row has no weight. Prefer Weight on each option.
               </span>
             </label>
+          </StudioPanel>
+
+          <StudioPanel
+            title="Formula marks"
+            hint="Trust strip on the product page — plant-based, cruelty-free, and Made in India on by default"
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              {PRODUCT_CLAIMS.map((claim) => {
+                const Icon = PRODUCT_CLAIM_ICONS[claim.id];
+                const checked = enabledClaims.has(claim.id);
+                return (
+                  <label
+                    key={claim.id}
+                    className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-[#ffffff] px-4 py-3 text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mt-0.5"
+                      checked={checked}
+                      onChange={(event) =>
+                        set("claims", toggleProductClaim(product.claims, claim.id, event.target.checked))
+                      }
+                    />
+                    <span className="flex min-w-0 items-start gap-2.5">
+                      <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full border border-line bg-paper text-mute">
+                        <Icon size={15} strokeWidth={1.4} aria-hidden />
+                      </span>
+                      <span>
+                        <span className="block font-medium">{claim.label}</span>
+                        <span className="mt-0.5 block text-xs text-mute">
+                          {claim.defaultEnabled ? "Default on for every product" : "Optional — turn on when it applies"}
+                        </span>
+                      </span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
           </StudioPanel>
 
           <StudioPanel title="Visibility" hint="Where this product appears in the store" defaultOpen={true}>

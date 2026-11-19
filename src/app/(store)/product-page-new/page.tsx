@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Check, Heart, Leaf, ShoppingBag, SquarePen, Truck } from "lucide-react";
+import { Check, ShoppingBag, SquarePen, Truck } from "lucide-react";
 import { Media, WishlistButton } from "@/components/ui";
 import { DeliveryChoice } from "@/components/product/DeliveryChoice";
+import { ProductClaimsStrip } from "@/components/product/ProductClaims";
 import { ProductBreadcrumbs } from "@/components/seo/ProductBreadcrumbs";
 import { ProductPageSkeleton } from "@/components/storefront/PageSkeletons";
 import { trackViewItem } from "@/lib/analytics";
@@ -137,6 +138,10 @@ function ProductLayout({
   const lineTotal = priceAfterOffer(price, applied);
   const shippingGap = shipping.freeShippingAt - lineTotal;
   const images = product.images.length ? product.images : ["/silknknot/body_butter.jpg"];
+  const descriptionImage =
+    product.descriptionImage && images.includes(product.descriptionImage)
+      ? product.descriptionImage
+      : images[0];
   const full = Math.round(product.rating);
   const reviews = mergedReviews(product.reviews, store.reviewsFor(product.id)).sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
@@ -272,16 +277,22 @@ function ProductLayout({
               </div>
             </div>
           </div>
-          <div className="flex gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex gap-3 overflow-x-auto py-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {images.map((image, index) => (
               <button
                 key={`${image}-${index}`}
                 type="button"
                 aria-label={`View image ${index + 1}`}
                 onClick={() => setActiveImage(index)}
-                className={`relative size-16 shrink-0 overflow-hidden rounded-md bg-white sm:size-20 ${activeImage === index ? "ring-2 ring-[#61A2AF]" : "ring-1 ring-[#efefed]"}`}
+                className={`relative size-16 shrink-0 rounded-md bg-white sm:size-20 ${
+                  activeImage === index
+                    ? "border-2 border-[#61A2AF]"
+                    : "border border-[#cfcbc4]"
+                }`}
               >
-                <Media src={image} alt={`${product.name} view ${index + 1}`} sizes="80px" className="object-contain p-1" />
+                <span className="absolute inset-0 overflow-hidden rounded-[5px]">
+                  <Media src={image} alt={`${product.name} view ${index + 1}`} sizes="80px" className="object-contain p-1" />
+                </span>
               </button>
             ))}
           </div>
@@ -397,42 +408,7 @@ function ProductLayout({
         <DeliveryChoice />
       </section>
 
-      <section className="overflow-hidden border-y border-[#efefed] bg-[#ffffff]">
-        <div className="py-6 md:hidden" aria-label="Product benefits">
-          <ul className="silk-marquee flex w-max items-center">
-            {[0, 1].map((copy) => (
-              <li key={copy} className="flex items-center" aria-hidden={copy === 1}>
-                {[
-                  ["Plant-based", Leaf],
-                  ["Cruelty-free", Heart],
-                  ["Paraben free", Check],
-                  ["Made in India", Truck],
-                ].map(([label, Icon]) => (
-                  <span key={String(label)} className="mx-8 inline-flex items-center gap-2 text-base font-medium text-[#2c2926]">
-                    <Icon size={18} strokeWidth={1.4} className="text-[#3A6B75]" />
-                    {String(label)}
-                  </span>
-                ))}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <ul className="mx-auto hidden max-w-[1200px] gap-8 px-4 py-10 sm:grid-cols-2 md:grid md:px-8 lg:grid-cols-4">
-          {[
-            ["Plant-based", Leaf],
-            ["Cruelty-free", Heart],
-            ["Paraben free", Check],
-            ["Made in India", Truck],
-          ].map(([label, Icon]) => (
-            <li key={String(label)} className="text-center">
-              <span className="mx-auto grid size-10 place-items-center text-[#3A6B75]">
-                <Icon size={22} strokeWidth={1.3} />
-              </span>
-              <h2 className="mt-3 text-base font-medium">{String(label)}</h2>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <ProductClaimsStrip product={product} />
 
       {detailTabs.length ? (
       <section className="mx-auto max-w-[1200px] px-4 py-14 md:px-8">
@@ -444,7 +420,7 @@ function ProductLayout({
           ))}
         </div>
         {detail === "description" && (productShowsSection(product, "description") || productShowsSection(product, "benefits")) ? (
-          <div className="mt-8 grid items-center gap-8 lg:grid-cols-2">
+          <div className="mt-8 grid items-start gap-8 lg:grid-cols-2">
             <div>
               {productShowsSection(product, "description") ? (
                 <p className="max-w-xl text-base leading-7 text-[#4e4943]">{product.description}</p>
@@ -460,8 +436,13 @@ function ProductLayout({
                 </ul>
               ) : null}
             </div>
-            <div className="relative min-h-[220px] overflow-hidden rounded-xl bg-[#efefed]">
-              <Media src={images[0]} alt={product.name} sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" />
+            <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-xl bg-[#f7f7f6] lg:mx-0 lg:max-w-none">
+              <Media
+                src={descriptionImage}
+                alt={product.name}
+                sizes="(min-width: 1024px) 40vw, 100vw"
+                className="object-contain p-3"
+              />
             </div>
           </div>
         ) : null}
