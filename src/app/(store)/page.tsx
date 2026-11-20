@@ -7,7 +7,7 @@ import { WhySilkKnot } from "@/components/home/WhySilkKnot";
 import { ClaimMarquee } from "@/components/home/ClaimMarquee";
 import { NewLaunches } from "@/components/home/NewLaunches";
 import { BrandStory, Newsletter } from "@/components/home/Flow";
-import Reviews from "@/components/home/Reviews";
+// import Reviews from "@/components/home/Reviews";
 import { PromotionalStrip } from "@/components/home/PromotionalStrip";
 import { WelcomeScratchOfferLazy } from "@/components/offers/WelcomeScratchOfferLazy";
 import { getPublicBannersForHome } from "@/lib/banners/server";
@@ -43,7 +43,7 @@ export default async function HomePage() {
       <CategorySection />
       <WhySilkKnot />
       <ClaimMarquee />
-      <Reviews />
+      {/* <Reviews /> */}
       <BrandStory />
       {/* <GiftSets/> */}
       {/* <BuildYourRitual/> */}

@@ -75,6 +75,33 @@ export function orderLinkSuffix(id: string) {
   return encodeURIComponent(id);
 }
 
+export function welcomeVariables(name: string) {
+  return [firstName(name)];
+}
+
+/** Once per account: WhatsApp welcome after first name + verified phone. */
+export async function notifyWelcomeSignup(db: Db, user: { id: string; name?: string; phone?: string }) {
+  const template = process.env.MSG91_WHATSAPP_WELCOME_TEMPLATE_NAME?.trim();
+  const destination = whatsAppDestination(user.phone);
+  const fullName = (user.name || "").trim();
+  if (!user.id || !fullName || !template || !destination || !whatsAppTemplateReady(template)) return;
+  const claim = await db.collection("users").updateOne(
+    { id: user.id, "notices.whatsappWelcomeAt": { $exists: false } },
+    { $set: { "notices.whatsappWelcomeAt": new Date().toISOString() } },
+  );
+  if (claim.modifiedCount !== 1) return;
+  // Body: Hi {{1}}, welcome to Silken Knot! … CTA "Explore Silken Knot" is a static
+  // Meta URL button → https://www.silkenknot.com (no button var in the API payload).
+  const [greetingName] = welcomeVariables(fullName);
+  const sent = await sendWhatsAppTemplate(destination, template, {
+    body_1: { type: "text", value: greetingName },
+  });
+  if (!sent.ok) {
+    await db.collection("users").updateOne({ id: user.id }, { $unset: { "notices.whatsappWelcomeAt": "" } });
+    console.info(JSON.stringify({ scope: "auth", event: "welcome_whatsapp_failed", userId: user.id, status: sent.status }));
+  }
+}
+
 export function queueOrderConfirmation(order: {
   id: string;
   email?: string;

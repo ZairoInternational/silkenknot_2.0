@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { confirmationVariables, deliveredVariables, formatDeliveredAt, orderLinkSuffix } from "./notify";
+import { confirmationVariables, deliveredVariables, formatDeliveredAt, orderLinkSuffix, welcomeVariables } from "./notify";
 
 test("order WhatsApp variables follow the approved template order", () => {
   assert.deepEqual(confirmationVariables({ customerName: "Asha Menon", number: "SK1042", total: 2499 }), [
@@ -29,4 +29,9 @@ test("order WhatsApp variables follow the approved template order", () => {
   );
   assert.equal(confirmationVariables({ customerName: "  ", number: "SK1", total: 0 })[0], "there");
   assert.equal(orderLinkSuffix("ord_abc123"), "ord_abc123");
+});
+
+test("welcome WhatsApp variables use first name only", () => {
+  assert.deepEqual(welcomeVariables("Asha Menon"), ["Asha"]);
+  assert.deepEqual(welcomeVariables("  "), ["there"]);
 });

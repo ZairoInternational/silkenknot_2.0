@@ -1,12 +1,14 @@
 import type { Db } from "mongodb";
 import { ACCOUNT_RESTRICTED_CODE, ACCOUNT_RESTRICTED_MESSAGE } from "@/lib/auth/codes";
 import type { OtpChannel, OtpPurpose } from "@/lib/auth/otp";
+import { notifyWelcomeSignup } from "@/lib/mail/notify";
 import { publicUser } from "@/lib/mongo";
 
 export { ACCOUNT_RESTRICTED_CODE, ACCOUNT_RESTRICTED_MESSAGE } from "@/lib/auth/codes";
 
 type Account = {
   id: string;
+  name?: string;
   role?: string;
   email?: string;
   phone?: string;
@@ -91,5 +93,8 @@ export async function linkVerifiedContact(db: Db, userId: string, purpose: OtpPu
     return { ok: false as const, message: "That verification can’t be used this way." };
   }
   const next = await users.findOne({ id: userId });
+  if (purpose === "link-phone" && next) {
+    void notifyWelcomeSignup(db, { id: userId, name: String(next.name || ""), phone: destination });
+  }
   return { ok: true as const, user: publicUser(next || account) };
 }

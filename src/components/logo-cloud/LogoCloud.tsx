@@ -8,13 +8,13 @@ import {
   Logo02,
   Logo03,
   Logo04,
-  Logo05,
+  // Logo05,
   Logo06,
   Logo07,
   Logo08,
   Logo09,
   Logo10,
-  Logo11,
+  // Logo11,
   Logo12,
 } from "@/components/logo-cloud/logos";
 import { Marquee } from "@/components/logo-cloud/marquee";
@@ -114,13 +114,13 @@ export function LogoCloud() {
             <Logo02 />
             <Logo03 />
             <Logo04 />
-            <Logo05 />
+            {/* <Logo05 /> */}
             <Logo06 />
             <Logo07 />
             <Logo08 />
             <Logo09 />
             <Logo10 />
-            <Logo11 />
+            {/* <Logo11 /> */}
             <Logo12 />
           </Marquee>
         </div>

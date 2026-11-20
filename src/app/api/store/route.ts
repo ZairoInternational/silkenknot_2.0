@@ -3,6 +3,7 @@ import { getFullProducts, getSlimCatalog, invalidateCatalogCache } from "@/lib/c
 import { databaseConfigured, getDb, publicUser } from "@/lib/mongo";
 import { saveBag } from "@/lib/auth/bag";
 import { csrfHeaderMatches, jsonError, sameOrigin } from "@/lib/auth/http";
+import { notifyWelcomeSignup } from "@/lib/mail/notify";
 import { applyAdminStatus, CheckoutError, publicOrder, type StoredOrder } from "@/lib/payments/service";
 import { customerOrderVisible } from "@/lib/shipping/states";
 import { clearSession, currentSession, ensureCsrfCookie } from "@/lib/session";
@@ -243,8 +244,13 @@ export async function POST(request: Request) {
       if (session.role !== "customer") return fail("Log in to continue.", 401);
       const name = String(body.name || "").trim().replace(/\s+/g, " ");
       if (name.length < 2 || name.length > 80) return fail("Enter your name.");
+      const before = await users.findOne({ id: session.id }, { projection: { nameSetAt: 1, phone: 1, phoneVerifiedAt: 1 } });
+      const firstNameSet = !before?.nameSetAt;
       await users.updateOne({ id: session.id }, { $set: { name, nameSetAt: new Date().toISOString() } });
       const user = await users.findOne({ id: session.id });
+      if (firstNameSet && before?.phoneVerifiedAt && before.phone) {
+        void notifyWelcomeSignup(db, { id: session.id, name, phone: String(before.phone) });
+      }
       return Response.json({ ok: true, message: "Profile saved.", user: user ? publicUser(user) : null });
     }
 
