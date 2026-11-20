@@ -77,7 +77,7 @@ function NameStep() {
 
   return (
     <div className={shell}>
-      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#3A6B75]">One step left</p>
+      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-mist-ink">One step left</p>
       <h1 className="mt-3 text-4xl font-medium tracking-tight">What should we call you?</h1>
       <p className="mt-3 text-sm leading-7 text-mute">Your name is required. It appears on orders and deliveries.</p>
       <form
@@ -112,11 +112,11 @@ function NameStep() {
             value={name}
             placeholder="Your name"
             onChange={(event) => { setName(event.target.value); setError(""); }}
-            className="h-full w-full bg-transparent text-base text-ink outline-none placeholder:text-[#8a8178] focus:outline-none focus-visible:outline-none"
+            className="h-full w-full bg-transparent text-base text-ink outline-none placeholder:text-mute focus:outline-none focus-visible:outline-none"
           />
         </label>
         {error ? <p role="alert" className="mt-3 text-sm text-[#8d3b32]">{error}</p> : null}
-        <button type="submit" disabled={busy} className="mt-5 h-12 w-full rounded-2xl bg-[#61A2AF] text-[11px] font-medium uppercase tracking-[0.16em] text-white hover:bg-[#4F8A96] disabled:opacity-60">
+        <button type="submit" disabled={busy} className="mt-5 h-12 w-full rounded-2xl bg-mist text-[11px] font-medium uppercase tracking-[0.16em] text-white hover:bg-mist-hover disabled:opacity-60">
           {busy ? "Saving…" : "Continue"}
         </button>
       </form>
@@ -137,7 +137,7 @@ function AccountNav({ items, className }: { items: { href: string; label: string
       {items.map((item) => {
         const Icon = item.icon;
         return (
-          <Link key={item.href} href={item.href} className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm ${item.active ? "bg-[#f7f7f6] font-medium text-[#b08958]" : "border border-[#e8e8e6] bg-white text-[#6f675d] md:border-0 md:bg-transparent md:py-2.5"}`}>
+          <Link key={item.href} href={item.href} className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm ${item.active ? "bg-sand font-medium text-mist-ink" : "border border-line bg-white text-mute md:border-0 md:bg-transparent md:py-2.5"}`}>
             <Icon size={16} strokeWidth={1.7} />
             {item.label}
           </Link>
@@ -161,15 +161,15 @@ function AccountFrame({ children }: { children: ReactNode }) {
 
   return (
     <div className="page-pad mx-auto w-full max-w-6xl px-4 pb-16 pt-6 md:px-8">
-      <div className="md:grid md:grid-cols-[230px_minmax(0,1fr)] md:overflow-hidden md:rounded-[28px] md:border md:border-[#e8e8e6] md:bg-white">
-        <aside className="hidden border-[#e8e8e6] px-5 py-8 md:block md:border-r max-md:hidden">
+      <div className="md:grid md:grid-cols-[230px_minmax(0,1fr)] md:overflow-hidden md:rounded-[28px] md:border md:border-line md:bg-white">
+        <aside className="hidden border-line px-5 py-8 md:block md:border-r max-md:hidden">
           <div className="flex items-center gap-3">
-            <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#f7f7f6] text-[#c4a574]">
+            <span className="grid size-12 shrink-0 place-items-center rounded-full bg-sand text-mist">
               <User size={22} strokeWidth={1.6} />
             </span>
             <span className="min-w-0">
-              <span className="block truncate text-sm font-semibold text-[#2c2926]">{user.name || "Your account"}</span>
-              <span className="mt-0.5 block truncate text-xs text-[#8a8178]">{user.phone ? displayPhone(user.phone) : user.email}</span>
+              <span className="block truncate text-sm font-semibold text-ink">{user.name || "Your account"}</span>
+              <span className="mt-0.5 block truncate text-xs text-mute">{user.phone ? displayPhone(user.phone) : user.email}</span>
             </span>
           </div>
           <AccountNav items={items} className="mt-8 space-y-1" />
@@ -201,17 +201,17 @@ function ProfileForm() {
 
   return (
     <AccountFrame>
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#c4a574]">My profile</p>
-      <h1 className="mt-2 text-3xl font-medium tracking-tight text-[#2c2926]">Personal Information</h1>
-      <p className="mt-2 text-sm text-[#8a8178]">Manage your personal details and contact information.</p>
+      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-mist">My profile</p>
+      <h1 className="mt-2 text-3xl font-medium tracking-tight text-ink">Personal Information</h1>
+      <p className="mt-2 text-sm text-mute">Manage your personal details and contact information.</p>
       <ProfileCompletion
         user={user}
         onPhone={() => setLinking("link-phone")}
         onEmail={() => setLinking("link-email")}
       />
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <div className="space-y-3 rounded-[24px] border border-[#e8e8e6] bg-white p-4 md:bg-[#ffffff]">
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#e8e8e6] bg-white px-4 py-3">
+        <div className="space-y-3 rounded-[24px] border border-line bg-white p-4 md:bg-paper">
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-white px-4 py-3">
             {editingName ? (
               <form
                 className="flex w-full items-center gap-2"
@@ -223,7 +223,7 @@ function ProfileForm() {
                 }}
               >
                 <label className="min-w-0 flex-1">
-                  <span className="text-xs text-[#b7a48a]">Full Name</span>
+                  <span className="text-xs text-mute">Full Name</span>
                   <input
                     required
                     minLength={2}
@@ -231,18 +231,18 @@ function ProfileForm() {
                     autoComplete="name"
                     value={name}
                     onChange={(event) => setName(event.target.value)}
-                    className="mt-1 h-10 w-full rounded-lg border border-[#e8e8e6] bg-[#ffffff] px-3 text-sm font-medium text-[#2c2926] outline-none ring-0 transition-[border-color,box-shadow] focus:border-[#61A2AF] focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,162,175,0.18)] focus-visible:outline-none"
+                    className="mt-1 h-10 w-full rounded-lg border border-line bg-paper px-3 text-sm font-medium text-ink outline-none ring-0 transition-[border-color,box-shadow] focus:border-mist focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_rgba(97,162,175,0.18)] focus-visible:outline-none"
                   />
                 </label>
-                <button type="submit" className="h-10 shrink-0 rounded-full bg-[#61A2AF] px-4 text-xs text-white hover:bg-[#4F8A96]">Save</button>
+                <button type="submit" className="h-10 shrink-0 rounded-full bg-mist px-4 text-xs text-white hover:bg-mist-hover">Save</button>
               </form>
             ) : (
               <>
                 <div>
-                  <p className="text-xs text-[#b7a48a]">Full Name</p>
-                  <p className="mt-0.5 text-sm font-medium text-[#2c2926]">{user.name}</p>
+                  <p className="text-xs text-mute">Full Name</p>
+                  <p className="mt-0.5 text-sm font-medium text-ink">{user.name}</p>
                 </div>
-                <button type="button" aria-label="Edit full name" className="text-[#c4a574]" onClick={() => { setName(user.name); setEditingName(true); }}>
+                <button type="button" aria-label="Edit full name" className="text-mist" onClick={() => { setName(user.name); setEditingName(true); }}>
                   <Pencil size={16} />
                 </button>
               </>
@@ -251,24 +251,24 @@ function ProfileForm() {
           <InfoRow label="Phone Number" value={user.phone ? displayPhone(user.phone) : "Not added"} onEdit={() => setLinking("link-phone")} />
           <InfoRow label="Email Address" value={user.email || "Not added"} onEdit={() => setLinking("link-email")} />
           {linking ? (
-            <div className="rounded-2xl border border-[#e8e8e6] bg-[#ffffff] p-3">
+            <div className="rounded-2xl border border-line bg-paper p-3">
               <OtpAuth variant="inline" purpose={linking} onDone={() => setLinking(null)} />
             </div>
           ) : null}
         </div>
-        <div className="flex flex-col items-center justify-center rounded-[24px] border border-[#e8e8e6] bg-white px-6 py-10 text-center md:bg-[#ffffff]">
+        <div className="flex flex-col items-center justify-center rounded-[24px] border border-line bg-white px-6 py-10 text-center md:bg-paper">
           {photo ? (
             <span className="relative size-20 overflow-hidden rounded-full">
               <Media src={photo} alt="" sizes="80px" className="object-cover" />
             </span>
           ) : (
-            <span className="grid size-20 place-items-center rounded-full bg-[#f7f7f6] text-[#c4a574]">
+            <span className="grid size-20 place-items-center rounded-full bg-sand text-mist">
               <User size={32} strokeWidth={1.5} />
             </span>
           )}
-          <p className="mt-4 text-base font-medium text-[#2c2926]">Profile Picture</p>
-          <p className="mt-1 max-w-xs text-sm text-[#8a8178]">Add a profile picture to make your account more personal.</p>
-          <label className="mt-5 inline-flex h-10 cursor-pointer items-center rounded-full bg-[#f3e6cf] px-5 text-sm font-medium text-[#3A6B75]">
+          <p className="mt-4 text-base font-medium text-ink">Profile Picture</p>
+          <p className="mt-1 max-w-xs text-sm text-mute">Add a profile picture to make your account more personal.</p>
+          <label className="mt-5 inline-flex h-10 cursor-pointer items-center rounded-full bg-mist-cool px-5 text-sm font-medium text-mist-ink">
             Change Photo
             <input
               type="file"
@@ -283,7 +283,7 @@ function ProfileForm() {
           </label>
         </div>
       </div>
-      {note ? <p role="status" className="mt-4 text-sm text-[#8a8178]">{note}</p> : null}
+      {note ? <p role="status" className="mt-4 text-sm text-mute">{note}</p> : null}
     </AccountFrame>
   );
 }
@@ -307,31 +307,31 @@ function ProfileCompletion({
   const next = completion.next;
 
   return (
-    <section className="mt-6 rounded-[24px] border border-[#e8e8e6] bg-white p-4 md:bg-[#ffffff]" aria-label="Profile completion">
+    <section className="mt-6 rounded-[24px] border border-line bg-white p-4 md:bg-paper" aria-label="Profile completion">
       <div className="flex items-center gap-4">
         <ProgressRing percent={completion.percent} />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-[#2c2926]">
+          <p className="text-sm font-medium text-ink">
             {completion.percent === 100 ? "Your profile is complete" : `Your profile is ${completion.percent}% complete`}
           </p>
-          <p className="mt-1 text-sm text-[#8a8178]">
+          <p className="mt-1 text-sm text-mute">
             {next ? hints[next.id] : "Name, phone, email, and a delivery address are saved."}
           </p>
           {next?.id === "phone" ? (
-            <button type="button" className="mt-3 h-9 rounded-full bg-[#61A2AF] px-4 text-sm text-white" onClick={onPhone}>Add phone</button>
+            <button type="button" className="mt-3 h-9 rounded-full bg-mist px-4 text-sm text-white" onClick={onPhone}>Add phone</button>
           ) : null}
           {next?.id === "email" ? (
-            <button type="button" className="mt-3 h-9 rounded-full bg-[#61A2AF] px-4 text-sm text-white" onClick={onEmail}>Add email</button>
+            <button type="button" className="mt-3 h-9 rounded-full bg-mist px-4 text-sm text-white" onClick={onEmail}>Add email</button>
           ) : null}
           {next?.id === "address" ? (
-            <Link href="/account/addresses" className="mt-3 inline-flex h-9 items-center rounded-full bg-[#61A2AF] px-4 text-sm text-white">Add address</Link>
+            <Link href="/account/addresses" className="mt-3 inline-flex h-9 items-center rounded-full bg-mist px-4 text-sm text-white">Add address</Link>
           ) : null}
         </div>
       </div>
       <ul className="mt-4 grid grid-cols-2 gap-2">
         {completion.steps.map((step) => (
-          <li key={step.id} className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm ${step.done ? "bg-[#e7f6ec] text-[#1f8a4c]" : "bg-[#f7f7f6] text-[#3A6B75]"}`}>
-            <span className={`grid size-5 place-items-center rounded-full ${step.done ? "bg-[#1f8a4c] text-white" : "border border-[#e3d3b8] bg-white"}`}>
+          <li key={step.id} className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm ${step.done ? "bg-[#e7f6ec] text-[#1f8a4c]" : "bg-sand text-mist-ink"}`}>
+            <span className={`grid size-5 place-items-center rounded-full ${step.done ? "bg-[#1f8a4c] text-white" : "border border-stone bg-white"}`}>
               {step.done ? <Check size={12} strokeWidth={2.4} /> : null}
             </span>
             {step.label}
@@ -349,32 +349,32 @@ function ProgressRing({ percent }: { percent: number }) {
   return (
     <span className="relative grid size-16 shrink-0 place-items-center">
       <svg viewBox="0 0 72 72" className="size-16 -rotate-90" aria-hidden>
-        <circle cx="36" cy="36" r={radius} fill="none" stroke="#e8e8e6" strokeWidth="6" />
+        <circle cx="36" cy="36" r={radius} fill="none" stroke="#e0e0e0" strokeWidth="6" />
         <circle
           cx="36"
           cy="36"
           r={radius}
           fill="none"
-          stroke="#61A2AF"
+          stroke="#5fa4ad"
           strokeWidth="6"
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
         />
       </svg>
-      <span className="absolute text-xs font-semibold text-[#2c2926]">{percent}%</span>
+      <span className="absolute text-xs font-semibold text-ink">{percent}%</span>
     </span>
   );
 }
 
 function InfoRow({ label, value, onEdit }: { label: string; value: string; onEdit: () => void }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#e8e8e6] bg-white px-4 py-3">
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-white px-4 py-3">
       <div className="min-w-0">
-        <p className="text-xs text-[#b7a48a]">{label}</p>
-        <p className="mt-0.5 truncate text-sm font-medium text-[#2c2926]">{value}</p>
+        <p className="text-xs text-mute">{label}</p>
+        <p className="mt-0.5 truncate text-sm font-medium text-ink">{value}</p>
       </div>
-      <button type="button" aria-label={`Edit ${label}`} className="text-[#c4a574]" onClick={onEdit}>
+      <button type="button" aria-label={`Edit ${label}`} className="text-mist" onClick={onEdit}>
         <Pencil size={16} />
       </button>
     </div>
@@ -501,30 +501,30 @@ function OrderList() {
     <div>
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start lg:gap-8">
         <div>
-          <h1 className="text-[1.75rem] font-medium tracking-tight text-[#2c2926] md:text-3xl">Your orders</h1>
-          <p className="mt-2 max-w-xl text-sm text-[#6f675d]">Track your orders, view details, and reorder your favorite products.</p>
-          <label className="mt-5 flex h-11 items-center gap-2 rounded-xl border border-[#e8e8e6] bg-white px-3 text-sm text-[#6f675d]">
-            <Search size={16} className="shrink-0 text-[#3A6B75]" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by order number…" className="min-w-0 flex-1 bg-transparent text-[#2c2926] outline-none placeholder:text-[#9a948b]" />
+          <h1 className="text-[1.75rem] font-medium tracking-tight text-ink md:text-3xl">Your orders</h1>
+          <p className="mt-2 max-w-xl text-sm text-mute">Track your orders, view details, and reorder your favorite products.</p>
+          <label className="mt-5 flex h-11 items-center gap-2 rounded-xl border border-line bg-white px-3 text-sm text-mute">
+            <Search size={16} className="shrink-0 text-mist-ink" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by order number…" className="min-w-0 flex-1 bg-transparent text-ink outline-none placeholder:text-mute" />
           </label>
           <div className="mt-4 flex items-center gap-2">
             <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1">
               {filters.map(([id, label]) => (
-                <button key={id} type="button" onClick={() => setFilter(id)} className={`h-9 shrink-0 rounded-full px-3 text-xs ${filter === id ? "bg-[#2c2926] text-white" : "border border-[#e8e8e6] bg-white text-[#4e4943]"}`}>
+                <button key={id} type="button" onClick={() => setFilter(id)} className={`h-9 shrink-0 rounded-full px-3 text-xs ${filter === id ? "bg-ink text-white" : "border border-line bg-white text-mute"}`}>
                   {label}
                 </button>
               ))}
             </div>
-            <span className="shrink-0 text-xs text-[#6f675d]">{visible.length} {visible.length === 1 ? "order" : "orders"}</span>
+            <span className="shrink-0 text-xs text-mute">{visible.length} {visible.length === 1 ? "order" : "orders"}</span>
           </div>
           {orders.length === 0 ? (
-            <div className="mt-6 rounded-2xl border border-[#e8e8e6] bg-white px-6 py-12 text-center">
-              <Package size={28} className="mx-auto text-[#61A2AF]" />
-              <p className="mt-4 text-[#2c2926]">No orders yet.</p>
-              <Link href="/shop" className="mt-5 inline-flex h-11 items-center rounded-md bg-[#61A2AF] px-5 text-[11px] uppercase tracking-[0.14em] text-white hover:bg-[#4F8A96]">Continue shopping</Link>
+            <div className="mt-6 rounded-2xl border border-line bg-white px-6 py-12 text-center">
+              <Package size={28} className="mx-auto text-mist" />
+              <p className="mt-4 text-ink">No orders yet.</p>
+              <Link href="/shop" className="mt-5 inline-flex h-11 items-center rounded-md bg-mist px-5 text-[11px] uppercase tracking-[0.14em] text-white hover:bg-mist-hover">Continue shopping</Link>
             </div>
           ) : visible.length === 0 ? (
-            <p className="mt-6 rounded-2xl border border-[#e8e8e6] bg-white px-5 py-8 text-sm text-[#6f675d]">{needle ? "No orders match this search." : filter === "cancelled" ? "No cancelled orders." : filter === "delivered" ? "No delivered orders." : "No orders in progress."}</p>
+            <p className="mt-6 rounded-2xl border border-line bg-white px-5 py-8 text-sm text-mute">{needle ? "No orders match this search." : filter === "cancelled" ? "No cancelled orders." : filter === "delivered" ? "No delivered orders." : "No orders in progress."}</p>
           ) : (
             <ul className="mt-4 space-y-4">
               {visible.map((order) => <OrderCard key={order.id} order={order} />)}
@@ -546,44 +546,44 @@ function OrderCard({ order }: { order: Order }) {
   const extra = order.items.length - shown.length;
   const again = group === "delivered" || group === "cancelled";
   return (
-    <li className="rounded-2xl border border-[#e8e8e6] bg-white p-4 md:p-5">
+    <li className="rounded-2xl border border-line bg-white p-4 md:p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-[#2c2926]">Order #{order.number}</p>
-          <p className="mt-1 text-xs text-[#6f675d]">{formatDate(order.createdAt)}</p>
+          <p className="text-sm font-medium text-ink">Order #{order.number}</p>
+          <p className="mt-1 text-xs text-mute">{formatDate(order.createdAt)}</p>
           <div className="mt-3 flex items-center justify-between gap-3 lg:hidden">
-            <span className="text-xs text-[#6f675d]">{payLabel(order)}</span>
-            <span className="text-sm font-medium text-[#2c2926]">{formatPrice(order.total)}</span>
+            <span className="text-xs text-mute">{payLabel(order)}</span>
+            <span className="text-sm font-medium text-ink">{formatPrice(order.total)}</span>
             <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.08em] ${statusTone(status)}`}>{shortStatus(status)}</span>
           </div>
           <div className="mt-4 flex gap-3 overflow-x-auto">
             {shown.map((item) => (
               <span key={`${item.productId}-${item.variantLabel}`} className="w-16 shrink-0 md:w-[4.5rem]">
-                <span className="relative grid size-16 place-items-center overflow-hidden rounded-lg bg-[#ffffff] md:size-[4.5rem]">
-                  {item.image ? <Media src={item.image} alt="" sizes="72px" className="object-cover" /> : <Package size={16} className="text-[#61A2AF]" />}
+                <span className="relative grid size-16 place-items-center overflow-hidden rounded-lg bg-paper md:size-[4.5rem]">
+                  {item.image ? <Media src={item.image} alt="" sizes="72px" className="object-cover" /> : <Package size={16} className="text-mist" />}
                 </span>
-                <span className="mt-1 block truncate text-[11px] text-[#4e4943]">{item.name}</span>
+                <span className="mt-1 block truncate text-[11px] text-mute">{item.name}</span>
               </span>
             ))}
-            {extra > 0 ? <span className="grid size-16 shrink-0 place-items-center rounded-lg bg-[#ffffff] text-xs text-[#6f675d] md:size-[4.5rem]">+{extra}</span> : null}
+            {extra > 0 ? <span className="grid size-16 shrink-0 place-items-center rounded-lg bg-paper text-xs text-mute md:size-[4.5rem]">+{extra}</span> : null}
           </div>
         </div>
         <div className="lg:w-64 lg:text-right">
           <div className="hidden items-center justify-end gap-3 lg:flex">
-            <span className="text-xs text-[#6f675d]">{payLabel(order)}</span>
-            <span className="text-sm font-medium text-[#2c2926]">{formatPrice(order.total)}</span>
+            <span className="text-xs text-mute">{payLabel(order)}</span>
+            <span className="text-sm font-medium text-ink">{formatPrice(order.total)}</span>
             <span className={`rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.08em] ${statusTone(status)}`}>{shortStatus(status)}</span>
           </div>
-          <p className="text-sm font-medium text-[#2c2926] lg:mt-4">{story.title}</p>
-          <p className="mt-1 text-xs leading-5 text-[#6f675d]">{story.body}</p>
+          <p className="text-sm font-medium text-ink lg:mt-4">{story.title}</p>
+          <p className="mt-1 text-xs leading-5 text-mute">{story.body}</p>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row lg:justify-end">
             {group === "progress" ? (
-              <Link href={`/orders/${order.id}#tracking`} className="inline-flex h-10 items-center justify-center rounded-md bg-[#61A2AF] px-4 text-xs text-white hover:bg-[#4F8A96]">Track order</Link>
+              <Link href={`/orders/${order.id}#tracking`} className="inline-flex h-10 items-center justify-center rounded-md bg-mist px-4 text-xs text-white hover:bg-mist-hover">Track order</Link>
             ) : null}
             {again ? (
-              <button type="button" onClick={() => orderAgain(order, store)} className="inline-flex h-10 items-center justify-center rounded-md bg-[#61A2AF] px-4 text-xs text-white hover:bg-[#4F8A96]">Buy again</button>
+              <button type="button" onClick={() => orderAgain(order, store)} className="inline-flex h-10 items-center justify-center rounded-md bg-mist px-4 text-xs text-white hover:bg-mist-hover">Buy again</button>
             ) : null}
-            <Link href={`/orders/${order.id}#details`} className="inline-flex h-10 items-center justify-center rounded-md border border-[#e8e8e6] px-4 text-xs text-[#2c2926]">View details</Link>
+            <Link href={`/orders/${order.id}#details`} className="inline-flex h-10 items-center justify-center rounded-md border border-line px-4 text-xs text-ink">View details</Link>
           </div>
         </div>
       </div>
@@ -599,25 +599,25 @@ function OrderHelp() {
   ];
   return (
     <aside className="mt-8 space-y-4 lg:sticky lg:top-24 lg:mt-0">
-      <div className="rounded-2xl border border-[#e8e8e6] bg-[#ffffff] p-4">
-        <p className="text-sm font-medium text-[#2c2926]">Need help?</p>
-        <p className="mt-1 text-xs leading-5 text-[#6f675d]">Support for your orders, shipping, and returns.</p>
+      <div className="rounded-2xl border border-line bg-paper p-4">
+        <p className="text-sm font-medium text-ink">Need help?</p>
+        <p className="mt-1 text-xs leading-5 text-mute">Support for your orders, shipping, and returns.</p>
         <ul className="mt-3 space-y-1">
           {links.map((link) => (
             <li key={link.label}>
-              <Link href={link.href} className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-[#2c2926] hover:bg-white">
-                <span className="text-[#3A6B75]">{link.icon}</span>
+              <Link href={link.href} className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-ink hover:bg-white">
+                <span className="text-mist-ink">{link.icon}</span>
                 {link.label}
               </Link>
             </li>
           ))}
         </ul>
       </div>
-      <div className="rounded-2xl border border-[#e8e8e6] bg-white p-4">
-        <p className="text-sm font-medium text-[#2c2926]">Questions?</p>
-        <p className="mt-1 text-xs text-[#6f675d]">Our team is happy to help.</p>
-        <Link href="/contact" className="mt-3 inline-flex h-10 items-center gap-2 rounded-md border border-[#e8e8e6] px-3 text-xs text-[#2c2926]">
-          <MessageCircle size={14} className="text-[#3A6B75]" /> Contact us
+      <div className="rounded-2xl border border-line bg-white p-4">
+        <p className="text-sm font-medium text-ink">Questions?</p>
+        <p className="mt-1 text-xs text-mute">Our team is happy to help.</p>
+        <Link href="/contact" className="mt-3 inline-flex h-10 items-center gap-2 rounded-md border border-line px-3 text-xs text-ink">
+          <MessageCircle size={14} className="text-mist-ink" /> Contact us
         </Link>
       </div>
     </aside>
@@ -627,8 +627,8 @@ function OrderHelp() {
 function statusTone(status: string) {
   if (status === "Delivered") return "bg-[#e7f0e4] text-[#3d5c3a]";
   if (status === "Cancelled" || status === "Refunded") return "bg-[#f6ece8] text-[#8a4b3c]";
-  if (status === "Payment pending" || status === "Refund in progress") return "bg-[#ffffff] text-[#6f675d]";
-  return "bg-[#f7f7f6] text-[#3A6B75]";
+  if (status === "Payment pending" || status === "Refund in progress") return "bg-paper text-mute";
+  return "bg-sand text-mist-ink";
 }
 
 export function AddressesScreen() {
@@ -652,7 +652,7 @@ function AddressLabelChip({ label }: { label: string }) {
   const kind = normalizeAddressLabel(label);
   const Icon = kind === "Office" ? Building2 : House;
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f7f7f6] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-[#b08958]">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-sand px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-mist-ink">
       <Icon size={12} strokeWidth={1.8} aria-hidden />
       {kind}
     </span>
@@ -709,28 +709,28 @@ function AddressBook() {
 
   return (
     <AccountFrame>
-      {fromShipping ? <Link href={back} className="text-sm text-[#b08958]">Back to shipping</Link> : null}
+      {fromShipping ? <Link href={back} className="text-sm text-mist-ink">Back to shipping</Link> : null}
       <div className="mt-1 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#c4a574]">My addresses</p>
-          <h1 className="mt-2 text-3xl font-medium tracking-tight text-[#2c2926]">Manage Addresses</h1>
-          <p className="mt-2 text-sm text-[#8a8178]">Add and manage your shipping and billing addresses.</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-mist">My addresses</p>
+          <h1 className="mt-2 text-3xl font-medium tracking-tight text-ink">Manage Addresses</h1>
+          <p className="mt-2 text-sm text-mute">Add and manage your shipping and billing addresses.</p>
         </div>
-        <button type="button" className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#61A2AF] px-5 text-sm font-medium text-white hover:bg-[#4F8A96] md:w-auto" onClick={() => setEditing(emptyAddress(user.name))}>
+        <button type="button" className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-mist px-5 text-sm font-medium text-white hover:bg-mist-hover md:w-auto" onClick={() => setEditing(emptyAddress(user.name))}>
           <Plus size={16} /> Add New Address
         </button>
       </div>
       {user.addresses.length === 0 && !editing ? (
-        <div className="mt-8 rounded-[24px] border border-[#e8e8e6] bg-white px-6 py-12 text-center">
-          <MapPin size={28} className="mx-auto text-[#c4a574]" />
-          <p className="mt-4 text-[#2c2926]">No saved address yet.</p>
+        <div className="mt-8 rounded-[24px] border border-line bg-white px-6 py-12 text-center">
+          <MapPin size={28} className="mx-auto text-mist" />
+          <p className="mt-4 text-ink">No saved address yet.</p>
         </div>
       ) : (
         <ul className="mt-8 space-y-4">
           {user.addresses.map((address) => (
-            <li key={address.id} className="rounded-[24px] border border-[#e8e8e6] bg-white p-5">
+            <li key={address.id} className="rounded-[24px] border border-line bg-white p-5">
               <div className="flex items-start gap-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#f7f7f6] text-[#c4a574]">
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sand text-mist">
                   <MapPin size={18} />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -738,22 +738,22 @@ function AddressBook() {
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <AddressLabelChip label={address.label} />
-                        {address.isDefault ? <span className="rounded-full bg-[#e8e8e6] px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-[#6f675d]">Default</span> : null}
+                        {address.isDefault ? <span className="rounded-full bg-stone px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.12em] text-mute">Default</span> : null}
                       </div>
-                      <p className="mt-1.5 font-medium text-[#2c2926]">{address.name}</p>
+                      <p className="mt-1.5 font-medium text-ink">{address.name}</p>
                     </div>
                   </div>
-                  <p className="mt-1 text-sm leading-6 text-[#a08a62]">{address.line1}</p>
-                  {address.line2 ? <p className="text-sm leading-6 text-[#a08a62]">{address.line2}</p> : null}
-                  <p className="text-sm leading-6 text-[#a08a62]">{address.city} {address.postal}</p>
-                  <p className="text-sm text-[#a08a62]">{address.phone ? displayPhone(address.phone) : ""}</p>
+                  <p className="mt-1 text-sm leading-6 text-mute">{address.line1}</p>
+                  {address.line2 ? <p className="text-sm leading-6 text-mute">{address.line2}</p> : null}
+                  <p className="text-sm leading-6 text-mute">{address.city} {address.postal}</p>
+                  <p className="text-sm text-mute">{address.phone ? displayPhone(address.phone) : ""}</p>
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 {address.isDefault && fromShipping ? (
                   <button
                     type="button"
-                    className="inline-flex h-9 items-center rounded-full bg-[#61A2AF] px-4 text-sm text-white"
+                    className="inline-flex h-9 items-center rounded-full bg-mist px-4 text-sm text-white"
                     onClick={() => {
                       warmShippingQuote(address.postal);
                       router.push(back);
@@ -765,7 +765,7 @@ function AddressBook() {
                 {!address.isDefault ? (
                   <button
                     type="button"
-                    className="inline-flex h-9 items-center rounded-full border border-[#e7d7bc] px-4 text-sm text-[#b08958] disabled:opacity-50"
+                    className="inline-flex h-9 items-center rounded-full border border-line px-4 text-sm text-mist-ink disabled:opacity-50"
                     disabled={picking === address.id}
                     onClick={async () => {
                       setPicking(address.id);
@@ -782,7 +782,7 @@ function AddressBook() {
                 ) : null}
                 <button
                   type="button"
-                  className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#e7d7bc] px-4 text-sm text-[#b08958]"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line px-4 text-sm text-mist-ink"
                   onClick={() => setEditing({ ...address, label: normalizeAddressLabel(address.label) })}
                 >
                   <Pencil size={14} /> Edit
@@ -797,7 +797,7 @@ function AddressBook() {
       )}
       {editing ? (
         <form
-          className="mt-6 grid gap-4 rounded-[24px] border border-[#e8e8e6] bg-white p-5 md:grid-cols-2"
+          className="mt-6 grid gap-4 rounded-[24px] border border-line bg-white p-5 md:grid-cols-2"
           onSubmit={async (event) => {
             event.preventDefault();
             const next = { ...editing, label: normalizeAddressLabel(editing.label), country: "India" };
@@ -806,7 +806,7 @@ function AddressBook() {
             setEditing(null);
           }}
         >
-          <p className="text-sm font-medium text-[#2c2926] md:col-span-2">{editing.line1 ? "Edit address" : "New address"}</p>
+          <p className="text-sm font-medium text-ink md:col-span-2">{editing.line1 ? "Edit address" : "New address"}</p>
           <Field
             label="Full name"
             name="name"
@@ -884,8 +884,8 @@ function AddressBook() {
                     onClick={() => setEditing({ ...editing, label: option })}
                     className={`inline-flex h-11 items-center gap-2 rounded-full border px-4 text-sm transition ${
                       active
-                        ? "border-[#61A2AF] bg-[#61A2AF] text-white"
-                        : "border-[#e8e8e6] bg-white text-[#6f675d] hover:border-[#61A2AF]"
+                        ? "border-mist bg-mist text-white"
+                        : "border-line bg-white text-mute hover:border-mist"
                     }`}
                   >
                     <Icon size={16} strokeWidth={1.7} aria-hidden />
@@ -895,13 +895,13 @@ function AddressBook() {
               })}
             </div>
           </div>
-          <label className="flex min-h-11 items-center gap-2.5 text-sm text-[#2c2926] md:col-span-2">
-            <input type="checkbox" checked={editing.isDefault} onChange={(event) => setEditing({ ...editing, isDefault: event.target.checked })} className="size-4 accent-[#61A2AF]" />
+          <label className="flex min-h-11 items-center gap-2.5 text-sm text-ink md:col-span-2">
+            <input type="checkbox" checked={editing.isDefault} onChange={(event) => setEditing({ ...editing, isDefault: event.target.checked })} className="size-4 accent-mist" />
             Default address
           </label>
           <div className="flex items-center gap-4 md:col-span-2">
-            <button type="submit" className="h-11 rounded-full bg-[#61A2AF] px-6 text-sm font-medium text-white hover:bg-[#4F8A96]">Save address</button>
-            <button type="button" onClick={() => setEditing(null)} className="text-sm text-[#8a8178]">Cancel</button>
+            <button type="submit" className="h-11 rounded-full bg-mist px-6 text-sm font-medium text-white hover:bg-mist-hover">Save address</button>
+            <button type="button" onClick={() => setEditing(null)} className="text-sm text-mute">Cancel</button>
           </div>
         </form>
       ) : null}

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion as useFramerReduced } from "framer-motion";
-import { Heart } from "lucide-react";
+import { ArrowDown, Heart } from "lucide-react";
 import { useBrandSettings } from "@/lib/brand/client";
 import {
   getBrandPlacement,
@@ -238,12 +238,16 @@ export function Stars({ rating }: { rating: number }) {
 export function PriceTag({ price, compare }: { price: number; compare?: number }) {
   const off = discountPercent(price, compare);
   return (
-    <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+    <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
       <span className="font-semibold tabular-nums tracking-tight">{formatPrice(price)}</span>
       {off > 0 && compare ? (
         <>
-          <s className="text-[12px] font-normal text-mute md:text-[0.92em]">{formatPrice(compare)}</s>
-          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-berry">
+          <span className="text-sm font-normal text-[#3A6B75] line-through">{formatPrice(compare)}</span>
+          <span
+            className="inline-flex items-center gap-0.5 rounded-full bg-[#e8f5ec] px-2 py-0.5 text-xs font-bold text-[#1f7a4d]"
+            aria-label={`${off}% off`}
+          >
+            <ArrowDown size={12} strokeWidth={2.5} aria-hidden />
             {off}% off
           </span>
         </>

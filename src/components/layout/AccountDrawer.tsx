@@ -15,12 +15,12 @@ function ProfileMeter({ user }: { user: NonNullable<ReturnType<typeof useStore>[
   const { percent } = profileCompletion(user);
   return (
     <span className="mt-2 block">
-      <span className="flex items-center justify-between text-[11px] font-medium text-[#3A6B75]">
+      <span className="flex items-center justify-between text-[11px] font-medium text-mist-ink">
         <span>{percent === 100 ? "Profile complete" : "Profile completion"}</span>
         <span>{percent}%</span>
       </span>
-      <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-[#efefed]">
-        <span className="block h-full rounded-full bg-[#61A2AF]" style={{ width: `${percent}%` }} />
+      <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-stone">
+        <span className="block h-full rounded-full bg-mist" style={{ width: `${percent}%` }} />
       </span>
     </span>
   );
@@ -46,17 +46,17 @@ function MenuRow({
   detail: string;
   onClick: () => void;
 }) {
-  const className = "flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-[#ffffff]";
+  const className = "flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-paper";
   const body = (
     <>
-      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#f7f7f6] text-[#2c2926]">
+      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-sand text-ink">
         <Icon size={18} strokeWidth={1.7} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-medium text-[#2c2926]">{title}</span>
-        <span className="mt-0.5 block text-xs text-[#8a8178]">{detail}</span>
+        <span className="block text-sm font-medium text-ink">{title}</span>
+        <span className="mt-0.5 block text-xs text-mute">{detail}</span>
       </span>
-      <ChevronRight size={16} className="shrink-0 text-[#c4bdb4]" />
+      <ChevronRight size={16} className="shrink-0 text-mute" />
     </>
   );
   if (href) {
@@ -112,7 +112,7 @@ export function AccountDrawer({ open, onClose, next, returnTo }: { open: boolean
           role="dialog"
           aria-modal="true"
           aria-label="My Account"
-          className="fixed inset-y-0 right-0 z-[70] flex w-full max-w-[420px] flex-col overflow-hidden bg-[#ffffff] text-[#2c2926] shadow-[-12px_0_40px_rgba(28,27,25,0.16)]"
+          className="fixed inset-y-0 right-0 z-[70] flex w-full max-w-[420px] flex-col overflow-hidden bg-paper text-ink shadow-[-12px_0_40px_rgba(28,27,25,0.16)]"
           initial={{ x: "100%" }}
           animate={{ x: 0 }}
           exit={{ x: "100%" }}
@@ -123,7 +123,7 @@ export function AccountDrawer({ open, onClose, next, returnTo }: { open: boolean
               <h2 className="text-lg font-semibold tracking-tight">
                 My Account
               </h2>
-              <p className="mt-1 text-sm text-[#8a8178]">
+              <p className="mt-1 text-sm text-mute">
                 Manage your profile, orders and preferences
               </p>
             </div>
@@ -131,7 +131,7 @@ export function AccountDrawer({ open, onClose, next, returnTo }: { open: boolean
               type="button"
               aria-label="Close account"
               onClick={onClose}
-              className="group/close inline-flex size-8 items-center justify-center text-[#2c2926] bg-black/10 hover:bg-black/18 focus-visible:outline-none rounded-full"
+              className="group/close inline-flex size-8 items-center justify-center text-ink bg-black/10 hover:bg-black/18 focus-visible:outline-none rounded-full"
             >
               <X
                 size={18} strokeWidth={1.6}
@@ -153,14 +153,14 @@ export function AccountDrawer({ open, onClose, next, returnTo }: { open: boolean
                   onClick={onClose}
                   className="flex items-center gap-3 rounded-2xl bg-white px-4 py-4 shadow-[0_1px_2px_rgba(28,27,25,0.04)]"
                 >
-                  <span className="grid size-12 shrink-0 place-items-center rounded-full bg-[#eef5f6] text-[#61A2AF]">
+                  <span className="grid size-12 shrink-0 place-items-center rounded-full bg-mist-cool text-mist">
                     <User size={22} strokeWidth={1.6} />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[15px] font-semibold">
                       {user.name || "Your account"}
                     </span>
-                    <span className="mt-0.5 block truncate text-sm text-[#8a8178]">
+                    <span className="mt-0.5 block truncate text-sm text-mute">
                       {user.phone ? displayPhone(user.phone) : user.email}
                     </span>
                     {verified ? (
@@ -170,16 +170,16 @@ export function AccountDrawer({ open, onClose, next, returnTo }: { open: boolean
                     ) : null}
                     <ProfileMeter user={user} />
                   </span>
-                  <ChevronRight size={16} className="shrink-0 text-[#c4bdb4]" />
+                  <ChevronRight size={16} className="shrink-0 text-mute" />
                 </Link>
 
-                <div className="divide-y divide-[#f7f7f6] overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(28,27,25,0.04)]">
+                <div className="divide-y divide-sand overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(28,27,25,0.04)]">
                   {accountRows.map((row) => (
                     <MenuRow key={row.title} {...row} onClick={onClose} />
                   ))}
                 </div>
 
-                <div className="divide-y divide-[#f7f7f6] overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(28,27,25,0.04)]">
+                <div className="divide-y divide-sand overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(28,27,25,0.04)]">
                   <MenuRow
                     href="/contact"
                     icon={Headphones}

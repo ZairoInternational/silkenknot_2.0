@@ -163,8 +163,8 @@
 }
 
 .sk-auth-method:hover {
-  border-color: #d4ccc0;
-  background: #fcfbf9;
+  border-color: var(--color-stone);
+  background: var(--color-sand);
 }
 
 .sk-auth-method-icon {
@@ -198,13 +198,13 @@
 }
 
 .sk-auth-method.is-active {
-  border-color: #61A2AF;
-  background: #eef5f6;
+  border-color: var(--color-mist);
+  background: var(--color-mist-cool);
   box-shadow: 0 0 0 3px rgba(97, 162, 175, 0.18);
 }
 
 .sk-auth-method.is-active .sk-auth-method-icon {
-  background: #61A2AF;
+  background: var(--color-mist);
   color: #fff;
 }
 
@@ -225,7 +225,7 @@
   padding: 5px 10px;
   border-radius: 999px;
   background: rgba(97, 162, 175, 0.16);
-  color: #3A6B75;
+  color: var(--color-mist-ink);
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -251,7 +251,7 @@
 
 .sk-auth-phone-field:focus-within,
 .sk-auth-email-field:focus-within {
-  border-color: #61A2AF;
+  border-color: var(--color-mist);
   box-shadow: 0 0 0 3px rgba(97, 162, 175, 0.18);
 }
 
@@ -290,7 +290,7 @@
 
 .sk-auth-email-field svg {
   flex-shrink: 0;
-  color: #3A6B75;
+  color: var(--color-mist-ink);
 }
 
 .sk-auth-primary {
@@ -302,7 +302,7 @@
   margin-top: 16px;
   border: 0;
   border-radius: 10px;
-  background: #61A2AF;
+  background: var(--color-mist);
   color: white;
   font-size: 11px;
   font-weight: 600;
@@ -313,7 +313,7 @@
 }
 
 .sk-auth-primary:hover {
-  background: #4F8A96;
+  background: var(--color-mist-hover);
 }
 
 .sk-auth-primary:disabled {
@@ -347,7 +347,7 @@ a.sk-auth-secondary {
 
 .sk-auth-secondary:hover {
   background: #ffffff;
-  border-color: #61A2AF;
+  border-color: var(--color-mist);
 }
 
 .sk-auth-restricted {
@@ -402,7 +402,7 @@ a.sk-auth-secondary {
 
 .sk-auth-consent input {
   margin-top: 3px;
-  accent-color: #61A2AF;
+  accent-color: var(--color-mist);
 }
 
 .sk-auth-consent a {
@@ -412,7 +412,7 @@ a.sk-auth-secondary {
 }
 
 .sk-auth-resend button {
-  color: #3A6B75;
+  color: var(--color-mist-ink);
   font-weight: 500;
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -452,8 +452,8 @@ a.sk-auth-secondary {
 }
 
 .sk-otp-inputs input:focus {
-  border-color: #61A2AF;
-  box-shadow: 0 0 0 3px rgb(203 172 124 / 28%);
+  border-color: var(--color-mist);
+  box-shadow: 0 0 0 3px rgba(97, 162, 175, 0.18);
 }
 
 .sk-auth-resend {
@@ -510,8 +510,8 @@ a.sk-auth-secondary {
 }
 
 .sk-auth-success-ring {
-  fill: #f7f7f6;
-  stroke: #61A2AF;
+  fill: var(--color-sand);
+  stroke: var(--color-mist);
   stroke-width: 1.5;
   transform-origin: center;
   animation: sk-success-pop 0.42s cubic-bezier(0.2, 0.85, 0.25, 1.15) both;
@@ -519,7 +519,7 @@ a.sk-auth-secondary {
 
 .sk-auth-success-tick {
   fill: none;
-  stroke: #3A6B75;
+  stroke: var(--color-mist-ink);
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -532,7 +532,7 @@ a.sk-auth-secondary {
   content: "";
   position: absolute;
   inset: 0;
-  border: 1.5px solid #61A2AF;
+  border: 1.5px solid var(--color-mist);
   border-radius: 50%;
   animation: sk-success-pulse 0.75s 0.12s ease-out both;
   pointer-events: none;
@@ -590,7 +590,7 @@ a.sk-auth-secondary {
   margin-top: 16px;
   border: 0;
   background: transparent;
-  color: #3A6B75;
+  color: var(--color-mist-ink);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.14em;
@@ -599,7 +599,7 @@ a.sk-auth-secondary {
 }
 
 .sk-auth-text-button:hover {
-  color: #4F8A96;
+  color: var(--color-mist-hover);
 }
 
 .sk-sr-only {
@@ -677,7 +677,7 @@ a.sk-auth-secondary {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
-  color: #3A6B75;
+  color: var(--color-mist-ink);
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.14em;
@@ -693,7 +693,7 @@ a.sk-auth-secondary {
   border: 0;
   border-radius: 999px;
   background: white;
-  color: #6f675d;
+  color: var(--mute);
   cursor: pointer;
 }
 

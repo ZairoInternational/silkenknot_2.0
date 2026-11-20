@@ -47,7 +47,7 @@ export function LogoutConfirm({
             <h2 id="logout-title" className="font-serif text-3xl">Sign out?</h2>
             <p id="logout-note" className="mt-3 text-sm text-mute">You’ll need a new code to sign in again.</p>
             <div className="mt-6 grid grid-cols-2 gap-3">
-              <button type="button" className="h-11 bg-[#61A2AF] text-[11px] uppercase tracking-[0.14em] text-white hover:bg-[#4F8A96]" onClick={onCancel}>
+              <button type="button" className="h-11 bg-mist text-[11px] uppercase tracking-[0.14em] text-white hover:bg-mist-hover" onClick={onCancel}>
                 Stay
               </button>
               <button type="button" className="h-11 border border-line text-[11px] uppercase tracking-[0.14em]" onClick={onConfirm}>

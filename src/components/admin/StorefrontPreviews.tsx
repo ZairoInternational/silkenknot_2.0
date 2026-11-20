@@ -272,18 +272,6 @@ export function SiteMediaDraftPreview({ media }: { media: SiteMediaSettings }) {
 function ShopSurfacePreview({ media }: { media: SiteMediaSettings }) {
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden rounded-xl border border-line bg-[#ffffff]">
-        <div className="grid md:grid-cols-[0.9fr_1.1fr]">
-          <div className="relative order-first min-h-[160px] md:order-last md:min-h-[220px]">
-            <Media src={media.shopHero} alt="Shop hero" sizes="600px" className="object-cover" />
-          </div>
-          <div className="flex flex-col justify-center px-5 py-6">
-            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#3A6B75]">Shop our collections</p>
-            <p className="mt-2 font-serif text-2xl leading-tight text-[#2c2926]">Natural care for your everyday rituals</p>
-            <p className="mt-2 text-sm text-[#4e4943]">Shop page top banner uses this photo.</p>
-          </div>
-        </div>
-      </div>
       <div className="relative min-h-[140px] overflow-hidden rounded-xl border border-line">
         <Media src={media.shopEditorial} alt="Shop editorial" sizes="800px" className="object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#ffffff]/90 via-[#ffffff]/55 to-transparent" />

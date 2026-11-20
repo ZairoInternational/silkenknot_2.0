@@ -336,23 +336,6 @@ export function ShopCatalog() {
   // ── Render ─────────────────────────────────────────────────────────────
   return (
     <div className="bg-[#ffffff] pt-[calc(var(--nav-h)+var(--announce-h))] text-[#2c2926]">
-      {/* Hero banner */}
-      <section className="grid md:min-h-[440px] md:grid-cols-[0.9fr_1.1fr]">
-        <div className="relative order-first min-h-[240px] md:order-last md:min-h-full">
-          <Media src={siteMedia.shopHero} alt="Silken Knot body care" sizes="(min-width: 768px) 55vw, 100vw" className="object-cover" />
-        </div>
-        <div className="flex flex-col justify-center px-6 py-8 md:px-12 md:py-16 lg:px-16">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#3A6B75] md:text-sm">Shop our collections</p>
-          <h1 className="mt-3 text-[2.15rem] font-medium leading-[1.12] md:text-5xl">Natural care for your everyday rituals</h1>
-          <p className="mt-4 max-w-md text-base leading-7 text-[#4e4943] md:text-lg">
-            From nourishing body butters to calming candles, find everything you need for a little more self-care in your day.
-          </p>
-          <a href="#products" className="mt-6 inline-flex w-fit items-center rounded-full bg-[#61A2AF] px-6 py-3 text-base text-white transition-colors hover:bg-[#4F8A96] md:text-sm">
-            Explore all products
-          </a>
-        </div>
-      </section>
-
       {/* Product listing */}
       <section id="products" className="scroll-mt-28 px-3.5 py-6 md:px-5 md:py-8 lg:grid lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-10 lg:px-10 lg:py-12">
         <aside className="hidden lg:block">{fields}</aside>
@@ -361,9 +344,9 @@ export function ShopCatalog() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#3A6B75] md:text-sm">The Silken Knot collection</p>
-              <h2 className="mt-2 text-3xl font-medium md:text-4xl">
+              <h1 className="mt-2 text-3xl font-medium md:text-4xl">
                 {category === "all" ? "All products" : categoryName}
-              </h2>
+              </h1>
               <p className="mt-2 text-base text-[#4e4943] md:text-lg">Little luxuries. Everyday moments.</p>
 
               {/* "Did you mean …?" banner */}

@@ -2716,8 +2716,8 @@ export function SiteMediaManager() {
               },
               {
                 title: "Shop page banners",
-                hint: "Top banner and lower story banner on the shop page.",
-                keys: ["shopHero", "shopEditorial"] as const,
+                hint: "Lower story banner on the shop page.",
+                keys: ["shopEditorial"] as const,
                 defaultOpen: false,
               },
               {

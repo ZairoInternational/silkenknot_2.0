@@ -132,7 +132,6 @@ export const SITE_MEDIA_SLOTS: { key: keyof Omit<SiteMediaSettings, "categoryStr
   { key: "bestsellerCandle", label: "Bestseller — Candle", hint: "Shelf / explore / aromatherapy cards" },
   { key: "whySilkKnot", label: "Why Silken Knot", hint: "Homepage story block" },
   { key: "brandStory", label: "Brand story", hint: "Homepage “Our story” block" },
-  { key: "shopHero", label: "Shop hero", hint: "Shop page top banner" },
   { key: "shopEditorial", label: "Shop editorial", hint: "Shop page lower banner" },
   { key: "authBackground", label: "Sign-in background", hint: "Login / OTP page" },
   { key: "checkoutBanner", label: "Checkout banner", hint: "Checkout header background" },

@@ -250,7 +250,7 @@ export function SearchOverlay() {
                               <Media src={category.image} alt={category.imageAlt} sizes="48px" className="object-cover" />
                             </span>
                             <span className="flex min-w-0 flex-1 items-center justify-between gap-2 pr-1">
-                              <span className="truncate font-serif text-lg leading-none">{category.name}</span>
+                              <span className="truncate text-sm leading-none">{category.name}</span>
                               <ArrowUpRight size={16} className="shrink-0 transition duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                             </span>
                           </Link>
@@ -273,7 +273,7 @@ export function SearchOverlay() {
                                 <Media src={product.images[0]} alt={product.name} sizes="48px" className="object-cover" />
                               </span>
                               <span className="min-w-0">
-                                <span className="block truncate font-serif text-lg leading-none">{product.name}</span>
+                                <span className="block truncate text-sm leading-none">{product.name}</span>
                                 <span className="mt-1 block text-xs text-mute">{formatPrice(product.price)}</span>
                               </span>
                             </Link>
