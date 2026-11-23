@@ -21,12 +21,12 @@ export function LaunchHeader() {
       </div>
       <Link
         href="/shop?sort=newest"
-        className="group inline-flex w-fit items-center gap-2 text-[15px] font-medium text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-mist"
+        className="group inline-flex w-fit shrink-0 cursor-pointer items-center gap-3 rounded-full bg-ink py-1.5 pl-6 pr-1.5 text-sm text-paper transition-colors hover:bg-midnight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
       >
-        <span className="border-b border-ink/35 pb-0.5 transition-colors duration-300 group-hover:border-mist group-hover:text-mist-ink">
-          View all new arrivals
+        View all new arrivals
+        <span className="inline-flex size-9 items-center justify-center rounded-full bg-paper text-ink transition-transform duration-300 ease-out group-hover:rotate-45 motion-reduce:transition-none motion-reduce:group-hover:rotate-0">
+          <ArrowRight size={16} />
         </span>
-        <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0" />
       </Link>
     </div>
   );

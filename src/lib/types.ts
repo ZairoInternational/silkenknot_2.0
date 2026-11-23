@@ -255,6 +255,16 @@ export type Order = {
   shippingQuoteId?: string;
   shipment?: ShipmentRecord;
   codCollection?: "due" | "not_applicable";
+  /** Explicit WhatsApp marketing reminder consent from checkout (unchecked by default). */
+  whatsappMarketingConsent?: {
+    optedIn: boolean;
+    at: string;
+    source: "checkout";
+  };
+  notices?: {
+    whatsappDeliveredAt?: string;
+    whatsappAbandonedAt?: string;
+  };
 };
 
 export type Coupon = {

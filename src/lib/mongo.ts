@@ -7,6 +7,7 @@ import { ensureBannerBootstrap } from "@/lib/banners/server";
 import { ensureBrandContent } from "@/lib/brand/server";
 import { ensureHeroContent } from "@/lib/hero/server";
 import { ensureSiteMediaContent } from "@/lib/site-media/server";
+import { ensureWelcomeScratchContent } from "@/lib/welcome-scratch/server";
 import { approxProductWeight } from "@/lib/shipping/weight";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 
@@ -169,6 +170,7 @@ async function seedIfEmpty(db: Db) {
     ensureBrandContent(db),
     ensureSiteMediaContent(db),
     ensureBannerBootstrap(db),
+    ensureWelcomeScratchContent(db),
   ]);
 
   await Promise.all([ensureAuthIndexes(db), ensureStorefrontIndexes(db), ensurePaymentIndexes(db)]);

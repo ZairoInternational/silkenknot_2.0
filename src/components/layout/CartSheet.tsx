@@ -59,12 +59,19 @@ export function CartSheet() {
             </button>
           </div>
           {store.cart.length === 0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center px-5 pb-8 text-center">
-              <ShoppingBag size={88} strokeWidth={1.15} className="text-ink/80" />
-              <p className="mt-6 font-serif text-3xl">Your bag is empty.</p>
-              <Link href="/shop" onClick={store.closeCart} className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-[#61A2AF] px-8 text-[11px] uppercase tracking-[0.16em] text-white hover:bg-[#4F8A96]">
-                Start shopping
-              </Link>
+            <div className="flex flex-1 flex-col px-5 pb-8">
+              <div className="flex flex-1 flex-col items-center justify-center text-center">
+                <ShoppingBag size={88} strokeWidth={1.15} className="text-ink/80" />
+                <p className="mt-6 font-serif text-3xl">Your bag is empty.</p>
+                <Link href="/shop" onClick={store.closeCart} className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-[#61A2AF] px-8 text-[11px] uppercase tracking-[0.16em] text-white hover:bg-[#4F8A96]">
+                  Start shopping
+                </Link>
+              </div>
+              {store.couponCode ? (
+                <div className="mt-auto pt-4">
+                  <OfferBox onOpenAll={() => setOffersOpen(true)} />
+                </div>
+              ) : null}
             </div>
           ) : (
             <>

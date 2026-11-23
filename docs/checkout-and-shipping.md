@@ -63,7 +63,7 @@ npx tsc --noEmit
 npm run lint
 ```
 
-Schedule `POST /api/checkout/reconcile` with header `x-silkknot-reconcile`. There is no in-app worker. That call releases expired reservations, retries Razorpay webhook events, books queued shipments, and refreshes tracking.
+Schedule `POST /api/checkout/reconcile` with header `x-silkknot-reconcile`. There is no in-app worker. That call releases expired reservations, retries Razorpay webhook events, books queued shipments, refreshes tracking, and (when `MSG91_WHATSAPP_ABANDONED_TEMPLATE_NAME` is set) sends at most one consented abandoned-checkout WhatsApp reminder per unpaid order after `ABANDONED_CHECKOUT_REMINDER_MINUTES` (default 30).
 
 `GET /api/shipping/serviceability?pin=110001` checks a 6-digit PIN without creating a shipment. A live Delhivery call happens only when `DELHIVERY_LIVE_READS_ENABLED=1`, a server token is set, and the host is `track.delhivery.com` or `staging-express.delhivery.com`. When that PIN is serviceable and `DELHIVERY_ORIGIN_PIN` is the warehouse’s 6-digit PIN, the same request also asks Expected TAT for surface and express. The origin PIN comes from the server environment. Delhivery does not return it from the pickup location name. If the origin PIN is missing or TAT fails, the date stays the store estimate. The freight quote is a separate call used by checkout.
 

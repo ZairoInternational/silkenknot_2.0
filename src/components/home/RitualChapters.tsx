@@ -95,13 +95,12 @@ export function CategorySection() {
             </div>
             <Link
               href="/shop"
-              className="group/all inline-flex w-fit shrink-0 cursor-pointer items-center gap-2 rounded-full border border-mist bg-white px-5 py-2.5 text-[15px] font-medium text-ink transition-colors duration-300 hover:bg-mist hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mist"
+              className="group inline-flex w-fit shrink-0 cursor-pointer items-center gap-3 rounded-full bg-ink py-1.5 pl-6 pr-1.5 text-sm text-paper transition-colors hover:bg-midnight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             >
               Shop all
-              <ArrowUpRight
-                size={15}
-                className="transition-transform duration-300 group-hover/all:translate-x-0.5 group-hover/all:-translate-y-0.5 motion-reduce:transition-none motion-reduce:group-hover/all:translate-x-0 motion-reduce:group-hover/all:translate-y-0"
-              />
+              <span className="inline-flex size-9 items-center justify-center rounded-full bg-paper text-ink transition-transform duration-300 ease-out group-hover:rotate-45 motion-reduce:transition-none motion-reduce:group-hover:rotate-0">
+                <ArrowUpRight size={16} />
+              </span>
             </Link>
           </div>
         </Reveal>

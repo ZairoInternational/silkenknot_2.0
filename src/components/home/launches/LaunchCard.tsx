@@ -57,7 +57,7 @@ export function LaunchCard({ product }: { product: Product }) {
         onAdd={add}
         wishlist={<WishlistButton productId={product.id} name={product.name} />}
         badge={
-          <span className="bg-[#ffffff]/92 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7350] backdrop-blur-sm">
+          <span className="rounded-full bg-[#1c1b19] px-2 py-1 text-[9px] font-medium uppercase tracking-[0.12em] text-white">
             New
           </span>
         }

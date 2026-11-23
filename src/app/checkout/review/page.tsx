@@ -48,6 +48,7 @@ export default function ReviewPage() {
   const paying = useRef(false);
   const settled = useRef(false);
   const [accepted, setAccepted] = useState(false);
+  const [whatsappReminders, setWhatsappReminders] = useState(false);
   const [error, setError] = useState("");
 
   const cartKey = store.cart.map((item) => `${item.productId}:${item.variantLabel}:${item.quantity}`).join("|");
@@ -185,6 +186,7 @@ export default function ReviewPage() {
             const coupon = store.coupons.find((item) => item.code === store.couponCode && item.active);
             return coupon ? couponDiscountPaise(store.cart, coupon) : 0;
           })(), method, Math.round(subtotal(store.cart) * 100)).amountPaise,
+          whatsappMarketingConsent: whatsappReminders,
         }),
       });
       const data = await createRes.json();
@@ -408,6 +410,14 @@ export default function ReviewPage() {
               <span>
                 I agree to the <a href="/terms" target="_blank">Terms</a>, <a href="/privacy" target="_blank">Privacy Policy</a>, <a href="/shipping" target="_blank">Shipping</a>, <a href="/returns" target="_blank">Returns</a>, and <a href="/payments" target="_blank">Payment</a> policies.
               </span>
+            </label>
+            <label className="checkLine termsCheck">
+              <input
+                type="checkbox"
+                checked={whatsappReminders}
+                onChange={(event) => setWhatsappReminders(event.target.checked)}
+              />
+              <span>Send me helpful order reminders and updates on WhatsApp.</span>
             </label>
           </div>
           {error ? <p className="errorText">{error}</p> : null}

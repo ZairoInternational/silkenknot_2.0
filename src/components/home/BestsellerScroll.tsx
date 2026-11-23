@@ -50,10 +50,10 @@ export function BestsellerScroll() {
             </div>
             <Link
               href={shopHref}
-              className="group inline-flex w-fit shrink-0 cursor-pointer items-center gap-3 rounded-full bg-mist py-1.5 pl-6 pr-1.5 text-sm font-medium text-white shadow-[0_10px_28px_rgba(95,164,173,0.3)] transition-colors duration-300 hover:bg-mist-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mist"
+              className="group inline-flex w-fit shrink-0 cursor-pointer items-center gap-3 rounded-full bg-ink py-1.5 pl-6 pr-1.5 text-sm text-paper transition-colors hover:bg-midnight focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             >
               Explore all
-              <span className="inline-flex size-9 items-center justify-center rounded-full bg-white text-ink transition-transform duration-300 ease-out group-hover:rotate-45 motion-reduce:transition-none motion-reduce:group-hover:rotate-0">
+              <span className="inline-flex size-9 items-center justify-center rounded-full bg-paper text-ink transition-transform duration-300 ease-out group-hover:rotate-45 motion-reduce:transition-none motion-reduce:group-hover:rotate-0">
                 <ArrowRight size={16} />
               </span>
             </Link>
@@ -111,11 +111,11 @@ function BestsellerCard({ product, rank }: { product: Product; rank: number }) {
           wishlist={<WishlistButton productId={product.id} name={product.name} />}
           badge={
             product.bestseller ? (
-              <span className="bg-paper/95 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-mist-ink backdrop-blur-sm md:rounded-full md:border md:border-mist/40 md:px-2.5">
+              <span className="rounded-full bg-[#1c1b19] px-2 py-1 text-[9px] font-medium uppercase tracking-[0.12em] text-white">
                 Bestseller
               </span>
             ) : product.newArrival ? (
-              <span className="bg-paper/95 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-mist-ink backdrop-blur-sm md:rounded-full md:border md:border-mist/40 md:px-2.5">
+              <span className="rounded-full bg-[#1c1b19] px-2 py-1 text-[9px] font-medium uppercase tracking-[0.12em] text-white">
                 New
               </span>
             ) : null

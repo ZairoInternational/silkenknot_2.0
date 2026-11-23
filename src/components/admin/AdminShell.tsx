@@ -89,6 +89,7 @@ const navGroups: NavGroup[] = [
       { label: "Website photos", href: "/admin/site-media", hint: "Page photos" },
       { label: "Logo", href: "/admin/brand", hint: "Brand mark" },
       { label: "Announcement", href: "/admin/announcements", hint: "Top bar" },
+      { label: "Welcome scratch", href: "/admin/welcome-scratch", hint: "Homepage offer modal" },
     ],
   },
   {

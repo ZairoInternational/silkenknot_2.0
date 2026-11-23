@@ -38,6 +38,7 @@ export async function POST(request: Request) {
       shippingQuoteId: body.shippingQuoteId,
       shippingOptionId: body.shippingOptionId,
       expectedAmountPaise: body.expectedAmountPaise,
+      whatsappMarketingConsent: body.whatsappMarketingConsent === true,
     });
     if ("alreadyPaid" in result) return NextResponse.json({ verified: true, order: result.order });
     if ("cod" in result) return NextResponse.json({ placed: true, order: result.order });

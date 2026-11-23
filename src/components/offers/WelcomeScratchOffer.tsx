@@ -6,10 +6,10 @@ import { Feather, HandHeart, Leaf, X } from "lucide-react";
 import { Media, ease, useDialog, usePrefersReducedMotion } from "@/components/ui";
 import { BrandLogo } from "@/components/ui";
 import { useStore } from "@/lib/store";
+import type { WelcomeScratchPublic } from "@/lib/welcome-scratch/content";
 
 const STORAGE_KEY = "sk-welcome-scratch";
-const PRIZE_CODE = "RITUAL10";
-const PRIZE_LABEL = "10% off your order";
+const CLAIMED_CODE_KEY = "sk-welcome-scratch-code";
 const SCROLL_TRIGGER = 0.28;
 const REVEAL_RATIO = 0.42;
 
@@ -37,6 +37,22 @@ function markSeen() {
   }
 }
 
+function rememberClaimedCode(code: string) {
+  try {
+    sessionStorage.setItem(CLAIMED_CODE_KEY, code);
+  } catch {
+    /* ignore */
+  }
+}
+
+function readClaimedCode() {
+  try {
+    return sessionStorage.getItem(CLAIMED_CODE_KEY);
+  } catch {
+    return null;
+  }
+}
+
 function wantsPreview() {
   try {
     return new URLSearchParams(window.location.search).has("previewScratch");
@@ -45,7 +61,7 @@ function wantsPreview() {
   }
 }
 
-export function WelcomeScratchOffer() {
+export function WelcomeScratchOffer({ settings }: { settings: WelcomeScratchPublic }) {
   const store = useStore();
   const reduced = usePrefersReducedMotion();
   const titleId = useId();
@@ -53,6 +69,8 @@ export function WelcomeScratchOffer() {
   const scratching = useRef(false);
   const [phase, setPhase] = useState<Phase>("closed");
   const [scratched, setScratched] = useState(0);
+  const prizeCode = settings.prizeCode;
+  const prizeLabel = settings.prizeLabel;
 
   const dismiss = useCallback(() => {
     markSeen();
@@ -60,6 +78,14 @@ export function WelcomeScratchOffer() {
   }, []);
 
   const dialogRef = useDialog(phase !== "closed", dismiss);
+
+  // Re-apply after bag hydrate so an early claim is not wiped by /api/store.
+  useEffect(() => {
+    if (!store.ready || store.couponCode) return;
+    const pending = readClaimedCode();
+    if (!pending) return;
+    store.applyCoupon(pending);
+  }, [store.ready, store.couponCode, store.applyCoupon]);
 
   useEffect(() => {
     if (wantsPreview()) {
@@ -187,20 +213,21 @@ export function WelcomeScratchOffer() {
   const revealNow = () => setPhase("revealed");
 
   const claim = () => {
-    const result = store.applyCoupon(PRIZE_CODE);
+    const result = store.applyCoupon(prizeCode);
     try {
-      void navigator.clipboard?.writeText(PRIZE_CODE);
+      void navigator.clipboard?.writeText(prizeCode);
     } catch {
       /* ignore */
     }
     if (result.ok) {
-      store.notify(`${PRIZE_CODE} applied`);
-    } else {
-      store.notify(`${PRIZE_CODE} copied — add to bag to use it`);
+      rememberClaimedCode(prizeCode);
+      store.notify(result.message || `${prizeCode} applied`);
+      markSeen();
+      setPhase("claimed");
+      window.setTimeout(() => setPhase("closed"), 900);
+      return;
     }
-    markSeen();
-    setPhase("claimed");
-    window.setTimeout(() => setPhase("closed"), 900);
+    store.notify(result.message || `${prizeCode} could not be applied`);
   };
 
   const open = phase !== "closed";
@@ -312,10 +339,10 @@ export function WelcomeScratchOffer() {
                     Welcome offer
                   </p>
                   <p className="mt-2 text-2xl font-medium text-[#2c2926]">
-                    {PRIZE_LABEL}
+                    {prizeLabel}
                   </p>
                   <p className="mt-1 rounded-md bg-[#f7f7f6] px-3 py-1 text-sm tracking-[0.18em] text-[#5c564e]">
-                    {PRIZE_CODE}
+                    {prizeCode}
                   </p>
                 </div>
 

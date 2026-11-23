@@ -418,10 +418,10 @@ export default function OrderSummary() {
 
   useEffect(() => {
     if (!store.ready || !store.couponCode) return;
-    if (items.length) {
-      const applied = store.coupons.find((item) => item.active && item.code === store.couponCode);
-      if (applied && couponDiscount(items, applied) > 0) return;
-    }
+    // Keep a claimed code while the bag is empty (welcome scratch / early claim).
+    if (!items.length) return;
+    const applied = store.coupons.find((item) => item.active && item.code === store.couponCode);
+    if (applied && couponDiscount(items, applied) > 0) return;
     const code = store.couponCode;
     store.clearCoupon();
     setCouponNotice(`${code} no longer applies to the items in your bag, so it was removed.`);

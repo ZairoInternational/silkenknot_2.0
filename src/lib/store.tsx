@@ -500,14 +500,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       (item) => item.active && item.code.toLowerCase() === code.trim().toLowerCase(),
     );
     if (!coupon) return { ok: false, message: "That offer isn’t active." };
-    if (couponDiscount(current.cart, coupon) <= 0) {
+    // Empty bag: still save the code so scratch / offer claim syncs to checkout later.
+    if (current.cart.length > 0 && couponDiscount(current.cart, coupon) <= 0) {
       return { ok: false, message: "This offer doesn’t apply to your bag." };
     }
     const changed = current.couponCode !== coupon.code;
     patch({ couponCode: coupon.code });
     // Celebrate only on a real apply/switch — not bag hydrate or same-code re-apply.
     if (changed) queueBagCelebrate("coupon");
-    return { ok: true, message: coupon.label };
+    return {
+      ok: true,
+      message: current.cart.length ? coupon.label : `${coupon.code} saved — add to bag to use it`,
+    };
   }, [patch]);
 
   const signedIn = useCallback((data: ApiResult, admin = false) => {

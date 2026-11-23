@@ -13,6 +13,7 @@ import { WelcomeScratchOfferLazy } from "@/components/offers/WelcomeScratchOffer
 import { getPublicBannersForHome } from "@/lib/banners/server";
 import { getHeroContent } from "@/lib/hero/server";
 import { buildPageMetadata, DEFAULT_DESCRIPTION, SITE_NAME } from "@/lib/seo/metadata";
+import { getPublicWelcomeScratch } from "@/lib/welcome-scratch/server";
 // import { GiftSets } from "@/components/home/GiftSets";
 // import { BuildYourRitual } from "@/components/home/Buildyourrituals";
 
@@ -32,7 +33,11 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [hero, campaigns] = await Promise.all([getHeroContent(), getPublicBannersForHome()]);
+  const [hero, campaigns, welcomeScratch] = await Promise.all([
+    getHeroContent(),
+    getPublicBannersForHome(),
+    getPublicWelcomeScratch(),
+  ]);
   return (
     <>
       <Hero content={hero} campaignBanners={campaigns.hero} />
@@ -48,7 +53,7 @@ export default async function HomePage() {
       {/* <GiftSets/> */}
       {/* <BuildYourRitual/> */}
       <Newsletter />
-      <WelcomeScratchOfferLazy />
+      {welcomeScratch ? <WelcomeScratchOfferLazy settings={welcomeScratch} /> : null}
     </>
   );
 }

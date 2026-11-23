@@ -11,6 +11,7 @@ import { checkoutSignatureValid } from "@/lib/payments/signature";
 import { reserveFilter } from "@/lib/payments/inventory";
 import { canRelease, fulfillmentTransition, paymentTransition } from "@/lib/payments/states";
 import { getMongo } from "@/lib/mongo";
+import { processAbandonedCheckoutReminders } from "@/lib/mail/abandonedCheckout";
 import { notifyOrderDelivered, queueOrderConfirmation } from "@/lib/mail/notify";
 import { enqueueShipment, processShipmentTasks } from "@/lib/shipping/booking";
 import { ShippingQuoteError, revalidateShipping } from "@/lib/shipping/quotes";
@@ -315,6 +316,7 @@ export async function createCheckout(input: {
   shippingQuoteId: unknown;
   shippingOptionId: unknown;
   expectedAmountPaise: unknown;
+  whatsappMarketingConsent?: unknown;
 }) {
   let config;
   try {
@@ -380,6 +382,7 @@ export async function createCheckout(input: {
   if (!useTransaction && process.env.NODE_ENV === "production") {
     throw new CheckoutError("config", "Checkout requires a MongoDB replica set so stock and the order update together.");
   }
+  const marketingConsent = input.whatsappMarketingConsent === true;
   const order: StoredOrder = {
     id: `ord_${randomBytes(16).toString("hex")}`,
     number: `SK${randomBytes(5).toString("hex").toUpperCase()}`,
@@ -390,6 +393,11 @@ export async function createCheckout(input: {
     customerName: address.fullName,
     phone: address.phone,
     userId: input.userId,
+    whatsappMarketingConsent: {
+      optedIn: marketingConsent,
+      at: now,
+      source: "checkout",
+    },
     address: toAddress(address),
     delivery: optionId,
     payment: method,
@@ -936,8 +944,16 @@ export async function reconcileOpenOrders() {
     await processWebhookEvent(String(event.eventId));
   }
   const shipmentPass = await processShipmentTasks();
-  paymentLog("reconcile_pass", { expired: expired.length, events: stuckEvents.length, shipments: shipmentPass.tasks });
-  return { expired: expired.length, events: stuckEvents.length, ...shipmentPass };
+  const abandonedPass = await processAbandonedCheckoutReminders(db);
+  paymentLog("reconcile_pass", {
+    expired: expired.length,
+    events: stuckEvents.length,
+    shipments: shipmentPass.tasks,
+    abandonedScanned: abandonedPass.scanned,
+    abandonedSent: abandonedPass.sent,
+    abandonedSkipped: abandonedPass.skipped,
+  });
+  return { expired: expired.length, events: stuckEvents.length, ...shipmentPass, abandoned: abandonedPass };
 }
 
 export async function acceptWebhook(rawBody: string, eventId: string) {

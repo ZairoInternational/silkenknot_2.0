@@ -6,4 +6,5 @@ export const CACHE_TAGS = {
   catalog: "catalog",
   hero: "hero",
   banners: "banners",
+  welcomeScratch: "welcome-scratch",
 } as const;
